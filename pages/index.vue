@@ -11,42 +11,34 @@ import {
     SphereGeometry,
     MeshBasicMaterial,
 } from "three";
+import { DigitalGlobe } from "../components/threejs/DigitalGlobe";
+import { AppCamera } from "../components/threejs/AppCamera"
+import { AppScene } from "../components/threejs/AppScene"
+import { AnimationLoop } from "../components/threejs/AnimationLoop"
 
 export default {
     mounted() {
-        const scene = new Scene();
-        const camera = new PerspectiveCamera(
-            75,
-            innerWidth / innerHeight,
-            0.1,
-            1000
-        );
-
+        // setup a webgl renderer
         const renderer = new WebGLRenderer({
             canvas: this.$refs.threejsCanvas,
         });
         renderer.setSize(innerWidth, innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Create a sphere
-        const sphere = new Mesh(
-            new SphereGeometry(5, 50, 50),
-            new MeshBasicMaterial({
-                color: 0x00ff00,
-                wireframe: true
-            })
-        );
+        // setup the camera and the scene
+        const appCam = new AppCamera(innerWidth, innerHeight, renderer);
+        const appScene = new AppScene(renderer, appCam.get());
 
-        // Add objects into scene
-        scene.add(sphere);
+        // Create meshes in the scene
+        const digitalGlobe = new DigitalGlobe();
+        appScene.get().add(digitalGlobe.innerGlobe);
 
-        camera.position.z = 10;
+        // Start animation
+        const animationLoop = new AnimationLoop(appScene, appCam);
+        //  animationLoop.members.push(digitalGlobe);
+        animationLoop.start();
 
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-        animate();
+        appCam.toGlobeView()
     }
 }
 </script>

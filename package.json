@@ -6,9 +6,13 @@
     "start": "node .output/server/index.mjs"
   },
   "devDependencies": {
-    "nuxt3": "latest"
+    "nuxt3": "latest",
+    "@types/three": "^0.144.0"
   },
   "dependencies": {
-    "three": "^0.145.0"
+    "@tweenjs/tween.js": "^18.6.4",
+    "three": "^0.144.0",
+    "d3-geo": "^3.0.1",
+    "postprocessing": "^6.29.0"
   }
 }
