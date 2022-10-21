@@ -3,42 +3,27 @@
 </template>
 
 <script>
-import {
-    Scene,
-    PerspectiveCamera,
-    WebGLRenderer,
-    Mesh,
-    SphereGeometry,
-    MeshBasicMaterial,
-} from "three";
 import { DigitalGlobe } from "../components/threejs/DigitalGlobe";
+import { AppRenderer } from "../components/threejs/AppRenderer"
 import { AppCamera } from "../components/threejs/AppCamera"
 import { AppScene } from "../components/threejs/AppScene"
 import { AnimationLoop } from "../components/threejs/AnimationLoop"
 
 export default {
     mounted() {
-        // setup a webgl renderer
-        const renderer = new WebGLRenderer({
-            canvas: this.$refs.threejsCanvas,
-        });
-        renderer.setSize(innerWidth, innerHeight);
-        document.body.appendChild(renderer.domElement);
+        // setup the threejs renderer, camera and scene
+        const appRenderer = new AppRenderer(this.$refs.threejsCanvas);
+        const appCam = new AppCamera(innerWidth, innerHeight, appRenderer);
+        const appScene = new AppScene(appRenderer, appCam);
 
-        // setup the camera and the scene
-        const appCam = new AppCamera(innerWidth, innerHeight, renderer);
-        const appScene = new AppScene(renderer, appCam.get());
+        // Add meshes to the scene
+        const digitalGlobe = new DigitalGlobe(appScene);
 
-        // Create meshes in the scene
-        const digitalGlobe = new DigitalGlobe();
-        appScene.get().add(digitalGlobe.innerGlobe);
-
-        // Start animation
+        // Start scene animation
         const animationLoop = new AnimationLoop(appScene, appCam);
-        //  animationLoop.members.push(digitalGlobe);
-        animationLoop.start();
 
-        appCam.toGlobeView()
+        // move the camera
+        appCam.toGlobeView();
     }
 }
 </script>

@@ -10,6 +10,7 @@ import TWEEN from "@tweenjs/tween.js";
 import { geoInterpolate } from "d3-geo";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GlobeUtils } from "../GlobeUtils";
+import { AppRenderer } from "./AppRenderer";
 //import { Satellite } from "./Satellite";
 
 class AppCamera {
@@ -18,12 +19,12 @@ class AppCamera {
   private startPos = new Vector3(156, 96, -240);
   private radius = 100;
 
-  constructor(width: number, height: number, renderer: WebGLRenderer) {
+  constructor(width: number, height: number, renderer: AppRenderer) {
     this.camera = new PerspectiveCamera(50, width / height, 0.1, 40000);
     this.camera.position.set(this.startPos.x, this.startPos.y, this.startPos.z);
     this.camera.up.set(0, 1, 0);
 
-    this.controls = new OrbitControls(this.camera, renderer.domElement);
+    this.controls = new OrbitControls(this.camera, renderer.get().domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.minDistance = 0;

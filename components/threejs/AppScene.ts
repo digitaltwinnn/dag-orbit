@@ -1,12 +1,4 @@
-import {
-  AmbientLight,
-  Camera,
-  HalfFloatType,
-  Object3D,
-  Scene,
-  UnsignedByteType,
-  WebGLRenderer,
-} from "three";
+import { AmbientLight, HalfFloatType, Object3D, Scene } from "three";
 import {
   BlendFunction,
   EffectComposer,
@@ -15,6 +7,8 @@ import {
   RenderPass,
   SelectiveBloomEffect,
 } from "postprocessing";
+import { AppRenderer } from "./AppRenderer";
+import { AppCamera } from "./AppCamera";
 
 class AppScene {
   private scene!: Scene;
@@ -22,7 +16,7 @@ class AppScene {
   private composer!: any;
   private bloomEffect!: any;
 
-  constructor(renderer: WebGLRenderer, camera: Camera) {
+  constructor(renderer: AppRenderer, camera: AppCamera) {
     this.scene = new Scene();
     this.scene.background = null;
 
@@ -30,21 +24,20 @@ class AppScene {
     this.light.intensity = 0.15;
     this.scene.add(this.light);
 
-  //  this.camera = new Camera(w, h, this.renderer);
-  //  this.scene.add(this.camera.get());
+    //  this.camera = new Camera(w, h, this.renderer);
+    //  this.scene.add(this.camera.get());
 
-    this.composer = new EffectComposer(renderer, {
-      // TODO: change to HalfFloatType / make it work
-      frameBufferType: UnsignedByteType,
+    this.composer = new EffectComposer(renderer.get(), {
+      frameBufferType: HalfFloatType,
     });
-    this.bloomEffect = new SelectiveBloomEffect(this.scene, camera, {
+    this.bloomEffect = new SelectiveBloomEffect(this.scene, camera.get(), {
       blendFunction: BlendFunction.SCREEN,
       kernelSize: KernelSize.MEDIUM,
       luminanceThreshold: 0.1,
       luminanceSmoothing: 0.075,
     });
-    const renderPass = new RenderPass(this.scene, camera);
-    const effectPass = new EffectPass(camera, this.bloomEffect);
+    const renderPass = new RenderPass(this.scene, camera.get());
+    const effectPass = new EffectPass(camera.get(), this.bloomEffect);
     // Removes banding from lighting calculations.
     //  effectPass.dithering = true;
     this.composer.addPass(renderPass);
@@ -53,6 +46,10 @@ class AppScene {
 
   public get(): Scene {
     return this.scene;
+  }
+
+  public add(object: Object3D): void {
+    this.scene.add(object);
   }
 
   public getComposer(): any {

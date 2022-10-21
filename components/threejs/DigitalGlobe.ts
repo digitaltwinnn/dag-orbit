@@ -18,6 +18,7 @@ import {
   Vector3,
 } from "three";
 import { GlobeUtils } from "../GlobeUtils";
+import { AppScene } from "./AppScene";
 
 const GLOBE = 0;
 const MAP = 1;
@@ -34,16 +35,16 @@ class DigitalGlobe {
   private colorInterval = false;
   private mode = GLOBE;
 
-  constructor(/*scene: Scene, loadingManager: LoadingManager, visible: boolean*/) {
+  constructor(appScene: AppScene) {
     const globeGeometry = new SphereGeometry(this.radius, 32, 32);
     const globeMaterial = new MeshBasicMaterial({
       color: new Color("BLue"),
-      wireframe: true,
       transparent: true,
       opacity: 0.7,
     });
     this.innerGlobe = new Mesh(globeGeometry, globeMaterial);
-    //  scene.add(this.innerGlobe);
+    appScene.add(this.innerGlobe);
+    appScene.applyBloomEffect(this.innerGlobe);
 
     /*
     const loader = new ImageLoader(loadingManager);

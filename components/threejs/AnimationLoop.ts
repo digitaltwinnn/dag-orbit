@@ -4,24 +4,20 @@ import { AppScene } from "./AppScene";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
 class AnimationLoop {
-  private camera: AppCamera;
-  private scene: Scene;
   private composer: any;
   private clock!: Clock;
   //  private stats!: Stats;
 
   public members = [] as any;
-  public bloomTargets = [] as any;
 
   constructor(scene: AppScene, camera: AppCamera) {
-    this.camera = camera;
-    this.scene = scene.get();
     this.composer = scene.getComposer();
     //    this.stats = stats;
     this.members.push(camera);
+    this.start();
   }
 
-  public start() {
+  private start() {
     this.clock = new Clock();
 
     const self = this;
