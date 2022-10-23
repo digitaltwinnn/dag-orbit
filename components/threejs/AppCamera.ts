@@ -16,7 +16,7 @@ import { AppRenderer } from "./AppRenderer";
 class AppCamera {
   private camera!: PerspectiveCamera;
   private controls!: OrbitControls;
-  private startPos = new Vector3(156, 96, -240);
+  private startPos = new Vector3(0, 0, 400);
   private radius = 100;
 
   constructor(width: number, height: number, renderer: AppRenderer) {
@@ -28,7 +28,7 @@ class AppCamera {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.minDistance = 0;
-    this.controls.maxDistance = 500;
+    this.controls.maxDistance = 5000;
   }
 
   public resize(width: number, height: number) {

@@ -18,12 +18,17 @@ export default {
 
         // Add meshes to the scene
         const digitalGlobe = new DigitalGlobe(appScene);
+        digitalGlobe.innerGlobe.position.set(-110, 0, 0);
+        appScene.applyBloomEffect(digitalGlobe.innerGlobe);
+
+        const digitalGlobe2 = new DigitalGlobe(appScene);
+        digitalGlobe2.innerGlobe.position.set(110, 0, 0);
 
         // Start scene animation
         const animationLoop = new AnimationLoop(appScene, appCam);
 
         // move the camera
-        appCam.toGlobeView();
+        // appCam.toGlobeView();
     }
 }
 </script>

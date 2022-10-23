@@ -38,13 +38,10 @@ class DigitalGlobe {
   constructor(appScene: AppScene) {
     const globeGeometry = new SphereGeometry(this.radius, 32, 32);
     const globeMaterial = new MeshBasicMaterial({
-      color: new Color("BLue"),
-      transparent: true,
-      opacity: 0.7,
+      color: new Color("Green")
     });
     this.innerGlobe = new Mesh(globeGeometry, globeMaterial);
     appScene.add(this.innerGlobe);
-    appScene.applyBloomEffect(this.innerGlobe);
 
     /*
     const loader = new ImageLoader(loadingManager);

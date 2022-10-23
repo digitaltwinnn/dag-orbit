@@ -6,11 +6,10 @@ class AppRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new WebGLRenderer({
       canvas: canvas,
-      alpha: true,
-      antialias: true,
+      powerPreference: "high-performance",
+      antialias: false,
       stencil: false,
       depth: false,
-      powerPreference: "high-performance",
     });
     this.renderer.setSize(innerWidth, innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
