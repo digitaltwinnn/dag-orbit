@@ -19,10 +19,7 @@ import { AppScene } from "./AppScene";
 
 const GLOBE = 0;
 const MAP = 1;
-const shieldColors = [
-  "#ffffff",
-  "#ff0000",
-];
+const shieldColors = ["#ffffff", "#ff0000"];
 
 class DigitalGlobe {
   public mesh!: InstancedMesh;
@@ -39,18 +36,18 @@ class DigitalGlobe {
   constructor(appScene: AppScene) {
     const globeGeometry = new SphereGeometry(this.radius, 32, 32);
     const globeMaterial = new MeshBasicMaterial({
-      color: new Color("Green")
+      color: new Color("Green"),
     });
     this.innerGlobe = new Mesh(globeGeometry, globeMaterial);
     appScene.add(this.innerGlobe);
 
-    const loader = new ImageLoader();
-    loader.load("../assets/earthspec1k.jpg", (image) => {
+    const loader = new ImageLoader(appScene.getLoadingManager());
+    loader.load("static/earthspec1k.jpg", (image) => {
       const canvas = document.createElement("canvas");
       canvas.width = image.width;
       canvas.height = image.height;
 
-      const context = canvas.getContext("2d");
+      const context = canvas.getContext("2d", { willReadFrequently: true });
       if (context) {
         context.drawImage(image, 0, 0);
         this.mapDots = this.createMapDots(image, context);

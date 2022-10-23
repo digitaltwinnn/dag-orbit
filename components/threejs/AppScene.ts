@@ -1,9 +1,4 @@
-import { DirectionalLight, Object3D, Scene, Vector2 } from "three";
-/*
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-*/
+import { DirectionalLight, LoadingManager, Object3D, Scene } from "three";
 import { AppRenderer } from "./AppRenderer";
 import { AppCamera } from "./AppCamera";
 import {
@@ -16,36 +11,21 @@ import {
 
 class AppScene {
   private scene!: Scene;
+  private loadingManager!: LoadingManager;
   private light!: DirectionalLight;
   private composer!: any;
   private bloomEffect!: SelectiveBloomEffect;
 
   constructor(renderer: AppRenderer, camera: AppCamera) {
     this.scene = new Scene();
+    this.loadingManager = new LoadingManager();
+    this.loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+      console.debug("Assets loaded " + (itemsLoaded / itemsTotal) * 100 + "%");
+    };
 
     this.light = new DirectionalLight(0xffffff);
     this.light.intensity = 1;
     this.scene.add(this.light);
-
-    /*
-    const renderPass = new RenderPass(this.scene, camera.get());
-    const bloomPass = new UnrealBloomPass(
-      new Vector2(window.innerWidth, window.innerHeight),
-      1.5,
-      0.4,
-      0.85
-    );
-    bloomPass.threshold = 0.21;
-    bloomPass.strength = 1.5;
-    bloomPass.radius = 0.65;
-    bloomPass.renderToScreen = true;
-
-    this.composer = new EffectComposer(renderer.get());
-    this.composer.addPass(renderPass);
-    this.composer.addPass(bloomPass);
-    */
-
-    const renderPass = new RenderPass(this.scene, camera.get());
 
     this.bloomEffect = new SelectiveBloomEffect(this.scene, camera.get(), {
       blendFunction: BlendFunction.ADD,
@@ -54,6 +34,7 @@ class AppScene {
       luminanceSmoothing: 0.1,
       intensity: 2.0,
     });
+    const renderPass = new RenderPass(this.scene, camera.get());
     const bloomPass = new EffectPass(camera.get(), this.bloomEffect);
 
     this.composer = new EffectComposer(renderer.get());
@@ -71,6 +52,10 @@ class AppScene {
 
   public getComposer(): any {
     return this.composer;
+  }
+
+  public getLoadingManager(): LoadingManager {
+    return this.loadingManager;
   }
 
   public applyBloomEffect(object: Object3D) {
