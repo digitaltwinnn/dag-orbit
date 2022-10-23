@@ -1,4 +1,3 @@
-/* eslint @typescript-eslint/no-var-requires: "off" */
 import {
   CircleGeometry,
   Color,
@@ -6,13 +5,11 @@ import {
   ImageLoader,
   InstancedBufferGeometry,
   InstancedMesh,
-  LoadingManager,
   MathUtils,
   Mesh,
   MeshBasicMaterial,
   MeshPhongMaterial,
   Object3D,
-  Scene,
   SphereGeometry,
   Vector2,
   Vector3,
@@ -22,6 +19,10 @@ import { AppScene } from "./AppScene";
 
 const GLOBE = 0;
 const MAP = 1;
+const shieldColors = [
+  "#ffffff",
+  "#ff0000",
+];
 
 class DigitalGlobe {
   public mesh!: InstancedMesh;
@@ -43,34 +44,27 @@ class DigitalGlobe {
     this.innerGlobe = new Mesh(globeGeometry, globeMaterial);
     appScene.add(this.innerGlobe);
 
-    /*
-    const loader = new ImageLoader(loadingManager);
-    loader.load(
-      require("../../assets/images/earth/earthspec1k.jpg"),
-      (image) => {
-        const canvas = document.createElement("canvas");
-        canvas.width = image.width;
-        canvas.height = image.height;
+    const loader = new ImageLoader();
+    loader.load("../assets/earthspec1k.jpg", (image) => {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
 
-        const context = canvas.getContext("2d");
-        if (context) {
-          context.drawImage(image, 0, 0);
-          this.mapDots = this.createMapDots(image, context);
-          this.globeDots = this.createGlobeDots(image, context);
+      const context = canvas.getContext("2d");
+      if (context) {
+        context.drawImage(image, 0, 0);
+        this.mapDots = this.createMapDots(image, context);
+        this.globeDots = this.createGlobeDots(image, context);
 
-          if (this.mode == MAP) {
-            this.mesh = this.createMesh(this.mapDots);
-          } else {
-            this.mesh = this.createMesh(this.globeDots);
-          }
-          scene.add(this.mesh);
-          if (!visible) this.hide();
-
-          this.rotateColors();
+        if (this.mode == MAP) {
+          this.mesh = this.createMesh(this.mapDots);
+        } else {
+          this.mesh = this.createMesh(this.globeDots);
         }
+        this.innerGlobe.add(this.mesh);
+        this.rotateColors();
       }
-    );
-    */
+    });
   }
 
   private createMesh(positions: Vector3[]): InstancedMesh {
@@ -97,11 +91,7 @@ class DigitalGlobe {
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
 
-      color.set(
-        global.shield.colors[
-          MathUtils.randInt(0, global.shield.colors.length - 1)
-        ]
-      );
+      color.set(shieldColors[MathUtils.randInt(0, shieldColors.length - 1)]);
       mesh.setColorAt(i, color);
     }
 
@@ -119,9 +109,7 @@ class DigitalGlobe {
           const random = Math.random();
           if (random > 0.98) {
             color.set(
-              global.shield.colors[
-                MathUtils.randInt(0, global.shield.colors.length - 1)
-              ]
+              shieldColors[MathUtils.randInt(0, shieldColors.length - 1)]
             );
             this.mesh.setColorAt(i, color);
           }
