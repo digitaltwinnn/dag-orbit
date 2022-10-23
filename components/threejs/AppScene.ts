@@ -1,4 +1,10 @@
-import { DirectionalLight, LoadingManager, Object3D, Scene } from "three";
+import {
+  DefaultLoadingManager,
+  DirectionalLight,
+  LoadingManager,
+  Object3D,
+  Scene,
+} from "three";
 import { AppRenderer } from "./AppRenderer";
 import { AppCamera } from "./AppCamera";
 import {
@@ -11,16 +17,22 @@ import {
 
 class AppScene {
   private scene!: Scene;
-  private loadingManager!: LoadingManager;
   private light!: DirectionalLight;
   private composer!: any;
   private bloomEffect!: SelectiveBloomEffect;
 
   constructor(renderer: AppRenderer, camera: AppCamera) {
     this.scene = new Scene();
-    this.loadingManager = new LoadingManager();
-    this.loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
-      console.debug("Assets loaded " + (itemsLoaded / itemsTotal) * 100 + "%");
+    DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+      console.debug(
+        "Started loading file: " +
+          url +
+          ".\nLoaded " +
+          itemsLoaded +
+          " of " +
+          itemsTotal +
+          " files."
+      );
     };
 
     this.light = new DirectionalLight(0xffffff);
@@ -52,10 +64,6 @@ class AppScene {
 
   public getComposer(): any {
     return this.composer;
-  }
-
-  public getLoadingManager(): LoadingManager {
-    return this.loadingManager;
   }
 
   public applyBloomEffect(object: Object3D) {

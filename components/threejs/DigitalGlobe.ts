@@ -41,8 +41,8 @@ class DigitalGlobe {
     this.innerGlobe = new Mesh(globeGeometry, globeMaterial);
     appScene.add(this.innerGlobe);
 
-    const loader = new ImageLoader(appScene.getLoadingManager());
-    loader.load("static/earthspec1k.jpg", (image) => {
+    const loader = new ImageLoader();
+    loader.load("image/earthspec1k.jpg", (image) => {
       const canvas = document.createElement("canvas");
       canvas.width = image.width;
       canvas.height = image.height;
