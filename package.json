@@ -6,6 +6,7 @@
     "start": "node .output/server/index.mjs"
   },
   "devDependencies": {
+    "@nuxtjs/web-vitals": "^0.1.10",
     "@types/three": "^0.144.0",
     "nuxt": "^3.0.0-rc.12"
   },
