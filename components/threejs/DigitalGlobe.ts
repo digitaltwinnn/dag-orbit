@@ -41,8 +41,10 @@ class DigitalGlobe {
     this.innerGlobe = new Mesh(globeGeometry, globeMaterial);
     appScene.add(this.innerGlobe);
 
+    const $img = useImage();
+    const imgUrl = $img("/earthspec1k.jpg");
     const loader = new ImageLoader();
-    loader.load("image/earthspec1k.jpg", (image) => {
+    loader.load(imgUrl, (image) => {
       const canvas = document.createElement("canvas");
       canvas.width = image.width;
       canvas.height = image.height;
@@ -59,7 +61,7 @@ class DigitalGlobe {
           this.mesh = this.createMesh(this.globeDots);
         }
         this.innerGlobe.add(this.mesh);
-        this.rotateColors();
+        //    this.rotateColors();
       }
     });
   }
