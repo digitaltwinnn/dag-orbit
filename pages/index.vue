@@ -1,5 +1,8 @@
 <template>
-    <canvas ref="threejsCanvas"></canvas>
+    <div>
+        <div id="stats" class="absolute top-0 right-0 m-4" />
+        <canvas ref="threejsCanvas"></canvas>
+    </div>
 </template>
 
 <script>

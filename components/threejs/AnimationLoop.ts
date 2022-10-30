@@ -6,13 +6,21 @@ import Stats from "three/examples/jsm/libs/stats.module.js";
 class AnimationLoop {
   private composer: any;
   private clock!: Clock;
-  //  private stats!: Stats;
+  private stats!: Stats;
 
   public members = [] as any;
 
   constructor(scene: AppScene, camera: AppCamera) {
     this.composer = scene.getComposer();
-    //    this.stats = stats;
+
+    this.stats = Stats();
+    const container = document.getElementById("stats");
+    if (container) {
+      this.stats.dom.removeAttribute("style");
+      container.appendChild(this.stats.dom);
+      this.stats.showPanel(0);
+    }
+
     this.members.push(camera);
     this.start();
   }
@@ -22,7 +30,7 @@ class AnimationLoop {
 
     const self = this;
     const tick = function () {
-      //   self.stats.begin();
+      self.stats.begin();
 
       const delta = self.clock.getDelta();
       const elapsed = self.clock.getElapsedTime();
@@ -32,7 +40,7 @@ class AnimationLoop {
       }
       requestAnimationFrame(tick);
 
-      // self.stats.end();
+      self.stats.end();
     };
     tick();
   }
