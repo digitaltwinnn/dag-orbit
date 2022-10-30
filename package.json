@@ -7,6 +7,7 @@
   },
   "devDependencies": {
     "@nuxt/image-edge": "^1.0.0-27769790.4b27db3",
+    "@nuxtjs/tailwindcss": "^6.1.2",
     "@nuxtjs/web-vitals": "^0.1.10",
     "@types/three": "^0.144.0",
     "nuxt": "^3.0.0-rc.12"
