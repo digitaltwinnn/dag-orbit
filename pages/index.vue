@@ -6,11 +6,13 @@
 </template>
 
 <script>
-import { DigitalGlobe } from "../components/threejs/DigitalGlobe";
 import { AppRenderer } from "../components/threejs/AppRenderer"
 import { AppCamera } from "../components/threejs/AppCamera"
 import { AppScene } from "../components/threejs/AppScene"
 import { AnimationLoop } from "../components/threejs/AnimationLoop"
+
+import { NaturalGlobe } from "../components/threejs/NaturalGlobe";
+import { Sun } from "~~/components/threejs/Sun";
 
 export default {
     mounted() {
@@ -20,18 +22,17 @@ export default {
         const appScene = new AppScene(appRenderer, appCam);
 
         // Add meshes to the scene
-        const digitalGlobe = new DigitalGlobe(appScene);
-        digitalGlobe.innerGlobe.position.set(-110, 0, 0);
-        appScene.applyBloomEffect(digitalGlobe.innerGlobe);
+        const naturalGlobe = new NaturalGlobe(appScene);
 
-        const digitalGlobe2 = new DigitalGlobe(appScene);
-        digitalGlobe2.innerGlobe.position.set(110, 0, 0);
+        // Add sun
+        const sun = new Sun(appScene);
+        sun.get().position.set(1000, 0, 1000)
 
         // Start scene animation
         const animationLoop = new AnimationLoop(appScene, appCam);
 
         // move the camera
-        // appCam.toGlobeView();
+        //   appCam.toGlobeView();
     }
 }
 </script>

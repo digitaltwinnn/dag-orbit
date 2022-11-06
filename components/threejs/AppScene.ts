@@ -1,7 +1,6 @@
 import {
   DefaultLoadingManager,
   DirectionalLight,
-  LoadingManager,
   Object3D,
   Scene,
 } from "three";
@@ -36,7 +35,7 @@ class AppScene {
     };
 
     this.light = new DirectionalLight(0xffffff);
-    this.light.intensity = 1;
+    this.light.intensity = 0.15;
     this.scene.add(this.light);
 
     this.bloomEffect = new SelectiveBloomEffect(this.scene, camera.get(), {
