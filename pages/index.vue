@@ -13,6 +13,10 @@ import { AnimationLoop } from "../components/threejs/AnimationLoop"
 
 import { NaturalGlobe } from "../components/threejs/NaturalGlobe";
 import { Sun } from "~~/components/threejs/Sun";
+import { Atmosphere } from "~~/components/threejs/Atmosphere";
+
+import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
+import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 
 export default {
     mounted() {
@@ -27,6 +31,9 @@ export default {
         // Add sun
         const sun = new Sun(appScene);
         sun.get().position.set(1000, 0, 1000)
+
+        // Add atmosphere
+        const atmosphere = new Atmosphere(appScene, sun, vAtmosphere, fAtmosphere);
 
         // Start scene animation
         const animationLoop = new AnimationLoop(appScene, appCam);
