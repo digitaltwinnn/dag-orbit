@@ -671,9 +671,9 @@
   integrity sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==
 
 "@types/node@*":
-  version "18.11.7"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.7.tgz#8ccef136f240770c1379d50100796a6952f01f94"
-  integrity sha512-LhFTglglr63mNXUSRYD8A+ZAIu5sFqNJ4Y2fPuY7UlrySJH87rRRlhtVmMHplmfk5WkoJGmDjE9oiTfyX94CpQ==
+  version "18.11.8"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.8.tgz#16d222a58d4363a2a359656dd20b28414de5d265"
+  integrity sha512-uGwPWlE0Hj972KkHtCDVwZ8O39GmyjfMane1Z3GUBGGnkZ2USDq7SxLpVIiIHpweY9DS0QTDH0Nw7RNBsAAZ5A==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -1235,12 +1235,7 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001426:
-  version "1.0.30001426"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001426.tgz#58da20446ccd0cb1dfebd11d2350c907ee7c2eaa"
-  integrity sha512-n7cosrHLl8AWt0wwZw/PJZgUg3lV0gk9LMI7ikGJwhyhgsd2Nb65vKvmSexCqq/J7rbH3mFG6yZZiPR5dLPW5A==
-
-caniuse-lite@^1.0.30001400:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001400, caniuse-lite@^1.0.30001426:
   version "1.0.30001427"
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001427.tgz#d3a749f74be7ae0671fbec3a4eea18576e8ad646"
   integrity sha512-lfXQ73oB9c8DP5Suxaszm+Ta2sr/4tf8+381GkIm1MLj/YdLf+rEDyDSRCzeltuyTVGm+/s18gdZ0q+Wmp8VsQ==
@@ -2414,6 +2409,11 @@ graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.4, 
   version "4.2.10"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.10.tgz#147d3a006da4ca3ce14728c7aefc287c367d7a6c"
   integrity sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==
+
+gsap@^3.11.3:
+  version "3.11.3"
+  resolved "https://registry.yarnpkg.com/gsap/-/gsap-3.11.3.tgz#ca5be827f56fe8d5720e08343390f74fb89a05f3"
+  integrity sha512-xc/iIJy+LWiMbRa4IdMtdnnKa/7PXEK6NNzV71gdOYUVeTZN7UWnLU0fB7Hi1iwiz4ZZoYkBZPPYGg+2+zzFHA==
 
 gzip-size@^7.0.0:
   version "7.0.0"
@@ -5043,9 +5043,9 @@ vite-plugin-checker@^0.5.1:
     vscode-uri "^3.0.2"
 
 vite@^3.1.7:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-3.2.1.tgz#dc1f54568300a7acdd89c8611e2719c21f1334f4"
-  integrity sha512-ADtMkfHuWq4tskJsri2n2FZkORO8ZyhI+zIz7zTrDAgDEtct1jdxOg3YsZBfHhKjmMoWLOSCr+64qrEDGo/DbQ==
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-3.2.2.tgz#280762bfaf47bcea1d12698427331c0009ac7c1f"
+  integrity sha512-pLrhatFFOWO9kS19bQ658CnRYzv0WLbsPih6R+iFeEEhDOuYgYCX2rztUViMz/uy/V8cLCJvLFeiOK7RJEzHcw==
   dependencies:
     esbuild "^0.15.9"
     postcss "^8.4.18"
