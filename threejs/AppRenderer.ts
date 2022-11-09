@@ -3,9 +3,8 @@ import { WebGLRenderer } from "three";
 class AppRenderer {
   private renderer!: WebGLRenderer;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(el: HTMLElement) {
     this.renderer = new WebGLRenderer({
-      canvas: canvas,
       powerPreference: "high-performance",
       antialias: false,
       stencil: false,
@@ -13,7 +12,7 @@ class AppRenderer {
     });
     this.renderer.setSize(innerWidth, innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    document.body.appendChild(this.renderer.domElement);
+    el.appendChild(this.renderer.domElement);
   }
 
   public get(): WebGLRenderer {

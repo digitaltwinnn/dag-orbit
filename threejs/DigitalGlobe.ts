@@ -14,7 +14,7 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { GlobeUtils } from "../GlobeUtils";
+import { GlobeUtils } from "./GlobeUtils";
 import { AppScene } from "./AppScene";
 
 const GLOBE = 0;
@@ -60,8 +60,9 @@ class DigitalGlobe {
         } else {
           this.mesh = this.createMesh(this.globeDots);
         }
+        this.mesh.name = "DigitalGlobe";
         this.innerGlobe.add(this.mesh);
-        //    this.rotateColors();
+        this.rotateColors();
       }
     });
   }

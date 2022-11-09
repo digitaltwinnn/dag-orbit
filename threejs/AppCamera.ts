@@ -2,16 +2,13 @@ import {
   CubicBezierCurve3,
   MathUtils,
   PerspectiveCamera,
-  Spherical,
   Vector3,
-  WebGLRenderer,
 } from "three";
 import TWEEN from "@tweenjs/tween.js";
 import { geoInterpolate } from "d3-geo";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { GlobeUtils } from "../GlobeUtils";
+import { GlobeUtils } from "./GlobeUtils";
 import { AppRenderer } from "./AppRenderer";
-//import { Satellite } from "./Satellite";
 
 class AppCamera {
   private camera!: PerspectiveCamera;
@@ -51,52 +48,15 @@ class AppCamera {
     }
   }
 
-  /*
-  public toSatellite(sat: Satellite): void {
-    const self = this;
-    this.toLatLng(
-      { lat: sat.lat - 10, lng: sat.lng },
-      sat.alt * 2,
-      sat.get().position,
-      6000,
-      function() {
-        // on complete
-        const s = new Spherical();
-        s.setFromVector3(self.camera.position);
-
-        const angle = 0.4 * Math.PI;
-        self.controls.minPolarAngle = s.phi - angle;
-        self.controls.maxPolarAngle = s.phi + angle;
-        self.controls.minAzimuthAngle = s.theta - angle;
-        self.controls.maxAzimuthAngle = s.theta + angle;
-      }
-    );
-  }
-*/
-
   public toGlobeView(cb: any) {
     const self = this;
-    this.toLatLng(
-      {
-        lat: 40.7,
-        lng: 74.0,
-      },
-      50,
-      new Vector3(this.radius, 0.5 * this.radius, 0),
-      4000,
-      function () {
-        self.controls.minPolarAngle = 0;
-        self.controls.maxPolarAngle = Math.PI;
-        self.controls.minAzimuthAngle = Infinity;
-        self.controls.maxAzimuthAngle = Infinity;
-        cb();
-      }
-    );
-  }
 
-  public toIntroView(cb: any) {
-    const self = this;
-    this.toVector(this.startPos, new Vector3(0, 0, 0), function () {
+    const target = { lat: 40.7, lng: 74.0 };
+    const height = 500;
+    const lookAt = new Vector3(this.radius, 0.5 * this.radius, 0);
+    const duration = 14000;
+
+    this.toLatLng(target, height, lookAt, duration, function () {
       self.controls.minPolarAngle = 0;
       self.controls.maxPolarAngle = Math.PI;
       self.controls.minAzimuthAngle = Infinity;
@@ -105,7 +65,28 @@ class AppCamera {
     });
   }
 
-  private toVector(target: Vector3, lookAt: Vector3, cb: any): void {
+  public toIntroView(cb: any) {
+    const self = this;
+
+    const target = this.startPos;
+    const lookAt = new Vector3(0, 0, 0);
+    const duration = 4000;
+
+    this.toVector(target, lookAt, duration, function () {
+      self.controls.minPolarAngle = 0;
+      self.controls.maxPolarAngle = Math.PI;
+      self.controls.minAzimuthAngle = Infinity;
+      self.controls.maxAzimuthAngle = Infinity;
+      cb();
+    });
+  }
+
+  private toVector(
+    target: Vector3,
+    lookAt: Vector3,
+    duration: number,
+    cb: any
+  ): void {
     const utils = new GlobeUtils(this.radius);
     const t = utils.toLatLng(target);
     const v = utils.toVector(t[0], t[1], 0);
@@ -113,7 +94,7 @@ class AppCamera {
       { lat: t[0], lng: t[1] },
       target.distanceTo(v),
       lookAt,
-      3000,
+      duration,
       cb
     );
   }
