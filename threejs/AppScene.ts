@@ -1,4 +1,5 @@
 import {
+  Color,
   DefaultLoadingManager,
   DirectionalLight,
   Object3D,
@@ -22,6 +23,8 @@ class AppScene {
 
   constructor(renderer: AppRenderer, camera: AppCamera) {
     this.scene = new Scene();
+    this.scene.background = new Color(0x00005a);
+
     DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
       console.debug(
         "Started loading file: " +

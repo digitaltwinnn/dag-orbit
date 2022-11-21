@@ -1,8 +1,18 @@
 <template>
     <div>
-        <threejsScene class="w-full h-screen bg-gray-700 panel-1" />
-        <div class="w-full h-screen bg-gray-600 panel-2">
-            <div class="w-64 h-64 bg-purple-500 test"></div>
+        <threejsScene ref="threejs" class="background" />
+        <div class="panel-0">
+            <div class="w-64 h-64 bg-green-700"></div>
+        </div>
+        <div class="panel-1">
+            <div class="h-full text-blue-700 text-9xl test1">
+                HELLO WORLD
+            </div>
+        </div>
+        <div class="panel-2">
+            <div class="h-full">
+                <div class="w-64 h-64 bg-blue-500 test2"></div>
+            </div>
         </div>
     </div>
 </template>
@@ -14,7 +24,26 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 export default {
     mounted() {
         gsap.registerPlugin(ScrollTrigger);
-        gsap.to(".test", {
+
+        gsap.from(".test1", {
+            opacity: 0,
+            scrollTrigger: {
+                trigger: ".panel-1",
+                scrub: 0.6,
+                markers: true
+            },
+        })
+
+        gsap.to(this.$refs.threejs.appScene.get().background, {
+            duration: 6, r: 0, g: 0, b: 0,
+            scrollTrigger: {
+                trigger: ".panel-1",
+                scrub: 0.6,
+                markers: true
+            }
+        });
+
+        gsap.to(".test2", {
             scrollTrigger: {
                 trigger: ".panel-2",
                 scrub: 0.6,
@@ -22,8 +51,17 @@ export default {
             },
             rotation: 360,
             transformOrigin: "center center",
-            ease: "Power2.easeInOut"
         })
     }
 }
 </script>
+
+<style>
+.background {
+    @apply fixed w-full h-screen bg-blue-900;
+}
+
+div[class^="panel-"] {
+    @apply w-full h-screen;
+}
+</style>

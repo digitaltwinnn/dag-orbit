@@ -23,17 +23,17 @@ export default {
     const el = document.getElementById("scene-container");
     if (el != null) {
       // setup the threejs renderer, camera and scene
-      const appRenderer = new AppRenderer(el);
-      const appCam = new AppCamera(innerWidth, innerHeight, appRenderer);
-      const appScene = new AppScene(appRenderer, appCam);
+      this.appRenderer = markRaw(new AppRenderer(el));
+      this.appCam = markRaw(new AppCamera(innerWidth, innerHeight, this.appRenderer));
+      this.appScene = markRaw(new AppScene(this.appRenderer, this.appCam));
       //window.addEventListener("resize", this.onWindowResize, false);
 
       // Add meshes to the scene
-      const naturalGlobe = new NaturalGlobe(appScene);
-      const sun = new Sun(appScene);
-      sun.get().position.set(1000, 0, 1000)
-      const atmosphere = new Atmosphere(appScene, sun, vAtmosphere, fAtmosphere);
-      const animationLoop = new AnimationLoop(appScene, appCam);
+      this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene));
+      this.sun = markRaw(new Sun(this.appScene));
+      this.sun.get().position.set(1000, 0, 1000)
+      this.atmosphere = markRaw(new Atmosphere(this.appScene, this.sun, vAtmosphere, fAtmosphere));
+      this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam));
 
       // move the camera
       //   appCam.toGlobeView();
@@ -41,7 +41,13 @@ export default {
   },
   data() {
     return {
-      count: 0
+      appRenderer: AppRenderer,
+      appCam: AppCamera,
+      appScene: AppScene,
+      naturalGlobe: NaturalGlobe,
+      sun: Sun,
+      atmosphere: Atmosphere,
+      animationLoop: AnimationLoop
     }
   }
 }
