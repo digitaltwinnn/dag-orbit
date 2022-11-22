@@ -43,6 +43,15 @@ export default {
             }
         });
 
+        gsap.to(this.$refs.threejs.naturalGlobe.get().position, {
+            x: 200, y: 200, z: 200,
+            scrollTrigger: {
+                trigger: ".panel-1",
+                scrub: 0.6,
+                markers: true
+            }
+        });
+
         gsap.to(".test2", {
             scrollTrigger: {
                 trigger: ".panel-2",
