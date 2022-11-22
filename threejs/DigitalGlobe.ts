@@ -19,14 +19,14 @@ import { AppScene } from "./AppScene";
 
 const GLOBE = 0;
 const MAP = 1;
-const shieldColors = ["#ffffff", "#ff0000"];
+const shieldColors = ["#1E90FE", "#1467C8", "#1053AD"];
 
 class DigitalGlobe {
-  public mesh!: InstancedMesh;
-  public innerGlobe!: Mesh;
+  private mesh!: InstancedMesh;
+  private innerGlobe!: Mesh;
   private dotDensity = 0.5;
   private rows = 150;
-  private radius = 100;
+  private radius = 130;
   private globeDots: Vector3[] = [];
   private mapDots: Vector3[] = [];
   private positions: Vector3[] = [];
@@ -34,13 +34,12 @@ class DigitalGlobe {
   private mode = GLOBE;
 
   constructor(appScene: AppScene) {
+    // inner globe
     const globeGeometry = new SphereGeometry(this.radius, 32, 32);
-    const globeMaterial = new MeshBasicMaterial({
-      color: new Color("Green"),
-    });
+    const globeMaterial = new MeshBasicMaterial({ visible: false });
     this.innerGlobe = new Mesh(globeGeometry, globeMaterial);
-    appScene.add(this.innerGlobe);
 
+    // digital globe
     const $img = useImage();
     const imgUrl = $img("/earthspec1k.jpg");
     const loader = new ImageLoader();
@@ -65,6 +64,9 @@ class DigitalGlobe {
         this.rotateColors();
       }
     });
+
+    this.innerGlobe.add(this.mesh);
+    appScene.add(this.innerGlobe);
   }
 
   private createMesh(positions: Vector3[]): InstancedMesh {
@@ -75,6 +77,7 @@ class DigitalGlobe {
     const instancedGeometry = new InstancedBufferGeometry().copy(baseGeometry);
     const material = new MeshPhongMaterial({
       side: DoubleSide,
+      transparent: true,
     });
     const mesh = new InstancedMesh(
       instancedGeometry,
@@ -184,12 +187,6 @@ class DigitalGlobe {
   }
 
   private transformMesh(target: Vector3[]) {
-    if (this.mode == MAP) {
-      this.innerGlobe.visible = false;
-    } else {
-      this.innerGlobe.visible = true;
-    }
-
     if (target.length >= this.positions.length) {
       const dummy = new Object3D();
       for (let i = 0; i < this.positions.length; i++) {
@@ -219,26 +216,24 @@ class DigitalGlobe {
   }
 
   public get(): Mesh {
-    return this.mesh;
+    // TODO replace with the digital instancedMesh
+    return this.innerGlobe;
   }
 
   public showGlobe(): void {
     this.mode = GLOBE;
     this.mesh.visible = true;
-    this.innerGlobe.visible = true;
     this.transformMesh(this.globeDots);
   }
 
   public showMap(): void {
     this.mode = MAP;
     this.mesh.visible = true;
-    this.innerGlobe.visible = false;
     this.transformMesh(this.mapDots);
   }
 
   public hide(): void {
     this.mesh.visible = false;
-    this.innerGlobe.visible = false;
   }
 }
 

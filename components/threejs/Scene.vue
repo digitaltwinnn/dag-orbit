@@ -11,6 +11,7 @@ import { AppCamera } from "../../threejs/AppCamera";
 import { AppScene } from "../../threejs/AppScene";
 import { AnimationLoop } from "../../threejs/AnimationLoop";
 
+import { DigitalGlobe } from "../../threejs/DigitalGlobe";
 import { NaturalGlobe } from "../../threejs/NaturalGlobe";
 import { Sun } from "../../threejs/Sun";
 
@@ -30,6 +31,7 @@ export default {
       //window.addEventListener("resize", this.onWindowResize, false);
 
       // add meshes to the scene
+      this.digitalGlobe = markRaw(new DigitalGlobe(this.appScene));
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
 
       // setup animation loop
@@ -45,6 +47,7 @@ export default {
       appCam: AppCamera,
       appScene: AppScene,
       naturalGlobe: NaturalGlobe,
+      digitalGlobe: DigitalGlobe,
       sun: Sun,
       animationLoop: AnimationLoop
     }
