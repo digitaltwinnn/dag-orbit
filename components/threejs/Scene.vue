@@ -13,7 +13,6 @@ import { AnimationLoop } from "../../threejs/AnimationLoop";
 
 import { NaturalGlobe } from "../../threejs/NaturalGlobe";
 import { Sun } from "../../threejs/Sun";
-import { Atmosphere } from "../../threejs/Atmosphere";
 
 import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
@@ -22,17 +21,18 @@ export default {
   mounted() {
     const el = document.getElementById("scene-container");
     if (el != null) {
-      // setup the threejs renderer, camera and scene
+      // setup the threejs renderer, camera, scene and (sun)light
       this.appRenderer = markRaw(new AppRenderer(el));
       this.appCam = markRaw(new AppCamera(innerWidth, innerHeight, this.appRenderer));
       this.appScene = markRaw(new AppScene(this.appRenderer, this.appCam));
-      //window.addEventListener("resize", this.onWindowResize, false);
-
-      // Add meshes to the scene
-      this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene));
       this.sun = markRaw(new Sun(this.appScene));
       this.sun.get().position.set(1000, 0, 1000)
-      this.atmosphere = markRaw(new Atmosphere(this.appScene, this.sun, vAtmosphere, fAtmosphere));
+      //window.addEventListener("resize", this.onWindowResize, false);
+
+      // add meshes to the scene
+      this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
+
+      // setup animation loop
       this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam));
 
       // move the camera
@@ -46,7 +46,6 @@ export default {
       appScene: AppScene,
       naturalGlobe: NaturalGlobe,
       sun: Sun,
-      atmosphere: Atmosphere,
       animationLoop: AnimationLoop
     }
   }
