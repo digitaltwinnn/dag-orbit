@@ -2,7 +2,7 @@ import { model, Schema } from "mongoose";
 
 const schema: Schema = new Schema(
   {
-    iPv4: {
+    ip: {
       type: Number,
       required: true,
     },
