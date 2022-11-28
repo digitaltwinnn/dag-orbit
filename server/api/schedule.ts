@@ -2,42 +2,52 @@ import axios from "axios";
 import nodeModel from "../models/node.model";
 
 export default defineEventHandler((event) => {
+  // look for recently active nodes in mongodb
   nodeModel.find(function (err, docs) {
     if (err) {
       console.error(err);
     } else {
       console.info("mongodb nodes found: " + docs.length);
-      let ip = ipToNumber("54.215.18.98");
+      let clusterIP = "54.215.18.98";
 
-      // select random ip if more node are online
+      // select a node ip if recently active nodes are found
       if (docs.length > 0) {
         const doc = docs.at(randomNumber(0, docs.length - 1));
-        ip = doc.ip;
+        clusterIP = numberToIP(doc.ip);
       }
 
-      queryNodes(numberToIP(ip));
+      // call the node to retrieve and update the mongodb store
+      updateNodeDb(clusterIP);
     }
   });
 
   return {
-    result: "works",
+    executed: true,
   };
 });
 
-function queryNodes(ip: string) {
+function updateNodeDb(ip: string): void {
+  // query the node for all nodes in the cluster
   axios
-    .get("http:/" + ip + ":9000/cluster/info")
+    .get("http://" + ip + ":9000/cluster/info")
     .then(function (response) {
+      let nodes = [];
+      let i: number;
+
+      // update mongodb with the returned nodes
       response.data.forEach((n) => {
-        nodeModel
-          .updateOne(
-            { ip: ipToNumber(n.ip) },
-            { $set: { state: n.state } },
-            { upsert: true }
-          )
-          .catch(function (e) {
-            console.error("mongodb error: ", e.message);
-          });
+        let docOperation = {
+          updateOne: {
+            filter: { ip: ipToNumber(n.ip) },
+            update: { $set: { state: n.state } },
+            upsert: true,
+          },
+        };
+        nodes.push(docOperation);
+      });
+
+      nodeModel.bulkWrite(nodes).catch((e) => {
+        console.error("nodejs error: " + e.message);
       });
     })
     .catch(function (e) {
