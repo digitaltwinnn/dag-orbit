@@ -12,4 +12,7 @@ export default defineNuxtConfig({
     ],
   },
   modules: ["@nuxt/image-edge", "@nuxtjs/tailwindcss"],
+  runtimeConfig: {
+    MONGODB_URI: process.env.MONGODB_URI,
+  },
 });
