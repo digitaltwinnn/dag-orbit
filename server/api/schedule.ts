@@ -1,9 +1,13 @@
+import mongoose from "mongoose";
 import axios from "axios";
 import nodeModel from "../models/node.model";
 
 export default defineEventHandler((event) => {
+  console.log("readyState: "+ mongoose.connection.readyState);
+
   // look for recently active nodes in mongodb
   nodeModel.find(function (err, docs) {
+    console.log(".find err: " + err);
     if (err) {
       console.error(err);
     } else {
@@ -31,6 +35,7 @@ function updateNodeDb(ip: string): void {
   axios
     .get("http://" + ip + ":9000/cluster/info")
     .then(function (response) {
+      console.log("queried the ip: " + ip);
       let nodes = [];
       let i: number;
 
@@ -46,9 +51,12 @@ function updateNodeDb(ip: string): void {
         nodes.push(docOperation);
       });
 
-      nodeModel.bulkWrite(nodes).catch((e) => {
-        console.error("nodejs error: " + e.message);
-      });
+      nodeModel
+        .bulkWrite(nodes)
+        .then(() => console.log("bulkwrite completed"))
+        .catch((e) => {
+          console.error("nodejs error: " + e.message);
+        });
     })
     .catch(function (e) {
       console.error("axios error: ", e.message);
