@@ -3,31 +3,26 @@ import axios from "axios";
 import nodeModel from "../models/node.model";
 
 export default defineEventHandler((event) => {
-  console.log("mongodb readyState: " + mongoose.connection.readyState);
+  connectionIsUp().then(() => {
+    nodeModel
+      .find()
+      .then((docs) => {
+        console.info("mongodb nodes found: " + docs.length);
 
-  // look for recently active nodes in mongodb
-  /*
-  nodeModel.find(function (err, docs) {
-    if (err) {
-      console.error(err);
-    } else {
-      
-      console.info("mongodb nodes found: " + docs.length);
-      */
-      let clusterIP = "54.215.18.98";
+        // select a node ip if recently active nodes are found
+        let clusterIP = "54.215.18.98";
+        if (docs.length > 0) {
+          const doc = docs.at(randomNumber(0, docs.length - 1));
+          clusterIP = numberToIP(doc.ip);
+        }
 
-      /*
-      // select a node ip if recently active nodes are found
-      if (docs.length > 0) {
-        const doc = docs.at(randomNumber(0, docs.length - 1));
-        clusterIP = numberToIP(doc.ip);
-      }
-      */
-
-      // call the node to retrieve and update the mongodb store
-      updateNodeDb(clusterIP);
-//    }
-//  });
+        // call the node to retrieve and update the mongodb store
+        updateNodeDb(clusterIP);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
 
   return {
     executed: true,
@@ -36,11 +31,9 @@ export default defineEventHandler((event) => {
 
 function updateNodeDb(ip: string): void {
   // query the node for all nodes in the cluster
-  console.log("updateNodeDb using api ip: " + ip)
   axios
     .get("http://" + ip + ":9000/cluster/info")
     .then(function (response) {
-      console.log("got axios response")
       let nodes = [];
       let i: number;
 
@@ -56,12 +49,9 @@ function updateNodeDb(ip: string): void {
         nodes.push(docOperation);
       });
 
-      nodeModel
-        .bulkWrite(nodes)
-        .then(() => console.log("mongodb bulkwrite completed"))
-        .catch((e) => {
-          console.error("nodejs error: " + e.message);
-        });
+      nodeModel.bulkWrite(nodes).catch((e) => {
+        console.error("nodejs error: " + e.message);
+      });
     })
     .catch(function (e) {
       console.error("axios error: ", e.message);
@@ -92,4 +82,16 @@ function ipToNumber(ip: string) {
       return (ipNumber << 8) + parseInt(octet, 10);
     }, 0) >>> 0
   );
+}
+
+async function connectionIsUp(): Promise<boolean> {
+  try {
+    return await mongoose.connection.db
+      .admin()
+      .ping()
+      .then((res) => res?.ok === 1);
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
 }
