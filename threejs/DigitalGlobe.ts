@@ -65,7 +65,6 @@ class DigitalGlobe {
       }
     });
 
-    this.innerGlobe.add(this.mesh);
     appScene.add(this.innerGlobe);
   }
 
