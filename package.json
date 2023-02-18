@@ -6,7 +6,7 @@
     "start": "node .output/server/index.mjs"
   },
   "devDependencies": {
-    "@nuxt/image-edge": "^1.0.0",
+    "@nuxt/image-edge": "^1.0.0-27919678.2f5b64b",
     "@nuxtjs/tailwindcss": "^6.1.2",
     "@types/three": "^0.144.0",
     "nuxt": "^3.0.0"
