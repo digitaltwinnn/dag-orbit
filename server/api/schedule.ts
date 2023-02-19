@@ -1,4 +1,3 @@
-import axios from "axios";
 import nodeModel from "../models/node.model";
 import { AnyBulkWriteOperation } from "mongodb";
 
@@ -34,11 +33,11 @@ export default defineEventHandler(async (event) => {
 
 async function updateNodeDb(ip: string): Promise<number> {
   // query the node for all nodes in the cluster
-  const response = await axios.get("http://" + ip + ":9000/cluster/info");
+  const response: any[] = await $fetch("http://" + ip + ":9000/cluster/info");
 
   // update mongodb with the returned nodes
   let nodes: AnyBulkWriteOperation[] = [];
-  response.data.forEach((n: { ip: string; state: string }) => {
+  response.forEach((n: { ip: string; state: string }) => {
     let docOperation = {
       updateOne: {
         filter: { ip: ipToNumber(n.ip) },
