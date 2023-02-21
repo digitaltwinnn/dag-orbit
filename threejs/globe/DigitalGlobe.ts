@@ -14,8 +14,8 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { GlobeUtils } from "./GlobeUtils";
-import { AppScene } from "./AppScene";
+import { GlobeUtils } from "../GlobeUtils";
+import { AppScene } from "../scene/AppScene";
 
 const GLOBE = 0;
 const MAP = 1;

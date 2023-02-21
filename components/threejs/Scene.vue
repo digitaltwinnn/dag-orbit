@@ -11,9 +11,9 @@ import { AppCamera } from "../../threejs/scene/AppCamera";
 import { AppScene } from "../../threejs/scene/AppScene";
 import { AnimationLoop } from "../../threejs/scene/AnimationLoop";
 
-import { DigitalGlobe } from "../../threejs/DigitalGlobe";
-import { NaturalGlobe } from "../../threejs/NaturalGlobe";
-import { Sun } from "../../threejs/Sun";
+import { DigitalGlobe } from "../../threejs/globe/DigitalGlobe";
+import { NaturalGlobe } from "../../threejs/globe/NaturalGlobelGlobe";
+import { Sun } from "../../threejs/globe/Sun";
 
 import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";

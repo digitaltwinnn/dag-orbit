@@ -5,7 +5,7 @@ import {
   SphereGeometry,
   TextureLoader,
 } from "three";
-import { AppScene } from "./AppScene";
+import { AppScene } from "../scene/AppScene";
 import { Atmosphere } from "./Atmosphere";
 import { Sun } from "./Sun";
 

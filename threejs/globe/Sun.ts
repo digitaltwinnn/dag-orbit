@@ -3,7 +3,7 @@ import {
   Lensflare,
   LensflareElement,
 } from "three/examples/jsm/objects/Lensflare.js";
-import { AppScene } from "./AppScene";
+import { AppScene } from "../scene/AppScene";
 
 class Sun {
   private light!: PointLight;
