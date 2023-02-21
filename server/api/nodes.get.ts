@@ -1,4 +1,4 @@
-import nodeModel from "../models/node.model";
+import nodeModel from "../model/node.model";
 
 export default defineEventHandler(async (event) => {
   const docs = await nodeModel.find().lean();

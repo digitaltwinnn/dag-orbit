@@ -1,4 +1,4 @@
-import nodeModel from "../models/node.model";
+import nodeModel from "../model/node.model";
 import { AnyBulkWriteOperation } from "mongodb";
 
 export default defineEventHandler(async (event) => {
