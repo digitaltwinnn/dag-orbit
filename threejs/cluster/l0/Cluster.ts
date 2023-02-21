@@ -50,9 +50,9 @@ class Cluster {
         );
         this.satellites.push(sat);
         this.anchorOnEarth(sat);
+        this.drawConnections(sat, color);
 
         // this.drawAnchor(sat, color);
-        this.drawConnections(sat, color);
         // sat.addNode(this.scene, this.earth, node);
       } else {
         //  sats[0].addNode(this.scene, this.earth, node);
@@ -85,20 +85,14 @@ class Cluster {
   }
 
   private drawConnections(satellite: Satellite, color: Color): void {
-    const origin = GlobeUtils.toVector(
-      satellite.lat,
-      satellite.lng,
-      this.radius + this.alt
-    );
-
     this.satellites.forEach((sat: Satellite) => {
       if (sat.get().name != satellite.get().name) {
-        const dest = GlobeUtils.toVector(
-          sat.lat,
-          sat.lng,
+
+        const arc = GlobeUtils.createSphereArc(
+          { lat: satellite.lat, lng: satellite.lng },
+          { lat: sat.lat, lng: sat.lng },
           this.radius + this.alt
         );
-        const arc = this.createSphereArc(origin, dest);
 
         // static line between satellites
         const line = this.createLine(arc, color, 0.03, 0.15);
@@ -166,19 +160,6 @@ class Cluster {
     return sats;
   }
 
-  /*
-  public findById(id: string): Satellite | null {
-    let satellite = null;
-    const satIndex = this.satellites.findIndex((s: Satellite) => {
-      return s.hasNode(id);
-    });
-    if (satIndex != -1) {
-      satellite = this.satellites[satIndex];
-    }
-    return satellite;
-  }
-  */
-
   public tick(delta: number) {
     /*
     this.satelliteAnchors.forEach((anchor: SatelliteAnchor) => {
@@ -203,25 +184,6 @@ class Cluster {
       opacity: opacity,
     });
     return new Mesh(geometry, material);
-  }
-
-  private createSphereArc(P: Vector3, Q: Vector3): Curve<Vector3> {
-    const sphereArc = new Curve<Vector3>();
-    sphereArc.getPoint = this.greatCircleFunction(P, Q);
-    return sphereArc;
-  }
-
-  private greatCircleFunction(P: Vector3, Q: Vector3) {
-    const angle = P.angleTo(Q);
-    return function (t: number) {
-      const X = new Vector3()
-        .addVectors(
-          P.clone().multiplyScalar(Math.sin((1 - t) * angle)),
-          Q.clone().multiplyScalar(Math.sin(t * angle))
-        )
-        .divideScalar(Math.sin(angle));
-      return X;
-    };
   }
 
   private inRange(x: number, min: number, max: number): boolean {
