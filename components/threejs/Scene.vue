@@ -12,8 +12,9 @@ import { AppScene } from "../../threejs/scene/AppScene";
 import { AnimationLoop } from "../../threejs/scene/AnimationLoop";
 
 import { DigitalGlobe } from "../../threejs/globe/DigitalGlobe";
-import { NaturalGlobe } from "../../threejs/globe/NaturalGlobelGlobe";
+import { NaturalGlobe } from "../../threejs/globe/NaturalGlobe";
 import { Sun } from "../../threejs/globe/Sun";
+import { Cluster } from "~~/threejs/cluster/l0/Cluster";
 
 import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
@@ -33,6 +34,7 @@ export default {
       // add meshes to the scene
       this.digitalGlobe = markRaw(new DigitalGlobe(this.appScene));
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
+      this.cluster = markRaw(new Cluster(this.appScene));
 
       // setup animation loop
       this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam));
@@ -49,6 +51,7 @@ export default {
       naturalGlobe: NaturalGlobe,
       digitalGlobe: DigitalGlobe,
       sun: Sun,
+      cluster: Cluster,
       animationLoop: AnimationLoop
     }
   }
