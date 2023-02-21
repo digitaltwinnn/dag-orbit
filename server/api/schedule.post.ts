@@ -3,41 +3,47 @@ import { AnyBulkWriteOperation } from "mongodb";
 
 export default defineEventHandler(async (event) => {
   let updates = 0;
-  let success = false;
 
   try {
-    const docs = await nodeModel.find();
-    console.info("nodes found in mongodb: " + docs.length);
-
-    // select a node ip if recently active nodes are found
-    let clusterIP = "54.215.18.98";
-    if (docs.length > 0) {
-      const doc = docs.at(randomNumber(0, docs.length - 1));
-      if (doc) {
-        clusterIP = numberToIP(doc.ip);
-      }
-    }
-    // call the node to retrieve and update the mongodb store
-    updates = await updateNodeDb(clusterIP);
-    success = true;
+    const clusterIP = await getClusterIP();
+    const nodes = await getClusterDetails(clusterIP);
+    updates = await updateNodeDb(nodes);
   } catch (e) {
-    success = false;
     console.error(e);
   }
 
   return {
-    success: success,
     updates: updates,
   };
 });
 
-async function updateNodeDb(ip: string): Promise<number> {
-  // query the node for all nodes in the cluster
-  const response: any[] = await $fetch("http://" + ip + ":9000/cluster/info");
+async function getClusterIP(): Promise<string> {
+  let ip = "0.0.0.0";
 
-  // update mongodb with the returned nodes
-  let nodes: AnyBulkWriteOperation[] = [];
-  response.forEach((n: { ip: string; state: string }) => {
+  // select the ip from a random active node if available
+  const docs = await nodeModel.find();
+  if (docs.length > 0) {
+    const doc = docs.at(randomNumber(0, docs.length - 1));
+    if (doc) {
+      ip = numberToIP(doc.ip);
+    } else if (process.env.L0_BOOTSTRAP_IP != undefined) {
+      ip = process.env.L0_BOOTSTRAP_IP;
+    }
+  }
+
+  return ip;
+}
+
+async function getClusterDetails(ip: string): Promise<any[]> {
+  // query the node for all nodes in the cluster
+  const nodes: any[] = await $fetch("http://" + ip + ":9000/cluster/info");
+  return nodes;
+}
+
+async function updateNodeDb(nodes: any[]): Promise<number> {
+  let nodeDocs: AnyBulkWriteOperation[] = [];
+
+  nodes.forEach((n: { ip: string; state: string }) => {
     let docOperation = {
       updateOne: {
         filter: { ip: ipToNumber(n.ip) },
@@ -45,12 +51,12 @@ async function updateNodeDb(ip: string): Promise<number> {
         upsert: true,
       },
     };
-    nodes.push(docOperation);
+    nodeDocs.push(docOperation);
   });
-  await nodeModel.bulkWrite(nodes);
 
+  await nodeModel.bulkWrite(nodeDocs);
   console.log("nodes refreshed in mongodb from cluster: " + nodes.length);
-  return nodes.length;
+  return nodeDocs.length;
 }
 
 function randomNumber(min: number, max: number) {
