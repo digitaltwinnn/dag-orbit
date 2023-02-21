@@ -6,10 +6,10 @@
 </template>
 
 <script>
-import { AppRenderer } from "../../threejs/AppRenderer";
-import { AppCamera } from "../../threejs/AppCamera";
-import { AppScene } from "../../threejs/AppScene";
-import { AnimationLoop } from "../../threejs/AnimationLoop";
+import { AppRenderer } from "../../threejs/scene/AppRenderer";
+import { AppCamera } from "../../threejs/scene/AppCamera";
+import { AppScene } from "../../threejs/scene/AppScene";
+import { AnimationLoop } from "../../threejs/scene/AnimationLoop";
 
 import { DigitalGlobe } from "../../threejs/DigitalGlobe";
 import { NaturalGlobe } from "../../threejs/NaturalGlobe";
@@ -34,8 +34,6 @@ export default {
       this.digitalGlobe = markRaw(new DigitalGlobe(this.appScene));
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
 
-      getNodes().then((nodes) => { console.log(nodes) });
-
       // setup animation loop
       this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam));
 
@@ -54,11 +52,6 @@ export default {
       animationLoop: AnimationLoop
     }
   }
-}
-
-async function getNodes() {
-  const nodes = await $fetch("/api/nodes");
-  return nodes;
 }
 
 </script>
