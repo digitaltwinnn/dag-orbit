@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   try {
     const clusterIP = await getClusterIP();
     const nodes = await getClusterDetails(clusterIP);
-    updates = await updateNodeDb(nodes);
+    updates = await updateNodeCollection(nodes);
   } catch (e) {
     console.error(e);
   }
@@ -19,6 +19,9 @@ export default defineEventHandler(async (event) => {
 
 async function getClusterIP(): Promise<string> {
   let ip = "0.0.0.0";
+  if (process.env.L0_BOOTSTRAP_IP != undefined) {
+    ip = process.env.L0_BOOTSTRAP_IP;
+  }
 
   // select the ip from a random active node if available
   const docs = await nodeModel.find();
@@ -26,8 +29,6 @@ async function getClusterIP(): Promise<string> {
     const doc = docs.at(randomNumber(0, docs.length - 1));
     if (doc) {
       ip = numberToIP(doc.ip);
-    } else if (process.env.L0_BOOTSTRAP_IP != undefined) {
-      ip = process.env.L0_BOOTSTRAP_IP;
     }
   }
 
@@ -35,19 +36,41 @@ async function getClusterIP(): Promise<string> {
 }
 
 async function getClusterDetails(ip: string): Promise<any[]> {
-  // query the node for all nodes in the cluster
   const nodes: any[] = await $fetch("http://" + ip + ":9000/cluster/info");
+  await Promise.all(
+    nodes.map(async (n, index, array) => {
+      const host = await $fetch("/api/hosts/" + n.ip);
+      n.host = host;
+      array[index] = n;
+    })
+  );
   return nodes;
 }
 
-async function updateNodeDb(nodes: any[]): Promise<number> {
+async function updateNodeCollection(nodes: any[]): Promise<number> {
   let nodeDocs: AnyBulkWriteOperation[] = [];
 
-  nodes.forEach((n: { ip: string; state: string }) => {
+  nodes.forEach((n: { ip: string; state: string; host: any }) => {
+    const latLong = n.host.loc.split(",").map((coord: string) => {
+      const f = parseFloat(coord);
+      return isNaN(f) ? 0 : f;
+    });
+
     let docOperation = {
       updateOne: {
         filter: { ip: ipToNumber(n.ip) },
-        update: { $set: { state: n.state } },
+        update: {
+          $set: {
+            state: n.state,
+            "host.name": n.host.hostname,
+            "host.city": n.host.city,
+            "host.region": n.host.region,
+            "host.country": n.host.country,
+            "host.latitude": latLong[0],
+            "host.longitude": latLong[1],
+            "host.org": n.host.org,
+          },
+        },
         upsert: true,
       },
     };
