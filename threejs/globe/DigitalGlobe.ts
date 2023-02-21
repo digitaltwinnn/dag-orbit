@@ -14,7 +14,7 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { GlobeUtils } from "../GlobeUtils";
+import { GlobeUtils } from "../utils/GlobeUtils";
 import { AppScene } from "../scene/AppScene";
 
 const GLOBE = 0;

@@ -7,7 +7,7 @@ import {
 import TWEEN from "@tweenjs/tween.js";
 import { geoInterpolate } from "d3-geo";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { GlobeUtils } from "../GlobeUtils";
+import { GlobeUtils } from "../utils/GlobeUtils";
 import { AppRenderer } from "./AppRenderer";
 
 class AppCamera {
