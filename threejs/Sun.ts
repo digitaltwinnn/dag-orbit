@@ -16,9 +16,9 @@ class Sun {
     const loader = new TextureLoader();
     const $img = useImage();
 
-    const sun = loader.load($img("/sun.jpg", { width: 200 }));
-    const hexagon = loader.load($img("/hexagon.jpg"));
-    const circle = loader.load($img("/circle.jpg"));
+    const sun = loader.load($img("/sun.jpg", { width: 320 }));
+    const hexagon = loader.load($img("/hexagon.jpg", { width: 320 }));
+    const circle = loader.load($img("/circle.jpg", { width: 320 }));
 
     const flare = new Lensflare();
     const blue = new Color("blue");

@@ -22,13 +22,13 @@ class NaturalGlobe {
     const loader = new TextureLoader();
     const $img = useImage();
 
-    const mapImgUrl = $img("/earthmap.jpg");
+    const mapImgUrl = $img("/earthmap.jpg", {width: 1536});
     const map = loader.load(mapImgUrl);
 
-    const specularImgUrl = $img("/earthspec1k.jpg", { width: 500 });
+    const specularImgUrl = $img("/earthspec1k.jpg", { width: 640 });
     const specular = loader.load(specularImgUrl);
 
-    const bumpImgUrl = $img("/earthbump10k.jpg");
+    const bumpImgUrl = $img("/earthbump10k.jpg", {width: 1536});
     const bump = loader.load(bumpImgUrl);
 
     const materialNormalMap = new MeshPhongMaterial({

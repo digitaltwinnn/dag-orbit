@@ -34,6 +34,8 @@ export default {
       this.digitalGlobe = markRaw(new DigitalGlobe(this.appScene));
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
 
+      getNodes().then((nodes) => { console.log(nodes) });
+
       // setup animation loop
       this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam));
 
@@ -53,4 +55,10 @@ export default {
     }
   }
 }
+
+async function getNodes() {
+  const nodes = await $fetch("/api/nodes");
+  return nodes;
+}
+
 </script>

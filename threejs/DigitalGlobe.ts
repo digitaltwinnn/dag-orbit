@@ -41,7 +41,7 @@ class DigitalGlobe {
 
     // digital globe
     const $img = useImage();
-    const imgUrl = $img("/earthspec1k.jpg");
+    const imgUrl = $img("/earthspec1k.jpg", {width: 1024});
     const loader = new ImageLoader();
     loader.load(imgUrl, (image) => {
       const canvas = document.createElement("canvas");
@@ -65,7 +65,6 @@ class DigitalGlobe {
       }
     });
 
-    this.innerGlobe.add(this.mesh);
     appScene.add(this.innerGlobe);
   }
 
