@@ -87,9 +87,8 @@ class AppCamera {
     duration: number,
     cb: any
   ): void {
-    const utils = new GlobeUtils(this.radius);
-    const t = utils.toLatLng(target);
-    const v = utils.toVector(t[0], t[1], 0);
+    const t = GlobeUtils.toLatLng(target);
+    const v = GlobeUtils.toVector(t[0], t[1], this.radius);
     this.toLatLng(
       { lat: t[0], lng: t[1] },
       target.distanceTo(v),
@@ -106,11 +105,10 @@ class AppCamera {
     duration: number,
     cb: any
   ): void {
-    const utils = new GlobeUtils(this.radius);
     const origin = this.camera.position.clone();
 
     // convert origin to latitude and longitude coordinates and interpolate
-    const startLatLng = utils.toLatLng(origin.clone());
+    const startLatLng = GlobeUtils.toLatLng(origin.clone());
     const interpolate = geoInterpolate(
       [startLatLng[1], startLatLng[0]],
       [target.lng, target.lat - 5]
@@ -119,7 +117,11 @@ class AppCamera {
     const midCoord2 = interpolate(0.75);
 
     // convert the destination lat-long coordinate to vectors as well
-    const targetVector = utils.toVector(target.lat, target.lng, alt);
+    const targetVector = GlobeUtils.toVector(
+      target.lat,
+      target.lng,
+      this.radius + alt
+    );
 
     // convert the interpolated lat-long coordinates to vectors
     const curveHeight = MathUtils.clamp(
@@ -127,8 +129,16 @@ class AppCamera {
       1 * alt,
       2 * alt
     );
-    const mid1 = utils.toVector(midCoord1[1], midCoord1[0], curveHeight);
-    const mid2 = utils.toVector(midCoord2[1], midCoord2[0], curveHeight);
+    const mid1 = GlobeUtils.toVector(
+      midCoord1[1],
+      midCoord1[0],
+      this.radius + curveHeight
+    );
+    const mid2 = GlobeUtils.toVector(
+      midCoord2[1],
+      midCoord2[0],
+      this.radius + curveHeight
+    );
 
     const camCurve = new CubicBezierCurve3(origin, mid1, mid2, targetVector);
     this.followCurve(camCurve, lookAt.clone(), duration, cb);

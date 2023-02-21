@@ -1,23 +1,17 @@
 import { Vector3 } from "three";
 
 class GlobeUtils {
-  private radius: number;
-
-  constructor(radius: number) {
-    this.radius = radius;
-  }
-
-  public toVector(lat: number, lng: number, altitude: number): Vector3 {
+  static toVector(lat: number, lng: number, radius: number): Vector3 {
     const latRad = lat * (Math.PI / 180);
     const lonRad = -lng * (Math.PI / 180);
     return new Vector3(
-      Math.cos(latRad) * Math.cos(lonRad) * (this.radius + altitude),
-      Math.sin(latRad) * (this.radius + altitude),
-      Math.cos(latRad) * Math.sin(lonRad) * (this.radius + altitude)
+      Math.cos(latRad) * Math.cos(lonRad) * radius,
+      Math.sin(latRad) * radius,
+      Math.cos(latRad) * Math.sin(lonRad) * radius
     );
   }
 
-  public toLatLng(vector: Vector3) {
+  static toLatLng(vector: Vector3) {
     const v = vector.clone();
     const norm = v.normalize();
 
