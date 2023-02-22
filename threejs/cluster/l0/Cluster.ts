@@ -1,26 +1,16 @@
-import {
-  Color,
-  Curve,
-  MathUtils,
-  Mesh,
-  MeshBasicMaterial,
-  QuadraticBezierCurve3,
-  TubeGeometry,
-  Vector3,
-} from "three";
+import { Color, MathUtils } from "three";
 import { Satellite } from "./Satellite";
 import TWEEN from "@tweenjs/tween.js";
-//import { SatelliteAnchor } from "./SatelliteAnchor";
 import { AppScene } from "../../scene/AppScene";
 import { GlobeUtils } from "../../utils/GlobeUtils";
+import { Edge } from "./Edge";
 
 const nodeColors = ["#1E90FE", "#1467C8", "#1053AD"];
 
 class Cluster {
   private appScene: AppScene;
   private satellites: Satellite[];
-  private satellitePaths: Mesh[];
-  //private satelliteAnchors!: SatelliteAnchor[];
+  private satelliteEdges: Edge[];
 
   private radius = 100;
   private alt = 20;
@@ -29,8 +19,7 @@ class Cluster {
   constructor(appScene: AppScene) {
     this.appScene = appScene;
     this.satellites = [];
-    this.satellitePaths = [];
-    //   this.satelliteAnchors = [];
+    this.satelliteEdges = [];
   }
 
   public refresh(nodes: any[]): void {
@@ -50,12 +39,7 @@ class Cluster {
         );
         this.satellites.push(sat);
         this.anchorOnEarth(sat);
-        this.drawConnections(sat, color);
-
-        // this.drawAnchor(sat, color);
-        // sat.addNode(this.scene, this.earth, node);
-      } else {
-        //  sats[0].addNode(this.scene, this.earth, node);
+        this.drawEdges(sat, color);
       }
     });
   }
@@ -84,71 +68,21 @@ class Cluster {
       .start();
   }
 
-  private drawConnections(satellite: Satellite, color: Color): void {
+  private drawEdges(satellite: Satellite, color: Color): void {
     this.satellites.forEach((sat: Satellite) => {
       if (sat.get().name != satellite.get().name) {
-
-        const arc = GlobeUtils.createSphereArc(
+        // create the edge
+        const edge = new Edge(
+          this.appScene,
           { lat: satellite.lat, lng: satellite.lng },
           { lat: sat.lat, lng: sat.lng },
-          this.radius + this.alt
+          this.radius + this.alt,
+          color
         );
-
-        // static line between satellites
-        const line = this.createLine(arc, color, 0.03, 0.15);
-        this.appScene.applyBloomEffect(line);
-        this.appScene.get().add(line);
-        this.satellitePaths.push(line);
-
-        // animate line across the static line
-        const animatedLine = this.createLine(arc, color, 0.035, 0.3);
-        this.appScene.applyBloomEffect(animatedLine);
-        animatedLine.visible = false;
-        this.appScene.get().add(animatedLine);
-        this.animateLine(animatedLine);
+        this.satelliteEdges.push(edge);
       }
     });
   }
-
-  private animateLine(line: Mesh): void {
-    const geom: TubeGeometry = line.geometry as TubeGeometry;
-    const vertices = 6;
-    const offset = 3;
-    const max = vertices * geom.attributes.position.count;
-    const size = 3 * vertices;
-
-    new TWEEN.Tween({ progress: 0 })
-      .to({ progress: 1 }, 15000)
-      .delay(Math.random() * 10000)
-      .repeat(Infinity)
-      .repeatDelay(Math.random() * 2000)
-      .yoyo(true)
-      .easing(TWEEN.Easing.Quartic.InOut)
-      .onStart(function () {
-        line.visible = true;
-      })
-      .onUpdate(function (values) {
-        const end = values.progress * max;
-        let start = end < size ? 0 : end - size;
-        start = size * Math.floor(start / offset) * offset;
-        geom.setDrawRange(start, end);
-      })
-      .start();
-  }
-
-  /*
-  private drawAnchor(sat: Satellite, color: Color): void {
-    const anchor = new SatelliteAnchor(
-      this.scene,
-      this.earth,
-      sat.lat,
-      sat.lng,
-      sat.alt,
-      color
-    );
-    this.satelliteAnchors.push(anchor);
-  }
-  */
 
   public findByLatLng(lat: number, lng: number): Satellite[] {
     const delta = 0.5;
@@ -161,29 +95,9 @@ class Cluster {
   }
 
   public tick(delta: number) {
-    /*
-    this.satelliteAnchors.forEach((anchor: SatelliteAnchor) => {
-      anchor.tick(delta);
-    });
-    */
     this.satellites.forEach((satellite: Satellite) => {
       satellite.tick(delta);
     });
-  }
-
-  private createLine(
-    path: QuadraticBezierCurve3 | Curve<Vector3>,
-    color: Color,
-    width: number,
-    opacity: number
-  ): Mesh {
-    const geometry = new TubeGeometry(path, 256, width, 6);
-    const material = new MeshBasicMaterial({
-      color: color,
-      transparent: true,
-      opacity: opacity,
-    });
-    return new Mesh(geometry, material);
   }
 
   private inRange(x: number, min: number, max: number): boolean {
