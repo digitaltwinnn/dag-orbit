@@ -37,7 +37,7 @@ export default {
       this.cluster = markRaw(new Cluster(this.appScene));
 
       // setup animation loop
-      this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam));
+      this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam, this.cluster));
 
       // move the camera
       //   appCam.toGlobeView();
