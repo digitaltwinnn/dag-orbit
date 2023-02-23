@@ -7,6 +7,7 @@ export default defineNuxtConfig({
       "d3-geo",
       "@tweenjs/tween.js",
       "gsap",
+      "@theatre/core",
     ],
   },
   modules: ["@nuxt/image-edge", "@nuxtjs/tailwindcss"],
