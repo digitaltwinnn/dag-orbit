@@ -9,6 +9,7 @@
 import { AppRenderer } from "../../threejs/scene/AppRenderer";
 import { AppCamera } from "../../threejs/scene/AppCamera";
 import { AppScene } from "../../threejs/scene/AppScene";
+import { AppTheatre } from "../../threejs/scene/AppTheatre";
 import { AnimationLoop } from "../../threejs/scene/AnimationLoop";
 
 import { DigitalGlobe } from "../../threejs/globe/DigitalGlobe";
@@ -21,6 +22,7 @@ import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 
 export default {
   mounted() {
+
     const el = document.getElementById("scene-container");
     if (el != null) {
       // setup the threejs renderer, camera, scene and (sun)light
@@ -36,11 +38,11 @@ export default {
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
       this.cluster = markRaw(new Cluster(this.appScene));
 
-      // setup animation loop
+      // setup animation frame loop
       this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam, this.cluster));
+      // setup the animation sequences
+      this.appTheatre = markRaw(new AppTheatre(this.digitalGlobe));
 
-      // move the camera
-      //   appCam.toGlobeView();
     }
   },
   data() {
@@ -48,11 +50,12 @@ export default {
       appRenderer: AppRenderer,
       appCam: AppCamera,
       appScene: AppScene,
+      appTheatre: AppTheatre,
       naturalGlobe: NaturalGlobe,
       digitalGlobe: DigitalGlobe,
       sun: Sun,
       cluster: Cluster,
-      animationLoop: AnimationLoop
+      animationLoop: AnimationLoop,
     }
   }
 }

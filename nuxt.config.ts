@@ -1,4 +1,5 @@
 export default defineNuxtConfig({
+  vite: { define: { "process.env.TESS_ENV": process.env.ENV } },
   build: {
     transpile: [
       "three",
