@@ -24,13 +24,13 @@ class Edge {
     const arc = GlobeUtils.createSphereArc(vertex1, vertex2, radius);
 
     // create the line
-    this.mesh = this.createLine(arc, color, 0.03, 0.15);
-    appScene.applyBloomEffect(this.mesh);
+    this.mesh = this.createLine(arc, color, 0.025, 0.15);
     appScene.get().add(this.mesh);
-
+    appScene.applyBloomEffect(this.mesh);
+    
     // animate line across the static line
-    const animatedLine = this.createLine(arc, color, 0.035, 0.3);
-    appScene.applyBloomEffect(animatedLine);
+    const animatedLine = this.createLine(arc, color, 0.05, 0.5);
+    
     animatedLine.visible = false;
 
     // TODO: reference here?

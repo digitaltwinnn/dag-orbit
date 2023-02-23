@@ -44,9 +44,9 @@ class AppScene {
     this.bloomEffect = new SelectiveBloomEffect(this.scene, camera.get(), {
       blendFunction: BlendFunction.ADD,
       mipmapBlur: true,
-      luminanceThreshold: 0.25,
-      luminanceSmoothing: 0.1,
-      intensity: 2.0,
+      luminanceThreshold: 0.025,
+      luminanceSmoothing: 0.025,
+      intensity: 1.1,
     });
     const renderPass = new RenderPass(this.scene, camera.get());
     const bloomPass = new EffectPass(camera.get(), this.bloomEffect);

@@ -40,6 +40,7 @@ class Satellite {
       color: color,
     });
     this.mesh.add(new Mesh(geom2, mat2));
+    appScene.applyBloomEffect(this.mesh);
     appScene.add(this.mesh);
   }
 

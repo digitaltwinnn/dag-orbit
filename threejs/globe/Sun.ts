@@ -25,7 +25,7 @@ class Sun {
     const yellow = new Color("yellow");
     const purple = new Color("purple");
 
-    flare.addElement(new LensflareElement(sun, 750, 0, this.light.color));
+    flare.addElement(new LensflareElement(sun, 500, 0, this.light.color));
     flare.addElement(new LensflareElement(circle, 75, 0.55));
     flare.addElement(new LensflareElement(hexagon, 200, 0.6));
     flare.addElement(new LensflareElement(hexagon, 400, 0.7, purple));
