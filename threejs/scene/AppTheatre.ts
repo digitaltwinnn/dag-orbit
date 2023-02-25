@@ -1,16 +1,18 @@
-import { getProject, ISheet, types } from "@theatre/core";
+import { getProject, IRafDriver, ISheet, types } from "@theatre/core";
 import studio from "@theatre/studio";
-import { Camera, Color, Light, Material, Mesh, Scene, Vector3 } from "three";
+import { Camera, Color, Light, Mesh, Scene, Vector3 } from "three";
 import { Cluster } from "../cluster/l0/Cluster";
 import { DigitalGlobe } from "../globe/DigitalGlobe";
 import { NaturalGlobe } from "../globe/NaturalGlobe";
 import { Sun } from "../globe/Sun";
+import { AnimationLoop } from "./AnimationLoop";
 import { AppCamera } from "./AppCamera";
 import { AppScene } from "./AppScene";
 
 class AppTheatre {
   cameraSubject: Vector3 = new Vector3(0, 0, 0);
   sceneColor: Color = new Color();
+  rafDriver!: IRafDriver;
 
   private positionRange: [min: number, max: number] = [-500, 500];
   private rotationRange: [min: number, max: number] = [-2, 2];
@@ -19,6 +21,7 @@ class AppTheatre {
   private opacityRange: [min: number, max: number] = [0, 1];
 
   constructor(
+    animationLoop: AnimationLoop,
     camera: AppCamera,
     scene: AppScene,
     sunLight: Sun,
@@ -26,6 +29,8 @@ class AppTheatre {
     digitalGlobe: DigitalGlobe,
     cluster: Cluster
   ) {
+    this.rafDriver = animationLoop.getTheatreDriver();
+
     const color = scene.get().background;
     if (color instanceof Color) {
       this.sceneColor = color;
@@ -100,7 +105,7 @@ class AppTheatre {
       mesh.rotation.set(v.rotation.x, v.rotation.y, v.rotation.z);
       mesh.position.set(v.position.x, v.position.y, v.position.z);
       mesh.scale.set(v.scale.x, v.scale.y, v.scale.z);
-    });
+    }, this.rafDriver);
 
     return control;
   }
@@ -122,7 +127,8 @@ class AppTheatre {
     control.onValuesChange((v) => {
       mesh.material.color.setRGB(v.color.r, v.color.g, v.color.b);
       mesh.material.opacity = v.opacity;
-    });
+    }, this.rafDriver);
+
     return control;
   }
 
@@ -146,7 +152,7 @@ class AppTheatre {
       light.position.set(v.position.x, v.position.y, v.position.z);
       light.color.setRGB(v.color.r, v.color.g, v.color.b);
       light.intensity = v.intensity;
-    });
+    }, this.rafDriver);
 
     return control;
   }
@@ -169,7 +175,7 @@ class AppTheatre {
       cam.position.set(v.position.x, v.position.y, v.position.z);
       this.cameraSubject.set(v.lookat.x, v.lookat.y, v.lookat.z);
       cam.lookAt(this.cameraSubject);
-    });
+    }, this.rafDriver);
 
     return control;
   }
@@ -187,7 +193,7 @@ class AppTheatre {
     control.onValuesChange((v) => {
       this.sceneColor.setRGB(v.color.r, v.color.g, v.color.b);
       scene.background = this.sceneColor;
-    });
+    }, this.rafDriver);
 
     return control;
   }
