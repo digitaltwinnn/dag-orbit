@@ -41,7 +41,13 @@ export default {
       // setup animation frame loop
       this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam, this.cluster));
       // setup the animation sequences
-      this.appTheatre = markRaw(new AppTheatre(this.digitalGlobe));
+      this.appTheatre = markRaw(new AppTheatre(
+        this.appCam,
+        this.appScene,
+        this.sun,
+        this.naturalGlobe,
+        this.digitalGlobe,
+        this.cluster));
 
     }
   },

@@ -2,6 +2,7 @@ import {
   Color,
   DefaultLoadingManager,
   DirectionalLight,
+  Light,
   Object3D,
   Scene,
 } from "three";
@@ -58,6 +59,10 @@ class AppScene {
 
   public get(): Scene {
     return this.scene;
+  }
+
+  public getLight(): Light {
+    return this.light;
   }
 
   public add(object: Object3D): void {
