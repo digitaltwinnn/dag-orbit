@@ -1,7 +1,8 @@
-import { Clock, Scene } from "three";
+import { Clock } from "three";
 import { AppCamera } from "./AppCamera";
 import { AppScene } from "./AppScene";
 import Stats from "three/examples/jsm/libs/stats.module.js";
+import { Cluster } from "../cluster/l0/Cluster";
 
 class AnimationLoop {
   private composer: any;
@@ -10,7 +11,7 @@ class AnimationLoop {
 
   public members = [] as any;
 
-  constructor(scene: AppScene, camera: AppCamera) {
+  constructor(scene: AppScene, camera: AppCamera, cluster: Cluster) {
     this.composer = scene.getComposer();
 
     this.stats = Stats();
@@ -21,7 +22,7 @@ class AnimationLoop {
       this.stats.showPanel(0);
     }
 
-    this.members.push(camera);
+    this.members.push(camera, cluster);
     this.start();
   }
 
@@ -43,14 +44,6 @@ class AnimationLoop {
       self.stats.end();
     };
     tick();
-  }
-
-  public showStats() {
-    //   this.stats.domElement.classList.remove("hidden");
-  }
-
-  public hideStats() {
-    //    this.stats.domElement.classList.add("hidden");
   }
 }
 

@@ -14,8 +14,8 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { GlobeUtils } from "./GlobeUtils";
-import { AppScene } from "./AppScene";
+import { GlobeUtils } from "../utils/GlobeUtils";
+import { AppScene } from "../scene/AppScene";
 
 const GLOBE = 0;
 const MAP = 1;
@@ -41,7 +41,7 @@ class DigitalGlobe {
 
     // digital globe
     const $img = useImage();
-    const imgUrl = $img("/earthspec1k.jpg", {width: 1024});
+    const imgUrl = $img("/earthspec1k.jpg", { width: 1024 });
     const loader = new ImageLoader();
     loader.load(imgUrl, (image) => {
       const canvas = document.createElement("canvas");
@@ -129,7 +129,6 @@ class DigitalGlobe {
     context: CanvasRenderingContext2D
   ): Vector3[] {
     const positions = [];
-    const util = new GlobeUtils(this.radius);
 
     for (let lat = -90; lat <= 90; lat += 180 / this.rows) {
       const r = Math.cos((Math.abs(lat) * Math.PI) / 180) * this.radius;
@@ -154,7 +153,9 @@ class DigitalGlobe {
 
         if (pixelData[0] <= 5) {
           positions.push(
-            util.toVector(lat, long, 0).normalize().multiplyScalar(this.radius)
+            GlobeUtils.toVector(lat, long, this.radius)
+              .normalize()
+              .multiplyScalar(this.radius)
           );
         }
       }

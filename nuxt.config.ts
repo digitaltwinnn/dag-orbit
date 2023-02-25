@@ -1,4 +1,5 @@
 export default defineNuxtConfig({
+  vite: { define: { "process.env.TESS_ENV": process.env.ENV } },
   build: {
     transpile: [
       "three",
@@ -6,6 +7,7 @@ export default defineNuxtConfig({
       "d3-geo",
       "@tweenjs/tween.js",
       "gsap",
+      "@theatre/core",
     ],
   },
   modules: ["@nuxt/image-edge", "@nuxtjs/tailwindcss"],

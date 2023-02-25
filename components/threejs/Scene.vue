@@ -6,20 +6,23 @@
 </template>
 
 <script>
-import { AppRenderer } from "../../threejs/AppRenderer";
-import { AppCamera } from "../../threejs/AppCamera";
-import { AppScene } from "../../threejs/AppScene";
-import { AnimationLoop } from "../../threejs/AnimationLoop";
+import { AppRenderer } from "../../threejs/scene/AppRenderer";
+import { AppCamera } from "../../threejs/scene/AppCamera";
+import { AppScene } from "../../threejs/scene/AppScene";
+import { AppTheatre } from "../../threejs/scene/AppTheatre";
+import { AnimationLoop } from "../../threejs/scene/AnimationLoop";
 
-import { DigitalGlobe } from "../../threejs/DigitalGlobe";
-import { NaturalGlobe } from "../../threejs/NaturalGlobe";
-import { Sun } from "../../threejs/Sun";
+import { DigitalGlobe } from "../../threejs/globe/DigitalGlobe";
+import { NaturalGlobe } from "../../threejs/globe/NaturalGlobe";
+import { Sun } from "../../threejs/globe/Sun";
+import { Cluster } from "~~/threejs/cluster/l0/Cluster";
 
 import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 
 export default {
   mounted() {
+
     const el = document.getElementById("scene-container");
     if (el != null) {
       // setup the threejs renderer, camera, scene and (sun)light
@@ -33,14 +36,19 @@ export default {
       // add meshes to the scene
       this.digitalGlobe = markRaw(new DigitalGlobe(this.appScene));
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
+      this.cluster = markRaw(new Cluster(this.appScene));
 
-      getNodes().then((nodes) => { console.log(nodes) });
+      // setup animation frame loop
+      this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam, this.cluster));
+      // setup the animation sequences
+      this.appTheatre = markRaw(new AppTheatre(
+        this.appCam,
+        this.appScene,
+        this.sun,
+        this.naturalGlobe,
+        this.digitalGlobe,
+        this.cluster));
 
-      // setup animation loop
-      this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam));
-
-      // move the camera
-      //   appCam.toGlobeView();
     }
   },
   data() {
@@ -48,17 +56,14 @@ export default {
       appRenderer: AppRenderer,
       appCam: AppCamera,
       appScene: AppScene,
+      appTheatre: AppTheatre,
       naturalGlobe: NaturalGlobe,
       digitalGlobe: DigitalGlobe,
       sun: Sun,
-      animationLoop: AnimationLoop
+      cluster: Cluster,
+      animationLoop: AnimationLoop,
     }
   }
-}
-
-async function getNodes() {
-  const nodes = await $fetch("/api/nodes");
-  return nodes;
 }
 
 </script>

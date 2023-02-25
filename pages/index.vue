@@ -69,7 +69,16 @@ export default {
             rotation: 360,
             transformOrigin: "center center",
         })
+
+        getNodes().then((nodes) => {
+            this.$refs.threejs.cluster.refresh(nodes);
+        });
     }
+}
+
+async function getNodes() {
+    const nodes = await $fetch("/api/nodes");
+    return nodes;
 }
 </script>
 

@@ -1,7 +1,8 @@
 import {
+  AmbientLight,
   Color,
   DefaultLoadingManager,
-  DirectionalLight,
+  Light,
   Object3D,
   Scene,
 } from "three";
@@ -17,7 +18,7 @@ import {
 
 class AppScene {
   private scene!: Scene;
-  private light!: DirectionalLight;
+  private light!: AmbientLight;
   private composer!: any;
   private bloomEffect!: SelectiveBloomEffect;
 
@@ -37,16 +38,16 @@ class AppScene {
       );
     };
 
-    this.light = new DirectionalLight(0xffffff);
+    this.light = new AmbientLight(0xffffff);
     this.light.intensity = 0.15;
     this.scene.add(this.light);
 
     this.bloomEffect = new SelectiveBloomEffect(this.scene, camera.get(), {
       blendFunction: BlendFunction.ADD,
       mipmapBlur: true,
-      luminanceThreshold: 0.25,
-      luminanceSmoothing: 0.1,
-      intensity: 2.0,
+      luminanceThreshold: 0.025,
+      luminanceSmoothing: 0.025,
+      intensity: 1.1,
     });
     const renderPass = new RenderPass(this.scene, camera.get());
     const bloomPass = new EffectPass(camera.get(), this.bloomEffect);
@@ -58,6 +59,10 @@ class AppScene {
 
   public get(): Scene {
     return this.scene;
+  }
+
+  public getLight(): Light {
+    return this.light;
   }
 
   public add(object: Object3D): void {
