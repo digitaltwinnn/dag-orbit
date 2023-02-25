@@ -1,7 +1,7 @@
 import {
+  AmbientLight,
   Color,
   DefaultLoadingManager,
-  DirectionalLight,
   Light,
   Object3D,
   Scene,
@@ -18,7 +18,7 @@ import {
 
 class AppScene {
   private scene!: Scene;
-  private light!: DirectionalLight;
+  private light!: AmbientLight;
   private composer!: any;
   private bloomEffect!: SelectiveBloomEffect;
 
@@ -38,7 +38,7 @@ class AppScene {
       );
     };
 
-    this.light = new DirectionalLight(0xffffff);
+    this.light = new AmbientLight(0xffffff);
     this.light.intensity = 0.15;
     this.scene.add(this.light);
 
