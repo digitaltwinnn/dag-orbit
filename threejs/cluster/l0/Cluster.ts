@@ -1,6 +1,6 @@
 import { Color, MathUtils } from "three";
 import { Satellite } from "./Satellite";
-import TWEEN from "@tweenjs/tween.js";
+//import { SatelliteAnchor } from "./SatelliteAnchor";
 import { AppScene } from "../../scene/AppScene";
 import { GlobeUtils } from "../../utils/GlobeUtils";
 import { Edge } from "./Edge";
@@ -11,6 +11,7 @@ class Cluster {
   private appScene: AppScene;
   private satellites: Satellite[];
   private satelliteEdges: Edge[];
+  //private satelliteAnchors!: SatelliteAnchor[];
 
   private radius = 100;
   private alt = 20;
@@ -20,6 +21,7 @@ class Cluster {
     this.appScene = appScene;
     this.satellites = [];
     this.satelliteEdges = [];
+    //   this.satelliteAnchors = [];
   }
 
   public refresh(nodes: any[]): void {
@@ -40,12 +42,16 @@ class Cluster {
         this.satellites.push(sat);
         this.anchorOnEarth(sat);
         this.drawEdges(sat, color);
+
+        // this.drawAnchor(sat, color);
+        // sat.addNode(this.scene, this.earth, node);
+      } else {
+        //  sats[0].addNode(this.scene, this.earth, node);
       }
     });
   }
 
   private anchorOnEarth(sat: Satellite): void {
-    const position = sat.get().position;
     const target = GlobeUtils.toVector(
       sat.lat,
       sat.lng,
@@ -53,19 +59,9 @@ class Cluster {
     );
 
     const mesh = sat.get();
-    new TWEEN.Tween(position)
-      .to(target, 2000)
-      .easing(TWEEN.Easing.Cubic.InOut)
-      .onUpdate(function () {
-        mesh.position.x = position.x;
-        mesh.position.y = position.y;
-        mesh.position.z = position.z;
-      })
-      .onComplete(function () {
-        mesh.lookAt(0, 0, 0);
-        mesh.rotateX(MathUtils.degToRad(90));
-      })
-      .start();
+    mesh.position.set(target.x, target.y, target.z);
+    mesh.lookAt(0, 0, 0);
+    mesh.rotateX(MathUtils.degToRad(90));
   }
 
   private drawEdges(satellite: Satellite, color: Color): void {
@@ -84,6 +80,20 @@ class Cluster {
     });
   }
 
+  /*
+  private drawAnchor(sat: Satellite, color: Color): void {
+    const anchor = new SatelliteAnchor(
+      this.scene,
+      this.earth,
+      sat.lat,
+      sat.lng,
+      sat.alt,
+      color
+    );
+    this.satelliteAnchors.push(anchor);
+  }
+  */
+
   public findByLatLng(lat: number, lng: number): Satellite[] {
     const delta = 0.5;
     const sats = this.satellites.filter((s: Satellite) => {
@@ -95,6 +105,11 @@ class Cluster {
   }
 
   public tick(delta: number) {
+    /*
+    this.satelliteAnchors.forEach((anchor: SatelliteAnchor) => {
+      anchor.tick(delta);
+    });
+    */
     this.satellites.forEach((satellite: Satellite) => {
       satellite.tick(delta);
     });

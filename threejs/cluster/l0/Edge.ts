@@ -7,7 +7,6 @@ import {
   TubeGeometry,
   Vector3,
 } from "three";
-import TWEEN from "@tweenjs/tween.js";
 import { AppScene } from "../../scene/AppScene";
 import { GlobeUtils } from "~~/threejs/utils/GlobeUtils";
 
@@ -27,17 +26,18 @@ class Edge {
     this.mesh = this.createLine(arc, color, 0.025, 0.15);
     appScene.get().add(this.mesh);
     appScene.applyBloomEffect(this.mesh);
-    
+
     // animate line across the static line
     const animatedLine = this.createLine(arc, color, 0.05, 0.5);
-    
+
     animatedLine.visible = false;
 
     // TODO: reference here?
     appScene.get().add(animatedLine);
-    this.animateLine(animatedLine);
+    // this.animateLine(animatedLine);
   }
 
+  /*
   private animateLine(line: Mesh): void {
     const geom: TubeGeometry = line.geometry as TubeGeometry;
     const vertices = 6;
@@ -63,6 +63,7 @@ class Edge {
       })
       .start();
   }
+  */
 
   public tick(delta: number) {}
 

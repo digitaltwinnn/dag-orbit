@@ -1,20 +1,11 @@
-import {
-  CubicBezierCurve3,
-  MathUtils,
-  PerspectiveCamera,
-  Vector3,
-} from "three";
-import TWEEN from "@tweenjs/tween.js";
-import { geoInterpolate } from "d3-geo";
+import { PerspectiveCamera, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { GlobeUtils } from "../utils/GlobeUtils";
 import { AppRenderer } from "./AppRenderer";
 
 class AppCamera {
   private camera!: PerspectiveCamera;
   private controls!: OrbitControls;
   private startPos = new Vector3(0, 0, 400);
-  private radius = 100;
 
   constructor(width: number, height: number, renderer: AppRenderer) {
     this.camera = new PerspectiveCamera(50, width / height, 0.1, 40000);
@@ -42,135 +33,9 @@ class AppCamera {
   }
 
   public tick(delta: number): void {
-    TWEEN.update();
     if (this.controls.enabled) {
       this.controls.update();
     }
-  }
-
-  public toGlobeView(cb: any) {
-    const self = this;
-
-    const target = { lat: 40.7, lng: 74.0 };
-    const height = 500;
-    const lookAt = new Vector3(this.radius, 0.5 * this.radius, 0);
-    const duration = 14000;
-
-    this.toLatLng(target, height, lookAt, duration, function () {
-      self.controls.minPolarAngle = 0;
-      self.controls.maxPolarAngle = Math.PI;
-      self.controls.minAzimuthAngle = Infinity;
-      self.controls.maxAzimuthAngle = Infinity;
-      cb();
-    });
-  }
-
-  public toIntroView(cb: any) {
-    const self = this;
-
-    const target = this.startPos;
-    const lookAt = new Vector3(0, 0, 0);
-    const duration = 4000;
-
-    this.toVector(target, lookAt, duration, function () {
-      self.controls.minPolarAngle = 0;
-      self.controls.maxPolarAngle = Math.PI;
-      self.controls.minAzimuthAngle = Infinity;
-      self.controls.maxAzimuthAngle = Infinity;
-      cb();
-    });
-  }
-
-  private toVector(
-    target: Vector3,
-    lookAt: Vector3,
-    duration: number,
-    cb: any
-  ): void {
-    const t = GlobeUtils.toLatLng(target);
-    const v = GlobeUtils.toVector(t[0], t[1], this.radius);
-    this.toLatLng(
-      { lat: t[0], lng: t[1] },
-      target.distanceTo(v),
-      lookAt,
-      duration,
-      cb
-    );
-  }
-
-  private toLatLng(
-    target: { lat: number; lng: number },
-    alt: number,
-    lookAt: Vector3,
-    duration: number,
-    cb: any
-  ): void {
-    const origin = this.camera.position.clone();
-
-    // convert origin to latitude and longitude coordinates and interpolate
-    const startLatLng = GlobeUtils.toLatLng(origin.clone());
-    const interpolate = geoInterpolate(
-      [startLatLng[1], startLatLng[0]],
-      [target.lng, target.lat - 5]
-    );
-    const midCoord1 = interpolate(0.25);
-    const midCoord2 = interpolate(0.75);
-
-    // convert the destination lat-long coordinate to vectors as well
-    const targetVector = GlobeUtils.toVector(
-      target.lat,
-      target.lng,
-      this.radius + alt
-    );
-
-    // convert the interpolated lat-long coordinates to vectors
-    const curveHeight = MathUtils.clamp(
-      origin.distanceTo(targetVector) * 0.75,
-      1 * alt,
-      2 * alt
-    );
-    const mid1 = GlobeUtils.toVector(
-      midCoord1[1],
-      midCoord1[0],
-      this.radius + curveHeight
-    );
-    const mid2 = GlobeUtils.toVector(
-      midCoord2[1],
-      midCoord2[0],
-      this.radius + curveHeight
-    );
-
-    const camCurve = new CubicBezierCurve3(origin, mid1, mid2, targetVector);
-    this.followCurve(camCurve, lookAt.clone(), duration, cb);
-  }
-
-  private followCurve(
-    camCurve: CubicBezierCurve3,
-    lookAt: Vector3,
-    duration: number,
-    onCompleteCb: any
-  ) {
-    const camera = this.camera;
-    const controls = this.controls;
-
-    const currLookAt = controls.target;
-    const _tmpCam = new Vector3();
-    new TWEEN.Tween({ progress: 0 })
-      .to({ progress: 1 }, duration)
-      .easing(TWEEN.Easing.Quartic.InOut)
-      .onStart(function () {
-        controls.enabled = false;
-      })
-      .onUpdate(function (values) {
-        camCurve.getPoint(values.progress, _tmpCam);
-        camera.position.set(_tmpCam.x, _tmpCam.y, _tmpCam.z);
-        camera.lookAt(currLookAt.lerp(lookAt, values.progress));
-      })
-      .onComplete(function () {
-        controls.enabled = true;
-        onCompleteCb();
-      })
-      .start();
   }
 }
 

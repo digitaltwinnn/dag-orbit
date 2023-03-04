@@ -4,8 +4,6 @@ export default defineNuxtConfig({
     transpile: [
       "three",
       "postprocessing",
-      "d3-geo",
-      "@tweenjs/tween.js",
       "gsap",
       "@theatre/core",
     ],
