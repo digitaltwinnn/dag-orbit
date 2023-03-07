@@ -1,4 +1,3 @@
-import { Clock } from "three";
 import { AppCamera } from "./AppCamera";
 import { AppScene } from "./AppScene";
 import Stats from "three/examples/jsm/libs/stats.module.js";
@@ -7,7 +6,6 @@ import { createRafDriver, IRafDriver } from "@theatre/core";
 
 class AnimationLoop {
   private composer: any;
-  private clock!: Clock;
   private stats!: Stats;
   private theatreDriver = createRafDriver({ name: "theatre.js" });
 
@@ -25,29 +23,16 @@ class AnimationLoop {
     }
 
     this.members.push(camera, cluster);
-    this.start();
   }
 
-  private start() {
-    this.clock = new Clock();
-    const self = this;
-
-    const tick = function () {
-      self.stats.begin();
-      const delta = self.clock.getDelta();
-      const elapsed = self.clock.getElapsedTime();
-
-      self.composer.render(delta);
-      self.theatreDriver.tick(delta);
-      for (const member of self.members) {
-        member.tick(delta, elapsed);
-      }
-
-      requestAnimationFrame(tick);
-      self.stats.end();
-    };
-
-    tick();
+  public tick(time: number, deltaTime: number, frame: number) {
+    this.stats.begin();
+    this.composer.render();
+    this.theatreDriver.tick(deltaTime);
+    for (const member of this.members) {
+      member.tick(deltaTime);
+    }
+    this.stats.end();
   }
 
   getTheatreDriver(): IRafDriver {

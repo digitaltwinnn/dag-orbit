@@ -77,8 +77,8 @@ class Satellite {
     return this.mesh;
   }
 
-  public tick(delta: number): void {
-    const degreesPerSecond = MathUtils.degToRad(45) * delta;
+  public tick(deltaTime: number): void {
+    const degreesPerSecond = (MathUtils.degToRad(45) * deltaTime) / 1000;
     this.mesh.rotateX(degreesPerSecond);
     this.mesh.rotateY(degreesPerSecond);
     this.mesh.rotateZ(degreesPerSecond);

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="stats" class="absolute top-0 right-0 m-4" />
+    <div id="stats" />
     <div id="scene-container" class="overflow-x-hidden"></div>
   </div>
 </template>
@@ -20,6 +20,8 @@ import { Cluster } from "~~/threejs/cluster/l0/Cluster";
 import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 
+import { gsap } from "gsap";
+
 export default {
   mounted() {
 
@@ -38,8 +40,17 @@ export default {
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
       this.cluster = markRaw(new Cluster(this.appScene));
 
-      // setup animation frame loop
-      this.animationLoop = markRaw(new AnimationLoop(this.appScene, this.appCam, this.cluster));
+      // setup animation frame loop, TODO: refactor this
+      this.animationLoop = markRaw(new AnimationLoop(
+        this.appScene,
+        this.appCam,
+        this.cluster)
+      );
+      const tick = (time, deltaTime, frame) => {
+        this.animationLoop.tick(time, deltaTime, frame);
+      };
+      gsap.ticker.add(tick);
+
       // setup the animation sequences
       this.appTheatre = markRaw(new AppTheatre(
         this.animationLoop,
@@ -49,7 +60,6 @@ export default {
         this.naturalGlobe,
         this.digitalGlobe,
         this.cluster));
-
     }
   },
   data() {

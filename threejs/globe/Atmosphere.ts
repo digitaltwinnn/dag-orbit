@@ -44,7 +44,7 @@ class Atmosphere {
     globe.add(this.mesh);
   }
 
-  public tick(delta: number): void {
+  public tick(deltaTime: number): void {
     this.sun.get().getWorldPosition(this.lightPos);
     this.uniforms.lightDirection.value = this.lightPos;
     this.uniforms.earthCenter.value = this.globe.position;

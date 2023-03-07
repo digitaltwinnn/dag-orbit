@@ -32,7 +32,7 @@ class AppCamera {
     return this.controls;
   }
 
-  public tick(delta: number): void {
+  public tick(deltaTime: number): void {
     if (this.controls.enabled) {
       this.controls.update();
     }

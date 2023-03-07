@@ -104,14 +104,14 @@ class Cluster {
     return sats;
   }
 
-  public tick(delta: number) {
+  public tick(deltaTime: number) {
     /*
     this.satelliteAnchors.forEach((anchor: SatelliteAnchor) => {
-      anchor.tick(delta);
+      anchor.tick(deltaTime);
     });
     */
     this.satellites.forEach((satellite: Satellite) => {
-      satellite.tick(delta);
+      satellite.tick(deltaTime);
     });
   }
 
