@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="stats" />
+    <div id="stats" class="absolute bottom-0 right-0 m-4" />
     <div id="scene-container" class="overflow-x-hidden"></div>
   </div>
 </template>
@@ -10,7 +10,6 @@ import { AppRenderer } from "../../threejs/scene/AppRenderer";
 import { AppCamera } from "../../threejs/scene/AppCamera";
 import { AppScene } from "../../threejs/scene/AppScene";
 import { AppTheatre } from "../../threejs/scene/AppTheatre";
-import { AnimationLoop } from "../../threejs/scene/AnimationLoop";
 
 import { DigitalGlobe } from "../../threejs/globe/DigitalGlobe";
 import { NaturalGlobe } from "../../threejs/globe/NaturalGlobe";
@@ -33,6 +32,12 @@ export default {
       this.appScene = markRaw(new AppScene(this.appRenderer, this.appCam));
       this.sun = markRaw(new Sun(this.appScene));
       this.sun.get().position.set(1000, 0, 1000)
+
+      // setup a global animation loop using gsap
+      gsap.ticker.add((time, deltaTime, frame) => {
+        this.appScene.tick(time, deltaTime, frame);
+      });
+
       //window.addEventListener("resize", this.onWindowResize, false);
 
       // add meshes to the scene
@@ -40,20 +45,8 @@ export default {
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
       this.cluster = markRaw(new Cluster(this.appScene));
 
-      // setup animation frame loop, TODO: refactor this
-      this.animationLoop = markRaw(new AnimationLoop(
-        this.appScene,
-        this.appCam,
-        this.cluster)
-      );
-      const tick = (time, deltaTime, frame) => {
-        this.animationLoop.tick(time, deltaTime, frame);
-      };
-      gsap.ticker.add(tick);
-
       // setup the animation sequences
       this.appTheatre = markRaw(new AppTheatre(
-        this.animationLoop,
         this.appCam,
         this.appScene,
         this.sun,
@@ -72,7 +65,6 @@ export default {
       digitalGlobe: DigitalGlobe,
       sun: Sun,
       cluster: Cluster,
-      animationLoop: AnimationLoop,
     }
   }
 }

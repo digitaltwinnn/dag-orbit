@@ -5,7 +5,6 @@ import { Cluster } from "../cluster/l0/Cluster";
 import { DigitalGlobe } from "../globe/DigitalGlobe";
 import { NaturalGlobe } from "../globe/NaturalGlobe";
 import { Sun } from "../globe/Sun";
-import { AnimationLoop } from "./AnimationLoop";
 import { AppCamera } from "./AppCamera";
 import { AppScene } from "./AppScene";
 
@@ -21,7 +20,6 @@ class AppTheatre {
   private opacityRange: [min: number, max: number] = [0, 1];
 
   constructor(
-    animationLoop: AnimationLoop,
     camera: AppCamera,
     scene: AppScene,
     sunLight: Sun,
@@ -29,7 +27,7 @@ class AppTheatre {
     digitalGlobe: DigitalGlobe,
     cluster: Cluster
   ) {
-    this.rafDriver = animationLoop.getTheatreDriver();
+    this.rafDriver = scene.getTheatreDriver();
 
     const color = scene.get().background;
     if (color instanceof Color) {
