@@ -17,6 +17,8 @@ import {
 } from "postprocessing";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { createRafDriver, IRafDriver } from "@theatre/core";
+import { NaturalGlobe } from "../globe/NaturalGlobe";
+import { DigitalGlobe } from "../globe/DigitalGlobe";
 
 class AppScene {
   private theatreDriver = createRafDriver({ name: "theatre.js" });
@@ -27,6 +29,7 @@ class AppScene {
   private composer!: EffectComposer;
   private bloomEffect!: SelectiveBloomEffect;
   private stats!: Stats;
+  private objectAnimation: any = [];
 
   constructor(renderer: AppRenderer, camera: AppCamera) {
     this.scene = new Scene();
@@ -83,12 +86,15 @@ class AppScene {
   public add(object: Object3D): void {
     this.scene.add(object);
   }
+  public addObjectAnimation(object: NaturalGlobe | DigitalGlobe) {
+    this.objectAnimation.push(object);
+  }
 
   public applyBloomEffect(object: Object3D) {
     this.bloomEffect.selection.add(object);
   }
 
-  getTheatreDriver(): IRafDriver {
+  public getTheatreDriver(): IRafDriver {
     return this.theatreDriver;
   }
 
@@ -97,6 +103,9 @@ class AppScene {
     this.composer.render();
     this.theatreDriver.tick(deltaTime);
     this.camera.tick(deltaTime);
+    this.objectAnimation.forEach((o: { tick: (deltaTime: number) => void }) => {
+      o.tick(deltaTime);
+    });
     this.stats.end();
   }
 }

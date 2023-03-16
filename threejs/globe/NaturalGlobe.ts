@@ -48,6 +48,7 @@ class NaturalGlobe {
     new Atmosphere(this.mesh, sun, vAtmosphere, fAtmosphere);
     // add globe to scene
     appScene.add(this.mesh);
+    appScene.addObjectAnimation(this);
   }
 
   public tick(deltaTime: number) {

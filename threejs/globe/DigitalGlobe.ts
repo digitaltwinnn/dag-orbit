@@ -66,6 +66,7 @@ class DigitalGlobe {
     });
 
     appScene.add(this.innerGlobe);
+    appScene.addObjectAnimation(this);
   }
 
   private createMesh(positions: Vector3[]): InstancedMesh {
@@ -220,20 +221,9 @@ class DigitalGlobe {
     return this.innerGlobe;
   }
 
-  public showGlobe(): void {
-    this.mode = GLOBE;
-    this.mesh.visible = true;
-    this.transformMesh(this.globeDots);
-  }
-
-  public showMap(): void {
-    this.mode = MAP;
-    this.mesh.visible = true;
-    this.transformMesh(this.mapDots);
-  }
-
-  public hide(): void {
-    this.mesh.visible = false;
+  public tick(deltaTime: number) {
+    const radiansPerSecond = MathUtils.degToRad(4);
+    this.mesh.rotation.y += (radiansPerSecond * deltaTime) / 1000;
   }
 }
 
