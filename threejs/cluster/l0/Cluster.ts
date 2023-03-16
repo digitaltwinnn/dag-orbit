@@ -1,4 +1,4 @@
-import { Color, MathUtils } from "three";
+import { Color, Group, MathUtils } from "three";
 import { Satellite } from "./Satellite";
 //import { SatelliteAnchor } from "./SatelliteAnchor";
 import { AppScene } from "../../scene/AppScene";
@@ -9,6 +9,7 @@ const nodeColors = ["#1E90FE", "#1467C8", "#1053AD"];
 
 class Cluster {
   private appScene: AppScene;
+  private cluster: Group;
   private satellites: Satellite[];
   private satelliteEdges: Edge[];
   //private satelliteAnchors!: SatelliteAnchor[];
@@ -19,8 +20,12 @@ class Cluster {
 
   constructor(appScene: AppScene) {
     this.appScene = appScene;
+    this.cluster = new Group();
     this.satellites = [];
     this.satelliteEdges = [];
+
+    appScene.add(this.cluster);
+    appScene.addObjectAnimation(this);
     //   this.satelliteAnchors = [];
   }
 
@@ -33,13 +38,14 @@ class Cluster {
       const sats = this.findByLatLng(node.host.latitude, node.host.longitude);
       if (sats.length == 0) {
         const sat = new Satellite(
-          this.appScene,
+          this.cluster,
           this.size,
           node.host.latitude,
           node.host.longitude,
           color
         );
         this.satellites.push(sat);
+        this.appScene.applyBloomEffect(sat.get());
         this.anchorOnEarth(sat);
         this.drawEdges(sat, color);
 
@@ -105,6 +111,8 @@ class Cluster {
   }
 
   public tick(deltaTime: number) {
+    const radiansPerSecond = MathUtils.degToRad(4);
+    this.cluster.rotation.y += (radiansPerSecond * deltaTime) / 1000;
     /*
     this.satelliteAnchors.forEach((anchor: SatelliteAnchor) => {
       anchor.tick(deltaTime);

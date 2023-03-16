@@ -19,6 +19,7 @@ import Stats from "three/examples/jsm/libs/stats.module.js";
 import { createRafDriver, IRafDriver } from "@theatre/core";
 import { NaturalGlobe } from "../globe/NaturalGlobe";
 import { DigitalGlobe } from "../globe/DigitalGlobe";
+import { Cluster } from "../cluster/l0/Cluster";
 
 class AppScene {
   private theatreDriver = createRafDriver({ name: "theatre.js" });
@@ -86,7 +87,7 @@ class AppScene {
   public add(object: Object3D): void {
     this.scene.add(object);
   }
-  public addObjectAnimation(object: NaturalGlobe | DigitalGlobe) {
+  public addObjectAnimation(object: NaturalGlobe | DigitalGlobe | Cluster) {
     this.objectAnimation.push(object);
   }
 

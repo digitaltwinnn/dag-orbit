@@ -1,5 +1,11 @@
-import { BoxGeometry, Color, MathUtils, Mesh, MeshBasicMaterial } from "three";
-import { AppScene } from "../../scene/AppScene";
+import {
+  BoxGeometry,
+  Color,
+  Group,
+  MathUtils,
+  Mesh,
+  MeshBasicMaterial,
+} from "three";
 import { Node } from "./Node";
 
 class Satellite {
@@ -12,7 +18,7 @@ class Satellite {
   public lng!: number;
 
   constructor(
-    appScene: AppScene,
+    cluster: Group,
     size: number,
     lat: number,
     lng: number,
@@ -25,23 +31,17 @@ class Satellite {
     this.lat = lat;
     this.lng = lng;
 
-    const geom = new BoxGeometry(size, size, size);
-    const mat = new MeshBasicMaterial({
-      color: color,
-      wireframe: true,
-    });
-    this.mesh = new Mesh(geom, mat);
+    const outsideFrame = new BoxGeometry(size, size, size);
+    const mat = new MeshBasicMaterial({ color: color, wireframe: true });
+    this.mesh = new Mesh(outsideFrame, mat);
     this.mesh.name = "Satellite" + Math.random();
     this.mesh.lookAt(0, 0, 0);
 
     const size2 = 0.3 * size;
-    const geom2 = new BoxGeometry(size2, size2, size2);
-    const mat2 = new MeshBasicMaterial({
-      color: color,
-    });
-    this.mesh.add(new Mesh(geom2, mat2));
-    appScene.applyBloomEffect(this.mesh);
-    appScene.add(this.mesh);
+    const insideBox = new BoxGeometry(size2, size2, size2);
+    const mat2 = new MeshBasicMaterial({ color: color });
+    this.mesh.add(new Mesh(insideBox, mat2));
+    cluster.add(this.mesh);
   }
 
   /*
