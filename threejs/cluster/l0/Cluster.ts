@@ -75,13 +75,14 @@ class Cluster {
       if (sat.get().name != satellite.get().name) {
         // create the edge
         const edge = new Edge(
-          this.appScene,
+          this.cluster,
           { lat: satellite.lat, lng: satellite.lng },
           { lat: sat.lat, lng: sat.lng },
           this.radius + this.alt,
           color
         );
         this.satelliteEdges.push(edge);
+        this.appScene.applyBloomEffect(edge.get());
       }
     });
   }

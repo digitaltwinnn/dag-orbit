@@ -1,20 +1,20 @@
 import {
   Color,
   Curve,
+  Group,
   Mesh,
   MeshBasicMaterial,
   QuadraticBezierCurve3,
   TubeGeometry,
   Vector3,
 } from "three";
-import { AppScene } from "../../scene/AppScene";
 import { GlobeUtils } from "~~/threejs/utils/GlobeUtils";
 
 class Edge {
   private mesh!: Mesh;
 
   constructor(
-    appScene: AppScene,
+    cluster: Group,
     vertex1: { lat: number; lng: number },
     vertex2: { lat: number; lng: number },
     radius: number,
@@ -24,8 +24,8 @@ class Edge {
 
     // create the line
     this.mesh = this.createLine(arc, color, 0.025, 0.15);
-    appScene.get().add(this.mesh);
-    appScene.applyBloomEffect(this.mesh);
+    this.mesh.name = "L0 Edge";
+    cluster.add(this.mesh);
 
     // animate line across the static line
     const animatedLine = this.createLine(arc, color, 0.05, 0.5);
@@ -33,7 +33,7 @@ class Edge {
     animatedLine.visible = false;
 
     // TODO: reference here?
-    appScene.get().add(animatedLine);
+    cluster.add(animatedLine);
     // this.animateLine(animatedLine);
   }
 
@@ -66,6 +66,10 @@ class Edge {
   */
 
   public tick(delta: number) {}
+
+  public get(): Mesh {
+    return this.mesh;
+  }
 
   private createLine(
     path: QuadraticBezierCurve3 | Curve<Vector3>,
