@@ -223,7 +223,7 @@ class DigitalGlobe {
 
   public tick(deltaTime: number) {
     const radiansPerSecond = MathUtils.degToRad(4);
-    this.mesh.rotation.y += (radiansPerSecond * deltaTime) / 1000;
+    this.innerGlobe.rotation.y += (radiansPerSecond * deltaTime) / 1000;
   }
 }
 
