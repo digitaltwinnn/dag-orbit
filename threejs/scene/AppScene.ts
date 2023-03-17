@@ -15,16 +15,27 @@ import {
   RenderPass,
   SelectiveBloomEffect,
 } from "postprocessing";
+import Stats from "three/examples/jsm/libs/stats.module.js";
+import { createRafDriver, IRafDriver } from "@theatre/core";
+import { NaturalGlobe } from "../globe/NaturalGlobe";
+import { DigitalGlobe } from "../globe/DigitalGlobe";
+import { Cluster } from "../cluster/l0/Cluster";
 
 class AppScene {
+  private theatreDriver = createRafDriver({ name: "theatre.js" });
+
   private scene!: Scene;
+  private camera!: AppCamera;
   private light!: AmbientLight;
-  private composer!: any;
+  private composer!: EffectComposer;
   private bloomEffect!: SelectiveBloomEffect;
+  private stats!: Stats;
+  private objectAnimation: any = [];
 
   constructor(renderer: AppRenderer, camera: AppCamera) {
     this.scene = new Scene();
     this.scene.background = new Color(0x00005a);
+    this.camera = camera;
 
     DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
       console.debug(
@@ -55,6 +66,14 @@ class AppScene {
     this.composer = new EffectComposer(renderer.get());
     this.composer.addPass(renderPass);
     this.composer.addPass(bloomPass);
+
+    this.stats = Stats();
+    const container = document.getElementById("stats");
+    if (container) {
+      this.stats.dom.removeAttribute("style");
+      container.appendChild(this.stats.dom);
+      this.stats.showPanel(0);
+    }
   }
 
   public get(): Scene {
@@ -68,13 +87,27 @@ class AppScene {
   public add(object: Object3D): void {
     this.scene.add(object);
   }
-
-  public getComposer(): any {
-    return this.composer;
+  public addObjectAnimation(object: NaturalGlobe | DigitalGlobe | Cluster) {
+    this.objectAnimation.push(object);
   }
 
   public applyBloomEffect(object: Object3D) {
     this.bloomEffect.selection.add(object);
+  }
+
+  public getTheatreDriver(): IRafDriver {
+    return this.theatreDriver;
+  }
+
+  public tick(time: number, deltaTime: number, frame: number) {
+    this.stats.begin();
+    this.composer.render();
+    this.theatreDriver.tick(deltaTime);
+    this.camera.tick(deltaTime);
+    this.objectAnimation.forEach((o: { tick: (deltaTime: number) => void }) => {
+      o.tick(deltaTime);
+    });
+    this.stats.end();
   }
 }
 

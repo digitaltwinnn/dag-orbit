@@ -22,13 +22,13 @@ class NaturalGlobe {
     const loader = new TextureLoader();
     const $img = useImage();
 
-    const mapImgUrl = $img("/earthmap.jpg", {width: 1536});
+    const mapImgUrl = $img("/earthmap.jpg", { width: 1536 });
     const map = loader.load(mapImgUrl);
 
     const specularImgUrl = $img("/earthspec1k.jpg", { width: 640 });
     const specular = loader.load(specularImgUrl);
 
-    const bumpImgUrl = $img("/earthbump10k.jpg", {width: 1536});
+    const bumpImgUrl = $img("/earthbump10k.jpg", { width: 1536 });
     const bump = loader.load(bumpImgUrl);
 
     const materialNormalMap = new MeshPhongMaterial({
@@ -48,19 +48,12 @@ class NaturalGlobe {
     new Atmosphere(this.mesh, sun, vAtmosphere, fAtmosphere);
     // add globe to scene
     appScene.add(this.mesh);
+    appScene.addObjectAnimation(this);
   }
 
-  public tick(delta: number, elapsed: number) {
+  public tick(deltaTime: number) {
     const radiansPerSecond = MathUtils.degToRad(4);
-    this.mesh.rotation.y += radiansPerSecond * delta;
-  }
-
-  public show(): void {
-    this.mesh.visible = true;
-  }
-
-  public hide(): void {
-    this.mesh.visible = false;
+    this.mesh.rotation.y += (radiansPerSecond * deltaTime) / 1000;
   }
 
   public get(): Mesh {

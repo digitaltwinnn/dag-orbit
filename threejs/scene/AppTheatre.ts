@@ -1,6 +1,6 @@
-import { getProject, ISheet, types } from "@theatre/core";
+import { getProject, IRafDriver, ISheet, types } from "@theatre/core";
 import studio from "@theatre/studio";
-import { Camera, Color, Light, Material, Mesh, Scene, Vector3 } from "three";
+import { Camera, Color, Light, Mesh, Scene, Vector3 } from "three";
 import { Cluster } from "../cluster/l0/Cluster";
 import { DigitalGlobe } from "../globe/DigitalGlobe";
 import { NaturalGlobe } from "../globe/NaturalGlobe";
@@ -11,6 +11,7 @@ import { AppScene } from "./AppScene";
 class AppTheatre {
   cameraSubject: Vector3 = new Vector3(0, 0, 0);
   sceneColor: Color = new Color();
+  rafDriver!: IRafDriver;
 
   private positionRange: [min: number, max: number] = [-500, 500];
   private rotationRange: [min: number, max: number] = [-2, 2];
@@ -26,6 +27,8 @@ class AppTheatre {
     digitalGlobe: DigitalGlobe,
     cluster: Cluster
   ) {
+    this.rafDriver = scene.getTheatreDriver();
+
     const color = scene.get().background;
     if (color instanceof Color) {
       this.sceneColor = color;
@@ -59,12 +62,12 @@ class AppTheatre {
     // camera and lights
     this.setCameraControls(sheet, camera.get());
     this.setSceneControls(sheet, scene.get());
-    this.setLightControls("/scene", sheet, scene.getLight());
-    this.setLightControls("/sun", sheet, sunLight.get());
+    this.setLightControls("scene", sheet, scene.getLight());
+    this.setLightControls("sun", sheet, sunLight.get());
 
     // objects in the scene
-    this.setObjectControls("/naturalGlobe", sheet, naturalGlobe.get());
-    this.setObjectControls("/digitalGlobe", sheet, digitalGlobe.get());
+    this.setObjectControls("naturalGlobe", sheet, naturalGlobe.get());
+    this.setObjectControls("digitalGlobe", sheet, digitalGlobe.get());
     //  this.setObjectControls("/cluster", sheet, cluster.get());
   }
 
@@ -78,7 +81,7 @@ class AppTheatre {
     sheet: ISheet,
     mesh: Mesh
   ): any {
-    const control = sheet.object("/" + objectName + "/movement", {
+    const control = sheet.object(objectName + " / movement", {
       rotation: types.compound({
         x: types.number(mesh.rotation.x, { range: this.rotationRange }),
         y: types.number(mesh.rotation.y, { range: this.rotationRange }),
@@ -100,14 +103,14 @@ class AppTheatre {
       mesh.rotation.set(v.rotation.x, v.rotation.y, v.rotation.z);
       mesh.position.set(v.position.x, v.position.y, v.position.z);
       mesh.scale.set(v.scale.x, v.scale.y, v.scale.z);
-    });
+    }, this.rafDriver);
 
     return control;
   }
 
   // TODO: fix mesh type
   private setColorControls(objectName: string, sheet: ISheet, mesh: any) {
-    const control = sheet.object("/" + objectName + "/color", {
+    const control = sheet.object(objectName + " / color", {
       color: types.rgba({
         r: mesh.material.color.r,
         g: mesh.material.color.g,
@@ -122,12 +125,13 @@ class AppTheatre {
     control.onValuesChange((v) => {
       mesh.material.color.setRGB(v.color.r, v.color.g, v.color.b);
       mesh.material.opacity = v.opacity;
-    });
+    }, this.rafDriver);
+
     return control;
   }
 
   private setLightControls(objectName: string, sheet: ISheet, light: Light) {
-    const control = sheet.object("/light" + objectName, {
+    const control = sheet.object("light / " + objectName, {
       position: types.compound({
         x: types.number(light.position.x, { range: this.positionRange }),
         y: types.number(light.position.y, { range: this.positionRange }),
@@ -146,13 +150,13 @@ class AppTheatre {
       light.position.set(v.position.x, v.position.y, v.position.z);
       light.color.setRGB(v.color.r, v.color.g, v.color.b);
       light.intensity = v.intensity;
-    });
+    }, this.rafDriver);
 
     return control;
   }
 
   private setCameraControls(sheet: ISheet, cam: Camera) {
-    const control = sheet.object("/camera/movement", {
+    const control = sheet.object("camera / movement", {
       position: types.compound({
         x: types.number(cam.position.x, { range: this.positionRange }),
         y: types.number(cam.position.y, { range: this.positionRange }),
@@ -169,13 +173,13 @@ class AppTheatre {
       cam.position.set(v.position.x, v.position.y, v.position.z);
       this.cameraSubject.set(v.lookat.x, v.lookat.y, v.lookat.z);
       cam.lookAt(this.cameraSubject);
-    });
+    }, this.rafDriver);
 
     return control;
   }
 
   private setSceneControls(sheet: ISheet, scene: Scene) {
-    const control = sheet.object("/scene/color", {
+    const control = sheet.object("scene / color", {
       color: types.rgba({
         r: this.sceneColor.r,
         g: this.sceneColor.g,
@@ -187,7 +191,7 @@ class AppTheatre {
     control.onValuesChange((v) => {
       this.sceneColor.setRGB(v.color.r, v.color.g, v.color.b);
       scene.background = this.sceneColor;
-    });
+    }, this.rafDriver);
 
     return control;
   }

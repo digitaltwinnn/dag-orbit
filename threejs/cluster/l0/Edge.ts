@@ -1,70 +1,79 @@
 import {
   Color,
   Curve,
+  Group,
   Mesh,
   MeshBasicMaterial,
   QuadraticBezierCurve3,
   TubeGeometry,
   Vector3,
 } from "three";
-import TWEEN from "@tweenjs/tween.js";
-import { AppScene } from "../../scene/AppScene";
+import { gsap } from "gsap";
 import { GlobeUtils } from "~~/threejs/utils/GlobeUtils";
 
 class Edge {
   private mesh!: Mesh;
+  private tubeSegments = 256;
+  private radiusSegments = 6;
 
   constructor(
-    appScene: AppScene,
+    cluster: Group,
     vertex1: { lat: number; lng: number },
     vertex2: { lat: number; lng: number },
     radius: number,
     color: Color
   ) {
     const arc = GlobeUtils.createSphereArc(vertex1, vertex2, radius);
-
-    // create the line
     this.mesh = this.createLine(arc, color, 0.025, 0.15);
-    appScene.get().add(this.mesh);
-    appScene.applyBloomEffect(this.mesh);
-    
-    // animate line across the static line
-    const animatedLine = this.createLine(arc, color, 0.05, 0.5);
-    
-    animatedLine.visible = false;
+    this.mesh.name = "L0 Edge";
+    cluster.add(this.mesh);
 
-    // TODO: reference here?
-    appScene.get().add(animatedLine);
+    // animate another line between start & end
+    const animatedLine = this.createLine(arc, color, 0.1, 0.5);
+    animatedLine.visible = false;
+    this.mesh.add(animatedLine);
     this.animateLine(animatedLine);
   }
 
-  private animateLine(line: Mesh): void {
-    const geom: TubeGeometry = line.geometry as TubeGeometry;
-    const vertices = 6;
+  private animateLine(l: Mesh): void {
+    const geom: TubeGeometry = l.geometry as TubeGeometry;
     const offset = 3;
-    const max = vertices * geom.attributes.position.count;
-    const size = 3 * vertices;
+    const max = 6 * this.tubeSegments * this.radiusSegments;
+    const size = 0.15 * max;
 
-    new TWEEN.Tween({ progress: 0 })
-      .to({ progress: 1 }, 15000)
-      .delay(Math.random() * 10000)
-      .repeat(Infinity)
-      .repeatDelay(Math.random() * 2000)
-      .yoyo(true)
-      .easing(TWEEN.Easing.Quartic.InOut)
-      .onStart(function () {
-        line.visible = true;
-      })
-      .onUpdate(function (values) {
-        const end = values.progress * max;
-        let start = end < size ? 0 : end - size;
-        start = size * Math.floor(start / offset) * offset;
-        geom.setDrawRange(start, end);
-      })
-      .start();
+    let line = { t: 0 };
+    let start, end, count;
+    gsap.to(line, {
+      duration: 3,
+      t: 1,
+      repeat: -1,
+      delay: Math.random() * 30,
+      repeatDelay: Math.random() * 30,
+      yoyo: true,
+      onStart: function () {
+        l.visible = true;
+      },
+      onUpdate: function () {
+        end = this.targets()[0].t * (max + size);
+        start = end < size ? 0 : end - size;
+        start = Math.floor(start / offset) * offset;
+
+        if (end < size) {
+          count = size - (size - end);
+        } else if (end > max) {
+          count = size - (end - max);
+        } else {
+          count = size;
+        }
+
+        geom.setDrawRange(start, count);
+      },
+    });
   }
 
-  public tick(delta: number) {}
+  public get(): Mesh {
+    return this.mesh;
+  }
 
   private createLine(
     path: QuadraticBezierCurve3 | Curve<Vector3>,
@@ -72,7 +81,12 @@ class Edge {
     width: number,
     opacity: number
   ): Mesh {
-    const geometry = new TubeGeometry(path, 256, width, 6);
+    const geometry = new TubeGeometry(
+      path,
+      this.tubeSegments,
+      width,
+      this.radiusSegments
+    );
     const material = new MeshBasicMaterial({
       color: color,
       transparent: true,
