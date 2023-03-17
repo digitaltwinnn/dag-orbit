@@ -101,6 +101,10 @@ class Cluster {
   }
   */
 
+  public get(): Group {
+    return this.cluster;
+  }
+
   public findByLatLng(lat: number, lng: number): Satellite[] {
     const delta = 0.5;
     const sats = this.satellites.filter((s: Satellite) => {
