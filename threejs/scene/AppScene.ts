@@ -28,7 +28,7 @@ class AppScene {
   private camera!: AppCamera;
   private light!: AmbientLight;
   private composer!: EffectComposer;
-  private bloomEffect!: SelectiveBloomEffect;
+  private bloom!: SelectiveBloomEffect;
   private stats!: Stats;
   private objectAnimation: any = [];
 
@@ -53,15 +53,15 @@ class AppScene {
     this.light.intensity = 0.15;
     this.scene.add(this.light);
 
-    this.bloomEffect = new SelectiveBloomEffect(this.scene, camera.get(), {
+    this.bloom = new SelectiveBloomEffect(this.scene, camera.get(), {
       blendFunction: BlendFunction.ADD,
       mipmapBlur: true,
       luminanceThreshold: 0.025,
       luminanceSmoothing: 0.025,
-      intensity: 1.1,
+      intensity: 2,
     });
     const renderPass = new RenderPass(this.scene, camera.get());
-    const bloomPass = new EffectPass(camera.get(), this.bloomEffect);
+    const bloomPass = new EffectPass(camera.get(), this.bloom);
 
     this.composer = new EffectComposer(renderer.get());
     this.composer.addPass(renderPass);
@@ -84,6 +84,14 @@ class AppScene {
     return this.light;
   }
 
+  public getTheatreDriver(): IRafDriver {
+    return this.theatreDriver;
+  }
+
+  public getBloomEffect(): SelectiveBloomEffect {
+    return this.bloom;
+  }
+
   public add(object: Object3D): void {
     this.scene.add(object);
   }
@@ -92,11 +100,7 @@ class AppScene {
   }
 
   public applyBloomEffect(object: Object3D) {
-    this.bloomEffect.selection.add(object);
-  }
-
-  public getTheatreDriver(): IRafDriver {
-    return this.theatreDriver;
+    this.bloom.selection.add(object);
   }
 
   public tick(time: number, deltaTime: number, frame: number) {

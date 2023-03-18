@@ -1,6 +1,6 @@
 import { getProject, IRafDriver, ISheet, types } from "@theatre/core";
 import studio from "@theatre/studio";
-import { Camera, Color, Light, Object3D, Scene, Vector3 } from "three";
+import { Color, Light, Object3D, Vector3 } from "three";
 import { Cluster } from "../cluster/l0/Cluster";
 import { DigitalGlobe } from "../globe/DigitalGlobe";
 import { NaturalGlobe } from "../globe/NaturalGlobe";
@@ -17,7 +17,7 @@ class AppTheatre {
   private rotationRange: [min: number, max: number] = [-2, 2];
   private intensityRange: [min: number, max: number] = [0, 5];
   private scaleRange: [min: number, max: number] = [0, 5];
-  private opacityRange: [min: number, max: number] = [0, 1];
+  private normalizedRange: [min: number, max: number] = [0, 1];
 
   constructor(
     camera: AppCamera,
@@ -60,8 +60,8 @@ class AppTheatre {
     cluster: Cluster
   ) {
     // scene and camera
-    this.setCameraControls(sheet, camera.get());
-    this.setSceneControls(sheet, scene.get());
+    this.setCameraControls(sheet, camera);
+    this.setSceneControls(sheet, scene);
 
     // lights
     this.setLightControls("scene", sheet, scene.getLight());
@@ -119,7 +119,7 @@ class AppTheatre {
         a: 1,
       }),
       opacity: types.number(mesh.material.opacity, {
-        range: this.opacityRange,
+        range: this.normalizedRange,
       }),
     });
 
@@ -156,7 +156,8 @@ class AppTheatre {
     return control;
   }
 
-  private setCameraControls(sheet: ISheet, cam: Camera) {
+  private setCameraControls(sheet: ISheet, appCam: AppCamera) {
+    const cam = appCam.get();
     const control = sheet.object("camera / movement", {
       position: types.compound({
         x: types.number(cam.position.x, { range: this.positionRange }),
@@ -171,7 +172,9 @@ class AppTheatre {
     });
 
     control.onValuesChange((v) => {
+      // position
       cam.position.set(v.position.x, v.position.y, v.position.z);
+      // lookat
       this.cameraSubject.set(v.lookat.x, v.lookat.y, v.lookat.z);
       cam.lookAt(this.cameraSubject);
     }, this.rafDriver);
@@ -179,19 +182,51 @@ class AppTheatre {
     return control;
   }
 
-  private setSceneControls(sheet: ISheet, scene: Scene) {
+  private setSceneControls(sheet: ISheet, appScene: AppScene) {
+    const scene = appScene.get();
+    const bloom: any = appScene.getBloomEffect();
+
     const control = sheet.object("scene / color", {
-      color: types.rgba({
+      background: types.rgba({
         r: this.sceneColor.r,
         g: this.sceneColor.g,
         b: this.sceneColor.b,
         a: 1,
       }),
+      bloom: types.compound({
+        intensity: types.number(bloom.intensity, {
+          range: this.intensityRange,
+        }),
+        radius: types.number(bloom.mipmapBlurPass.radius, {
+          range: this.normalizedRange,
+        }),
+        luminance: types.compound({
+          threshold: types.number(bloom.luminanceMaterial.threshold, {
+            range: this.normalizedRange,
+          }),
+          smoothing: types.number(bloom.luminanceMaterial.smoothing, {
+            range: this.normalizedRange,
+          }),
+        }),
+        blend: types.compound({
+          opacity: types.number(bloom.blendMode.opacity.value, {
+            range: this.normalizedRange,
+          }),
+        }),
+      }),
     });
 
     control.onValuesChange((v) => {
-      this.sceneColor.setRGB(v.color.r, v.color.g, v.color.b);
+      // background
+      this.sceneColor.setRGB(v.background.r, v.background.g, v.background.b);
       scene.background = this.sceneColor;
+      // bloom
+      bloom.intensity = v.bloom.intensity;
+      bloom.mipmapBlurPass.radius = v.bloom.radius;
+      bloom.luminanceMaterial.threshold = v.bloom.luminance.threshold;
+      bloom.luminanceMaterial.smoothing = v.bloom.luminance.smoothing;
+      //  bloom.blendMode.setBlendFunction(v.bloom.blend.mode);
+      bloom.blendMode.opacity.value = v.bloom.blend.opacity;
     }, this.rafDriver);
 
     return control;
