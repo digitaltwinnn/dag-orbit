@@ -2,15 +2,13 @@ import {
   CircleGeometry,
   Color,
   DoubleSide,
+  Group,
   ImageLoader,
   InstancedBufferGeometry,
   InstancedMesh,
   MathUtils,
-  Mesh,
-  MeshBasicMaterial,
   MeshPhongMaterial,
   Object3D,
-  SphereGeometry,
   Vector2,
   Vector3,
 } from "three";
@@ -22,8 +20,8 @@ const MAP = 1;
 const shieldColors = ["#1E90FE", "#1467C8", "#1053AD"];
 
 class DigitalGlobe {
-  private mesh!: InstancedMesh;
-  private innerGlobe!: Mesh;
+  private group!: Group;
+  private dots!: InstancedMesh;
   private dotDensity = 0.5;
   private rows = 150;
   private radius = 130;
@@ -34,10 +32,7 @@ class DigitalGlobe {
   private mode = GLOBE;
 
   constructor(appScene: AppScene) {
-    // inner globe
-    const globeGeometry = new SphereGeometry(this.radius, 32, 32);
-    const globeMaterial = new MeshBasicMaterial({ visible: false });
-    this.innerGlobe = new Mesh(globeGeometry, globeMaterial);
+    this.group = new Group();
 
     // digital globe
     const $img = useImage();
@@ -55,17 +50,16 @@ class DigitalGlobe {
         this.globeDots = this.createGlobeDots(image, context);
 
         if (this.mode == MAP) {
-          this.mesh = this.createMesh(this.mapDots);
+          this.dots = this.createMesh(this.mapDots);
         } else {
-          this.mesh = this.createMesh(this.globeDots);
+          this.dots = this.createMesh(this.globeDots);
         }
-        this.mesh.name = "DigitalGlobe";
-        this.innerGlobe.add(this.mesh);
+        this.group.add(this.dots);
         this.rotateColors();
       }
     });
 
-    appScene.add(this.innerGlobe);
+    appScene.add(this.group);
     appScene.addObjectAnimation(this);
   }
 
@@ -114,12 +108,12 @@ class DigitalGlobe {
             color.set(
               shieldColors[MathUtils.randInt(0, shieldColors.length - 1)]
             );
-            this.mesh.setColorAt(i, color);
+            this.dots.setColorAt(i, color);
           }
         }
 
-        if (this.mesh.instanceColor) {
-          this.mesh.instanceColor.needsUpdate = true;
+        if (this.dots.instanceColor) {
+          this.dots.instanceColor.needsUpdate = true;
         }
       }, 100);
     }
@@ -139,7 +133,7 @@ class DigitalGlobe {
       for (let x = 0; x < dotsForLat; x++) {
         const long = -180 + (x * 360) / dotsForLat;
 
-        const coordinate = this.latLonToXY(
+        const coordinate = this.latLongToXY(
           lat,
           long,
           image.width,
@@ -197,15 +191,15 @@ class DigitalGlobe {
           dummy.lookAt(0, 0, 0);
         }
         dummy.updateMatrix();
-        this.mesh.setMatrixAt(i, dummy.matrix);
+        this.dots.setMatrixAt(i, dummy.matrix);
       }
-      this.mesh.instanceMatrix.needsUpdate = true;
+      this.dots.instanceMatrix.needsUpdate = true;
     } else {
       console.warn("couldn't transform mesh");
     }
   }
 
-  private latLonToXY(
+  private latLongToXY(
     lat: number,
     long: number,
     mapWidth: number,
@@ -216,14 +210,13 @@ class DigitalGlobe {
     return new Vector2(Math.floor(x), Math.floor(y));
   }
 
-  public get(): Mesh {
-    // TODO replace with the digital instancedMesh
-    return this.innerGlobe;
+  public get(): Group {
+    return this.group;
   }
 
   public tick(deltaTime: number) {
     const radiansPerSecond = MathUtils.degToRad(4);
-    this.innerGlobe.rotation.y += (radiansPerSecond * deltaTime) / 1000;
+    this.group.rotation.y += (radiansPerSecond * deltaTime) / 1000;
   }
 }
 

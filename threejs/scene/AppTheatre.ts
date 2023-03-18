@@ -70,10 +70,7 @@ class AppTheatre {
     // objects in the scene
     this.setMovementControls("naturalGlobe", sheet, naturalGlobe.get());
     this.setColorControls("naturalGlobe", sheet, naturalGlobe.get());
-
     this.setMovementControls("digitalGlobe", sheet, digitalGlobe.get());
-    this.setColorControls("digitalGlobe", sheet, digitalGlobe.get());
-
     this.setMovementControls("cluster", sheet, cluster.get());
   }
 
