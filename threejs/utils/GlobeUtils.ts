@@ -1,4 +1,4 @@
-import { Curve, Vector3 } from "three";
+import { Curve, Vector2, Vector3 } from "three";
 
 class GlobeUtils {
   static toVector(lat: number, lng: number, radius: number): Vector3 {
@@ -21,6 +21,17 @@ class GlobeUtils {
     const lng = (Math.PI - lngRads) * (180 / Math.PI);
 
     return [lat, lng - 180];
+  }
+
+  static latLongToXY(
+    lat: number,
+    long: number,
+    width: number,
+    height: number
+  ): Vector2 {
+    const y = (-1 * lat + 90) * (height / 180);
+    const x = (long + 180) * (width / 360);
+    return new Vector2(Math.floor(x), Math.floor(y));
   }
 
   static createSphereArc(
