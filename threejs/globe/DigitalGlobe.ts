@@ -96,8 +96,8 @@ class DigitalGlobe {
 
       color.set(shieldColors[MathUtils.randInt(0, shieldColors.length - 1)]);
       this.mesh.setColorAt(i, color);
-      this.group.add(this.mesh);
     }
+    this.group.add(this.mesh);
   }
 
   private animateColors() {
