@@ -11,7 +11,6 @@ import { AppCamera } from "../../threejs/scene/AppCamera";
 import { AppScene } from "../../threejs/scene/AppScene";
 import { AppTheatre } from "../../threejs/scene/AppTheatre";
 
-import { DigitalGlobe } from "../../threejs/globe/DigitalGlobe";
 import { NaturalGlobe } from "../../threejs/globe/NaturalGlobe";
 import { Sun } from "../../threejs/globe/Sun";
 import { Cluster } from "~~/threejs/cluster/l0/Cluster";
@@ -23,7 +22,6 @@ import { gsap } from "gsap";
 
 export default {
   mounted() {
-
     const el = document.getElementById("scene-container");
     if (el != null) {
       // setup the threejs renderer, camera, scene and (sun)light
@@ -41,7 +39,7 @@ export default {
       //window.addEventListener("resize", this.onWindowResize, false);
 
       // add meshes to the scene
-      this.digitalGlobe = markRaw(new DigitalGlobe(this.appScene));
+      useDigitalGlobe().init(this.appScene);
       this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
       this.cluster = markRaw(new Cluster(this.appScene));
 
@@ -51,7 +49,6 @@ export default {
         this.appScene,
         this.sun,
         this.naturalGlobe,
-        this.digitalGlobe,
         this.cluster));
     }
   },
@@ -62,7 +59,6 @@ export default {
       appScene: AppScene,
       appTheatre: AppTheatre,
       naturalGlobe: NaturalGlobe,
-      digitalGlobe: DigitalGlobe,
       sun: Sun,
       cluster: Cluster,
     }

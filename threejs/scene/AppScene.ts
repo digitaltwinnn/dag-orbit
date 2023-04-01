@@ -18,7 +18,6 @@ import {
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { createRafDriver, IRafDriver } from "@theatre/core";
 import { NaturalGlobe } from "../globe/NaturalGlobe";
-import { DigitalGlobe } from "../globe/DigitalGlobe";
 import { Cluster } from "../cluster/l0/Cluster";
 
 class AppScene {
@@ -95,7 +94,7 @@ class AppScene {
   public add(object: Object3D): void {
     this.scene.add(object);
   }
-  public addObjectAnimation(object: NaturalGlobe | DigitalGlobe | Cluster) {
+  public addObjectAnimation(object: NaturalGlobe | Cluster) {
     this.objectAnimation.push(object);
   }
 
