@@ -6,8 +6,8 @@ import {
   TextureLoader,
 } from "three";
 import { AppScene } from "../scene/AppScene";
-import { Atmosphere } from "./Atmosphere";
 import { Sun } from "./Sun";
+import { useAtmosphere } from "~~/composables/useAtmosphere";
 
 class NaturalGlobe {
   private mesh!: Mesh;
@@ -45,7 +45,7 @@ class NaturalGlobe {
     this.mesh.name = "NaturalGlobe";
 
     // add atmosphere to globe
-    new Atmosphere(this.mesh, sun, vAtmosphere, fAtmosphere);
+    useAtmosphere().init(this.mesh, sun, vAtmosphere, fAtmosphere);
     // add globe to scene
     appScene.add(this.mesh);
     appScene.addObjectAnimation(this);
