@@ -11,7 +11,6 @@ import { AppCamera } from "../../threejs/scene/AppCamera";
 import { AppScene } from "../../threejs/scene/AppScene";
 import { AppTheatre } from "../../threejs/scene/AppTheatre";
 
-import { NaturalGlobe } from "../../threejs/globe/NaturalGlobe";
 import { Cluster } from "~~/threejs/cluster/l0/Cluster";
 
 import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
@@ -38,14 +37,13 @@ export default {
 
       // add meshes to the scene
       useDigitalGlobe().init(this.appScene);
-      this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, vAtmosphere, fAtmosphere));
+      useNaturalGlobe().init(this.appScene, vAtmosphere, fAtmosphere);
       this.cluster = markRaw(new Cluster(this.appScene));
 
       // setup the animation sequences
       this.appTheatre = markRaw(new AppTheatre(
         this.appCam,
         this.appScene,
-        this.naturalGlobe,
         this.cluster));
     }
   },
@@ -55,7 +53,6 @@ export default {
       appCam: AppCamera,
       appScene: AppScene,
       appTheatre: AppTheatre,
-      naturalGlobe: NaturalGlobe,
       cluster: Cluster,
     }
   }

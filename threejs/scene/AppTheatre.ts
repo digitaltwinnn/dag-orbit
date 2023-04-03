@@ -2,7 +2,6 @@ import { getProject, IRafDriver, ISheet, types } from "@theatre/core";
 import studio from "@theatre/studio";
 import { Color, Light, Object3D, Vector3 } from "three";
 import { Cluster } from "../cluster/l0/Cluster";
-import { NaturalGlobe } from "../globe/NaturalGlobe";
 import { AppCamera } from "./AppCamera";
 import { AppScene } from "./AppScene";
 
@@ -17,12 +16,7 @@ class AppTheatre {
   private scaleRange: [min: number, max: number] = [0, 5];
   private normalizedRange: [min: number, max: number] = [0, 1];
 
-  constructor(
-    camera: AppCamera,
-    scene: AppScene,
-    naturalGlobe: NaturalGlobe,
-    cluster: Cluster
-  ) {
+  constructor(camera: AppCamera, scene: AppScene, cluster: Cluster) {
     this.rafDriver = scene.getTheatreDriver();
 
     const color = scene.get().background;
@@ -35,14 +29,13 @@ class AppTheatre {
 
     const project = getProject("Orbit");
     const introSheet = project.sheet("Intro");
-    this.initIntro(introSheet, camera, scene, naturalGlobe, cluster);
+    this.initIntro(introSheet, camera, scene, cluster);
   }
 
   private initIntro(
     sheet: ISheet,
     camera: AppCamera,
     scene: AppScene,
-    naturalGlobe: NaturalGlobe,
     cluster: Cluster
   ) {
     // scene and camera
@@ -54,8 +47,8 @@ class AppTheatre {
     //  this.setLightControls("sun", sheet, sunLight.get());
 
     // objects in the scene
-    this.setMovementControls("naturalGlobe", sheet, naturalGlobe.get());
-    this.setColorControls("naturalGlobe", sheet, naturalGlobe.get());
+    //this.setMovementControls("naturalGlobe", sheet, naturalGlobe.get());
+    //this.setColorControls("naturalGlobe", sheet, naturalGlobe.get());
     //  this.setMovementControls("digitalGlobe", sheet, digitalGlobe.get());
     this.setMovementControls("cluster", sheet, cluster.get());
   }

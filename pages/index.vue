@@ -50,7 +50,7 @@ export default {
                 }
             });
 
-            gsap.to(this.$refs.threejs.naturalGlobe.get().position, {
+            gsap.to(useNaturalGlobe().position.value, {
                 x: -200, y: -200, z: -200,
                 scrollTrigger: {
                     trigger: ".panel-1",
