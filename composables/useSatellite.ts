@@ -9,20 +9,16 @@ import {
 import { GlobeUtils } from "~~/threejs/utils/GlobeUtils";
 
 export const useSatellite = (
-  cluster: Group,
+  parent: Group | Mesh,
   size: number,
   color: Color,
   lat: number,
   lng: number
 ) => {
-  const mesh: Mesh = new Mesh(undefined, undefined);
-  mesh.name = "Satellite" + Math.random();
-
   const material = new MeshBasicMaterial({ color: color, wireframe: true });
   const geometry = new BoxGeometry(size, size, size);
-
-  mesh.geometry = geometry;
-  mesh.material = material;
+  const mesh = new Mesh(geometry, material);
+  mesh.name = "Satellite" + Math.random();
   mesh.lookAt(0, 0, 0);
 
   const size2 = 0.3 * size;
@@ -30,10 +26,9 @@ export const useSatellite = (
   const insideMaterial = material.clone();
   insideMaterial.wireframe = false;
   mesh.add(new Mesh(insideGeometry, insideMaterial));
-  cluster.add(mesh);
+  parent.add(mesh);
 
   const state = reactive({
-    initialised: false,
     position: mesh.position,
     name: mesh.name,
     lat: lat,
