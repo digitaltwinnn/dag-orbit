@@ -6,26 +6,24 @@ import {
   Uniform,
   Vector3,
 } from "three";
-import { Sun } from "~~/threejs/globe/Sun";
 
 const settings = {
   innerRadius: 100,
   outerRadius: 103,
 };
 
-const lightPos = new Vector3();
 let uniforms: any;
 let mesh: Mesh;
 
-const init = (globe: Mesh, sun: Sun, vertex: any, fragment: any) => {
+const init = (globe: Mesh, vertex: any, fragment: any) => {
   const atmosphereGeometry = new SphereGeometry(settings.outerRadius, 64, 64);
-  sun.get().getWorldPosition(lightPos);
+  const $sun = useSun();
 
   uniforms = {
     earthCenter: new Uniform(globe.position),
     earthRadius: new Uniform(settings.innerRadius),
     atmosphereRadius: new Uniform(settings.outerRadius),
-    lightDirection: new Uniform(sun.get().position),
+    lightDirection: new Uniform($sun.position.value),
   };
   const atmosphereMaterial = new ShaderMaterial({
     uniforms: uniforms,
