@@ -1,6 +1,5 @@
 import { Color, Group, MathUtils } from "three";
 import { AppScene } from "../../scene/AppScene";
-import { Edge } from "./Edge";
 
 const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
 
@@ -11,21 +10,15 @@ type Satellite = {
 };
 
 class Cluster {
-  private appScene: AppScene;
   private cluster: Group;
-  private satellites: Satellite[];
-  private satelliteEdges: Edge[];
+  private satellites: Satellite[] = [];
 
   private radius = 100;
   private alt = 20;
   private size = 2;
 
   constructor(appScene: AppScene) {
-    this.appScene = appScene;
     this.cluster = new Group();
-    this.satellites = [];
-    this.satelliteEdges = [];
-
     appScene.add(this.cluster);
   }
 
@@ -62,15 +55,14 @@ class Cluster {
   private drawEdges(sat: Satellite, color: Color): void {
     this.satellites.forEach((satellite: Satellite) => {
       if (satellite.name != sat.name) {
-        const edge = new Edge(
+        const $edge = useEdge(
           this.cluster,
           { lat: sat.lat, lng: sat.lng },
           { lat: satellite.lat, lng: satellite.lng },
           this.radius + this.alt,
           color
         );
-        this.satelliteEdges.push(edge);
-        this.appScene.applyBloomEffect(edge.get());
+        //this.appScene.applyBloomEffect(edge.get());
       }
     });
   }
