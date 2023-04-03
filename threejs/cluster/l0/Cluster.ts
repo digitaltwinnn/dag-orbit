@@ -1,18 +1,20 @@
 import { Color, Group, MathUtils } from "three";
-import { Satellite } from "./Satellite";
-//import { SatelliteAnchor } from "./SatelliteAnchor";
 import { AppScene } from "../../scene/AppScene";
-import { GlobeUtils } from "../../utils/GlobeUtils";
 import { Edge } from "./Edge";
 
-const nodeColors = ["#1E90FE", "#1467C8", "#1053AD"];
+const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
+
+type Satellite = {
+  lat: number;
+  lng: number;
+  name: string;
+};
 
 class Cluster {
   private appScene: AppScene;
   private cluster: Group;
   private satellites: Satellite[];
   private satelliteEdges: Edge[];
-  //private satelliteAnchors!: SatelliteAnchor[];
 
   private radius = 100;
   private alt = 20;
@@ -25,59 +27,45 @@ class Cluster {
     this.satelliteEdges = [];
 
     appScene.add(this.cluster);
-    appScene.addObjectAnimation(this);
-    //   this.satelliteAnchors = [];
   }
 
   public refresh(nodes: any[]): void {
     nodes.forEach((node) => {
-      const color = new Color(
-        nodeColors[MathUtils.randInt(0, nodeColors.length - 1)]
-      );
-
       const sats = this.findByLatLng(node.host.latitude, node.host.longitude);
       if (sats.length == 0) {
-        const sat = new Satellite(
+        const color = new Color(
+          COLORS[MathUtils.randInt(0, COLORS.length - 1)]
+        );
+        const $sat = useSatellite(
           this.cluster,
           this.size,
+          color,
           node.host.latitude,
-          node.host.longitude,
-          color
+          node.host.longitude
         );
-        this.satellites.push(sat);
-        this.appScene.applyBloomEffect(sat.get());
-        this.anchorOnEarth(sat);
-        this.drawEdges(sat, color);
+        $sat.anchor(this.radius + this.alt);
+        // this.appScene.applyBloomEffect(sat.get());
 
-        // this.drawAnchor(sat, color);
-        // sat.addNode(this.scene, this.earth, node);
+        const satellite = {
+          lat: $sat.lat.value,
+          lng: $sat.lng.value,
+          name: $sat.name.value,
+        };
+        this.satellites.push(satellite);
+        this.drawEdges(satellite, color);
       } else {
         //  sats[0].addNode(this.scene, this.earth, node);
       }
     });
   }
 
-  private anchorOnEarth(sat: Satellite): void {
-    const target = GlobeUtils.toVector(
-      sat.lat,
-      sat.lng,
-      this.radius + this.alt
-    );
-
-    const mesh = sat.get();
-    mesh.position.set(target.x, target.y, target.z);
-    mesh.lookAt(0, 0, 0);
-    mesh.rotateX(MathUtils.degToRad(90));
-  }
-
-  private drawEdges(satellite: Satellite, color: Color): void {
-    this.satellites.forEach((sat: Satellite) => {
-      if (sat.get().name != satellite.get().name) {
-        // create the edge
+  private drawEdges(sat: Satellite, color: Color): void {
+    this.satellites.forEach((satellite: Satellite) => {
+      if (satellite.name != sat.name) {
         const edge = new Edge(
           this.cluster,
-          { lat: satellite.lat, lng: satellite.lng },
           { lat: sat.lat, lng: sat.lng },
+          { lat: satellite.lat, lng: satellite.lng },
           this.radius + this.alt,
           color
         );
@@ -86,20 +74,6 @@ class Cluster {
       }
     });
   }
-
-  /*
-  private drawAnchor(sat: Satellite, color: Color): void {
-    const anchor = new SatelliteAnchor(
-      this.scene,
-      this.earth,
-      sat.lat,
-      sat.lng,
-      sat.alt,
-      color
-    );
-    this.satelliteAnchors.push(anchor);
-  }
-  */
 
   public get(): Group {
     return this.cluster;
@@ -118,14 +92,6 @@ class Cluster {
   public tick(deltaTime: number) {
     const radiansPerSecond = MathUtils.degToRad(4);
     this.cluster.rotation.y += (radiansPerSecond * deltaTime) / 1000;
-    /*
-    this.satelliteAnchors.forEach((anchor: SatelliteAnchor) => {
-      anchor.tick(deltaTime);
-    });
-    */
-    this.satellites.forEach((satellite: Satellite) => {
-      satellite.tick(deltaTime);
-    });
   }
 
   private inRange(x: number, min: number, max: number): boolean {
