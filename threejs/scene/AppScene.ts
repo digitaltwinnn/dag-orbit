@@ -17,7 +17,6 @@ import {
 } from "postprocessing";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { createRafDriver, IRafDriver } from "@theatre/core";
-import { Cluster } from "../cluster/l0/Cluster";
 
 class AppScene {
   private theatreDriver = createRafDriver({ name: "theatre.js" });
@@ -93,7 +92,7 @@ class AppScene {
   public add(object: Object3D): void {
     this.scene.add(object);
   }
-  public addObjectAnimation(object: Cluster) {
+  public addObjectAnimation(object: any) {
     this.objectAnimation.push(object);
   }
 
