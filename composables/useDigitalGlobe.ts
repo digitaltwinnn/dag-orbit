@@ -14,7 +14,6 @@ import {
   MathUtils,
 } from "three";
 import { AppScene } from "~~/threejs/scene/AppScene";
-import { GlobeUtils } from "~~/threejs/utils/GlobeUtils";
 import { gsap } from "gsap";
 
 const GLOBE = 0;
@@ -69,6 +68,8 @@ const createGlobeGeometry = (
   context: CanvasRenderingContext2D
 ): BufferGeometry => {
   const dots = [];
+  const $util = useGlobeUtils();
+
   for (let lat = -90; lat <= 90; lat += 180 / settings.globe.rows) {
     const r = Math.cos((Math.abs(lat) * Math.PI) / 180) * settings.globe.radius;
     const circumference = r * Math.PI * 2;
@@ -76,7 +77,7 @@ const createGlobeGeometry = (
 
     for (let x = 0; x < dotsForLat; x++) {
       const long = -180 + (x * 360) / dotsForLat;
-      const coordinate = GlobeUtils.latLongToXY(
+      const coordinate = $util.latLongToXY(
         lat,
         long,
         image.width,
@@ -91,7 +92,8 @@ const createGlobeGeometry = (
 
       if (pixelData[0] <= 5) {
         dots.push(
-          GlobeUtils.toVector(lat, long, settings.globe.radius)
+          $util
+            .toVector(lat, long, settings.globe.radius)
             .normalize()
             .multiplyScalar(settings.globe.radius)
         );

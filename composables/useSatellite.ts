@@ -6,7 +6,6 @@ import {
   Mesh,
   MeshBasicMaterial,
 } from "three";
-import { GlobeUtils } from "~~/threejs/utils/GlobeUtils";
 
 export const useSatellite = (
   parent: Group | Mesh,
@@ -36,7 +35,7 @@ export const useSatellite = (
   });
 
   const anchor = (altitude: number) => {
-    const target = GlobeUtils.toVector(state.lat, state.lng, altitude);
+    const target = useGlobeUtils().toVector(state.lat, state.lng, altitude);
     state.position.set(target.x, target.y, target.z);
     mesh.lookAt(0, 0, 0);
     mesh.rotateX(MathUtils.degToRad(90));

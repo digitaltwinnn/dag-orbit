@@ -8,7 +8,6 @@ import {
   TubeGeometry,
   Vector3,
 } from "three";
-import { GlobeUtils } from "~~/threejs/utils/GlobeUtils";
 import { gsap } from "gsap";
 
 export const useEdge = (
@@ -63,7 +62,7 @@ export const useEdge = (
     path: QuadraticBezierCurve3 | Curve<Vector3>,
     color: Color,
     width: number,
-    opacity: number,
+    opacity: number
   ): Mesh => {
     const geometry = new TubeGeometry(
       path,
@@ -79,7 +78,7 @@ export const useEdge = (
     return new Mesh(geometry, material);
   };
 
-  const arc = GlobeUtils.createSphereArc(vertex1, vertex2, radius);
+  const arc = useGlobeUtils().createSphereArc(vertex1, vertex2, radius);
   const mesh = createLine(arc, color, 0.025, 0.15);
   mesh.name = "Edge" + Math.random();
 
