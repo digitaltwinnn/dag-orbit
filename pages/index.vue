@@ -37,7 +37,8 @@ export default {
                     markers: true
                 },
             })
-            gsap.to(this.$refs.threejs.appScene.get().background, {
+            /*
+            gsap.to(useScene().background.value, {
                 duration: 6, r: 0, g: 0, b: 0,
                 scrollTrigger: {
                     trigger: ".panel-1",
@@ -45,6 +46,7 @@ export default {
                     markers: true
                 }
             });
+            */
             gsap.to(useNaturalGlobe().position.value, {
                 x: -200, y: -200, z: -200,
                 scrollTrigger: {

@@ -1,5 +1,4 @@
-import { Color, Group, MathUtils } from "three";
-import { AppScene } from "~~/threejs/scene/AppScene";
+import { Color, Group, MathUtils, Object3D } from "three";
 
 const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
 
@@ -14,11 +13,20 @@ const settings = {
   satellite: {
     altitude: 20,
     size: 2,
+    proximity: 0.5,
   },
 };
 
 const cluster = new Group();
 const satellites: Satellite[] = [];
+
+const init = (parent: Object3D, url: string) => {
+  $fetch(url).then((nodes: any) => {
+    refresh(nodes);
+    parent.add(cluster);
+    state.initialised = true;
+  });
+};
 
 const refresh = (nodes: any[]) => {
   nodes.forEach((node) => {
@@ -49,10 +57,10 @@ const refresh = (nodes: any[]) => {
 };
 
 const findByLatLng = (lat: number, lng: number): Satellite[] => {
-  const delta = 0.5;
+  const proximity = settings.satellite.proximity;
   const sats = satellites.filter((s: Satellite) => {
-    const latInRange = inRange(lat, s.lat - delta, s.lat + delta);
-    const lngInRange = inRange(lng, s.lng - delta, s.lng + delta);
+    const latInRange = inRange(lat, s.lat - proximity, s.lat + proximity);
+    const lngInRange = inRange(lng, s.lng - proximity, s.lng + proximity);
     return latInRange && lngInRange;
   });
   return sats;
@@ -82,21 +90,14 @@ const tick = (deltaTime: number) => {
   cluster.rotation.y += (radiansPerSecond * deltaTime) / 1000;
 };
 
-const getNodes = (url: string) => {
-  const nodes = $fetch(url);
-  return nodes;
-};
+const state = reactive({
+  initialised: false,
+});
 
-const state = reactive({});
-
-export const useCluster = (appScene: AppScene, url: string) => {
-  getNodes(url).then((nodes: any) => {
-    refresh(nodes);
-    appScene.add(cluster);
-  });
-
+export const useCluster = () => {
   return {
     ...toRefs(state),
+    init,
     tick,
   };
 };

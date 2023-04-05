@@ -1,15 +1,14 @@
-import { Color, PointLight, TextureLoader } from "three";
+import { Color, Object3D, PointLight, TextureLoader } from "three";
 import {
   Lensflare,
   LensflareElement,
 } from "three/examples/jsm/objects/Lensflare";
-import { AppScene } from "~~/threejs/scene/AppScene";
 
 const light = new PointLight(0xffffff);
 light.name = "Sun";
 light.intensity = 1;
 
-const init = (appScene: AppScene) => {
+const init = (parent: Object3D) => {
   light.position.set(1000, 0, 1000);
   const loader = new TextureLoader();
   const $img = useImage();
@@ -31,7 +30,7 @@ const init = (appScene: AppScene) => {
   flare.addElement(new LensflareElement(hexagon, 600, 0.8, blue));
   flare.addElement(new LensflareElement(circle, 125, 0.9, purple));
   light.add(flare);
-  appScene.add(light);
+  parent.add(light);
   state.initialised = true;
 };
 

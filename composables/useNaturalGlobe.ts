@@ -2,10 +2,10 @@ import {
   MathUtils,
   Mesh,
   MeshPhongMaterial,
+  Object3D,
   SphereGeometry,
   TextureLoader,
 } from "three";
-import { AppScene } from "~~/threejs/scene/AppScene";
 
 const settings = {
   radius: 100,
@@ -14,7 +14,7 @@ const settings = {
 const mesh: Mesh = new Mesh(undefined, undefined);
 mesh.name = "NaturalGlobe";
 
-const init = (appScene: AppScene, vAtmosphere: any, fAtmosphere: any) => {
+const init = (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
   const loader = new TextureLoader();
   const $img = useImage();
 
@@ -36,7 +36,7 @@ const init = (appScene: AppScene, vAtmosphere: any, fAtmosphere: any) => {
   mesh.material = material;
 
   useAtmosphere().init(mesh, vAtmosphere, fAtmosphere);
-  appScene.add(mesh);
+  parent.add(mesh);
 };
 
 const tick = (deltaTime: number) => {

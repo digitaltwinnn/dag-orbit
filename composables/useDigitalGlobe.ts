@@ -13,7 +13,6 @@ import {
   Color,
   MathUtils,
 } from "three";
-import { AppScene } from "~~/threejs/scene/AppScene";
 import { gsap } from "gsap";
 
 const GLOBE = 0;
@@ -38,7 +37,7 @@ let mesh: InstancedMesh;
 let globeGeometry: BufferGeometry;
 let mapGeometry: BufferGeometry;
 
-const init = (scene: AppScene) => {
+const init = (parent: Object3D) => {
   const $img = useImage();
   const imgUrl = $img("/earthspec1k.jpg", { width: 1024 });
   const loader = new ImageLoader();
@@ -57,7 +56,7 @@ const init = (scene: AppScene) => {
       mesh = createMesh(globeGeometry);
       group = new Group();
       group.add(mesh);
-      scene.add(group);
+      parent.add(group);
       state.initialised = true;
     }
   });
@@ -206,8 +205,6 @@ const createMesh = (geom: BufferGeometry): InstancedMesh => {
 
     color.set(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
     mesh.setColorAt(i, color);
-
-    state.meshCount++;
   }
 
   return mesh;
@@ -302,7 +299,6 @@ const tick = (deltaTime: number) => {
 
 const state = reactive({
   initialised: false,
-  meshCount: 0,
 });
 
 export const useDigitalGlobe = () => {
