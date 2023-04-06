@@ -11,8 +11,8 @@ const settings = {
   radius: 100,
 };
 
-const mesh: Mesh = new Mesh(undefined, undefined);
-mesh.name = "NaturalGlobe";
+const globe: Mesh = new Mesh(undefined, undefined);
+globe.name = "NaturalGlobe";
 
 const init = (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
   const loader = new TextureLoader();
@@ -32,26 +32,26 @@ const init = (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
     bumpScale: 1,
   });
 
-  mesh.geometry = geometry;
-  mesh.material = material;
+  globe.geometry = geometry;
+  globe.material = material;
 
-  useAtmosphere().init(mesh, vAtmosphere, fAtmosphere);
-  parent.add(mesh);
+  useAtmosphere().init(globe, vAtmosphere, fAtmosphere);
+  parent.add(globe);
 };
 
 const tick = (deltaTime: number) => {
   const radiansPerSecond = MathUtils.degToRad(4);
-  mesh.rotation.y += (radiansPerSecond * deltaTime) / 1000;
+  globe.rotation.y += (radiansPerSecond * deltaTime) / 1000;
 };
 
 const state = reactive({
   initialised: false,
-  position: mesh.position,
 });
 
 export const useNaturalGlobe = () => {
   return {
     ...toRefs(state),
+    globe,
     init,
     tick,
   };

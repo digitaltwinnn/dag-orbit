@@ -32,7 +32,7 @@ const settings = {
   },
 };
 
-let group: Group;
+let globe: Group;
 let mesh: InstancedMesh;
 let globeGeometry: BufferGeometry;
 let mapGeometry: BufferGeometry;
@@ -54,9 +54,10 @@ const init = (parent: Object3D) => {
       mapGeometry = createMapGeometry(image, context);
 
       mesh = createMesh(globeGeometry);
-      group = new Group();
-      group.add(mesh);
-      parent.add(group);
+      globe = new Group();
+      globe.name = "DigitalGlobe";
+      globe.add(mesh);
+      parent.add(globe);
       state.initialised = true;
     }
   });
@@ -294,7 +295,7 @@ const concatBufferAttributes = (
 
 const tick = (deltaTime: number) => {
   const radiansPerSecond = MathUtils.degToRad(4);
-  group.rotation.y += (radiansPerSecond * deltaTime) / 1000;
+  globe.rotation.y += (radiansPerSecond * deltaTime) / 1000;
 };
 
 const state = reactive({
@@ -304,6 +305,7 @@ const state = reactive({
 export const useDigitalGlobe = () => {
   return {
     ...toRefs(state),
+    globe,
     init,
     tick,
     transform,

@@ -17,10 +17,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
 export const useScene = (el: HTMLElement) => {
-  const state = reactive({
-    initialised: false,
-  });
-
   const settings = {
     renderer: {
       powerPreference: "high-performance",
@@ -73,8 +69,10 @@ export const useScene = (el: HTMLElement) => {
 
   /* scene */
   const scene = new Scene();
+  scene.name = "Scene";
   scene.background = settings.scene.background;
   const light = new AmbientLight(0xffffff);
+  light.name = "Ambient";
   light.intensity = settings.scene.light.intensity;
   scene.add(light);
 
@@ -100,7 +98,6 @@ export const useScene = (el: HTMLElement) => {
     container.appendChild(stats.dom);
     stats.showPanel(0);
   }
-  state.initialised = true;
 
   const tick = (deltaTime: number) => {
     stats.begin();
@@ -113,8 +110,10 @@ export const useScene = (el: HTMLElement) => {
   };
 
   return {
-    ...toRefs(state),
+    camera,
     scene,
+    bloom,
+    light,
     tick,
   };
 };

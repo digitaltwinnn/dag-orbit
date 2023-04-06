@@ -36,12 +36,12 @@ const init = (parent: Object3D) => {
 
 const state = reactive({
   initialised: false,
-  position: light.position,
 });
 
 export const useSun = () => {
   return {
     ...toRefs(state),
+    light,
     init,
   };
 };

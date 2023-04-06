@@ -15,16 +15,31 @@ export default {
     const el = document.getElementById("scene-container");
     if (el != null) {
       const $main = useScene(el);
-      useSun().init($main.scene);
-      useDigitalGlobe().init($main.scene);
-      useNaturalGlobe().init($main.scene, vAtmosphere, fAtmosphere);
-      useCluster().init($main.scene, "/api/nodes");
+
+      const $sun = useSun();
+      const $digital = useDigitalGlobe();
+      const $natural = useNaturalGlobe();
+      const $cluster = useCluster();
+
+      $sun.init($main.scene);
+      $digital.init($main.scene);
+      $natural.init($main.scene, vAtmosphere, fAtmosphere);
+      $cluster.init($main.scene, "/api/nodes");
+
+      /*
+      const $theatre = useTheatre();
+      $theatre.init(
+        $main.camera, $main.scene, $main.bloom,
+        [$main.light, $sun.light],
+        [$natural.globe, $digital.globe, $cluster.cluster]
+      )
+      */
 
       // setup animations
       gsap.ticker.add((time, deltaTime, frame) => {
         $main.tick(time, deltaTime, frame);
+        // $theatre.rafDriver.tick(time, deltaTime, frame);
       });
-      //this.appTheatre = markRaw(new AppTheatre(this.appCam, this.appScene));
     }
   },
 }

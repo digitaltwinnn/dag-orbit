@@ -47,7 +47,7 @@ export default {
                 }
             });
             */
-            gsap.to(useNaturalGlobe().position.value, {
+            gsap.to(useNaturalGlobe().globe.position, {
                 x: -200, y: -200, z: -200,
                 scrollTrigger: {
                     trigger: ".panel-1",

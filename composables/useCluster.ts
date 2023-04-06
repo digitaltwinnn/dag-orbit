@@ -17,8 +17,9 @@ const settings = {
   },
 };
 
-const cluster = new Group();
 const satellites: Satellite[] = [];
+const cluster = new Group();
+cluster.name = "Cluster";
 
 const init = (parent: Object3D, url: string) => {
   $fetch(url).then((nodes: any) => {
