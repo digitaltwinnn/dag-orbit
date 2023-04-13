@@ -15,16 +15,10 @@ export default {
     const el = document.getElementById("scene-container");
     if (el != null) {
       const $main = useScene(el);
-
-      const $sun = useSun();
-      const $digital = useDigitalGlobe();
-      const $natural = useNaturalGlobe();
-      const $cluster = useCluster();
-
-      $sun.init($main.scene);
-      $digital.init($main.scene);
-      $natural.init($main.scene, vAtmosphere, fAtmosphere);
-      $cluster.init($main.scene, "/api/nodes");
+      useSun().init($main.scene);
+      useDigitalGlobe().init($main.scene);
+      useNaturalGlobe().init($main.scene, vAtmosphere, fAtmosphere);
+      useCluster().init($main.scene, $main.bloom, "/api/nodes");
 
       /*
       const $theatre = useTheatre();

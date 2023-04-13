@@ -1,3 +1,4 @@
+import { SelectiveBloomEffect } from "postprocessing";
 import {
   BoxGeometry,
   Color,
@@ -9,23 +10,25 @@ import {
 
 export const useSatellite = (
   parent: Group | Mesh,
+  bloomEffect: SelectiveBloomEffect,
   size: number,
   color: Color,
   lat: number,
   lng: number
 ) => {
-  const material = new MeshBasicMaterial({ color: color, wireframe: true });
-  const geometry = new BoxGeometry(size, size, size);
+  const innerSize = 0.3 * size;
+  const material = new MeshBasicMaterial({ color: color });
+  const geometry = new BoxGeometry(innerSize, innerSize, innerSize);
   const mesh = new Mesh(geometry, material);
   mesh.name = "Satellite" + Math.random();
   mesh.lookAt(0, 0, 0);
 
-  const size2 = 0.3 * size;
-  const insideGeometry = new BoxGeometry(size2, size2, size2);
-  const insideMaterial = material.clone();
-  insideMaterial.wireframe = false;
-  mesh.add(new Mesh(insideGeometry, insideMaterial));
+  const outerGeometry = new BoxGeometry(size, size, size);
+  const outerMaterial = material.clone();
+  outerMaterial.wireframe = true;
+  mesh.add(new Mesh(outerGeometry, outerMaterial));
   parent.add(mesh);
+  bloomEffect.selection.add(mesh);
 
   const state = reactive({
     position: mesh.position,

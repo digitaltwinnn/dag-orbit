@@ -1,3 +1,4 @@
+import { SelectiveBloomEffect } from "postprocessing";
 import { Color, Group, MathUtils, Object3D } from "three";
 
 const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
@@ -20,8 +21,10 @@ const settings = {
 const satellites: Satellite[] = [];
 const cluster = new Group();
 cluster.name = "Cluster";
+let bloomEffect: SelectiveBloomEffect;
 
-const init = (parent: Object3D, url: string) => {
+const init = (parent: Object3D, effect: SelectiveBloomEffect, url: string) => {
+  bloomEffect = effect;
   $fetch(url).then((nodes: any) => {
     refresh(nodes);
     parent.add(cluster);
@@ -36,13 +39,13 @@ const refresh = (nodes: any[]) => {
       const color = new Color(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
       const $sat = useSatellite(
         cluster,
+        bloomEffect,
         settings.satellite.size,
         color,
         node.host.latitude,
         node.host.longitude
       );
       $sat.anchor(settings.radius + settings.satellite.altitude);
-      // this.appScene.applyBloomEffect(sat.get());
 
       const satellite = {
         lat: $sat.lat.value,
@@ -76,12 +79,12 @@ const drawEdges = (sat: Satellite, color: Color) => {
     if (satellite.name != sat.name) {
       const $edge = useEdge(
         cluster,
+        bloomEffect,
         { lat: sat.lat, lng: sat.lng },
         { lat: satellite.lat, lng: satellite.lng },
         settings.radius + settings.satellite.altitude,
         color
       );
-      //this.appScene.applyBloomEffect(edge.get());
     }
   });
 };

@@ -9,9 +9,11 @@ import {
   Vector3,
 } from "three";
 import { gsap } from "gsap";
+import { SelectiveBloomEffect } from "postprocessing";
 
 export const useEdge = (
   parent: Group | Mesh,
+  bloomEffect: SelectiveBloomEffect,
   vertex1: { lat: number; lng: number },
   vertex2: { lat: number; lng: number },
   radius: number,
@@ -88,6 +90,7 @@ export const useEdge = (
 
   mesh.add(animatedLine);
   parent.add(mesh);
+  bloomEffect.selection.add(mesh);
 
   const state = reactive({});
 
