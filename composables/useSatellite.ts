@@ -2,14 +2,14 @@ import { SelectiveBloomEffect } from "postprocessing";
 import {
   BoxGeometry,
   Color,
-  Group,
   MathUtils,
   Mesh,
   MeshBasicMaterial,
+  Object3D,
 } from "three";
 
 export const useSatellite = (
-  parent: Group | Mesh,
+  parent: Object3D,
   bloomEffect: SelectiveBloomEffect,
   size: number,
   color: Color,
@@ -44,16 +44,8 @@ export const useSatellite = (
     mesh.rotateX(MathUtils.degToRad(90));
   };
 
-  const tick = (deltaTime: number) => {
-    const degreesPerSecond = (MathUtils.degToRad(45) * deltaTime) / 1000;
-    mesh.rotateX(degreesPerSecond);
-    mesh.rotateY(degreesPerSecond);
-    mesh.rotateZ(degreesPerSecond);
-  };
-
   return {
     ...toRefs(state),
-    tick,
     anchor,
   };
 };

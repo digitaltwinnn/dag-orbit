@@ -1,3 +1,4 @@
+import { gsap } from "gsap";
 import {
   MathUtils,
   Mesh,
@@ -37,11 +38,16 @@ const init = (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
 
   useAtmosphere().init(globe, vAtmosphere, fAtmosphere);
   parent.add(globe);
+  animate();
 };
 
-const tick = (deltaTime: number) => {
-  const radiansPerSecond = MathUtils.degToRad(4);
-  globe.rotation.y += (radiansPerSecond * deltaTime) / 1000;
+const animate = () => {
+  gsap.to(globe.rotation, {
+    y: MathUtils.degToRad(360),
+    duration: 60,
+    repeat: -1,
+    ease: "linear",
+  });
 };
 
 const state = reactive({
@@ -53,6 +59,5 @@ export const useNaturalGlobe = () => {
     ...toRefs(state),
     globe,
     init,
-    tick,
   };
 };

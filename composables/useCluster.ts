@@ -89,11 +89,6 @@ const drawEdges = (sat: Satellite, color: Color) => {
   });
 };
 
-const tick = (deltaTime: number) => {
-  const radiansPerSecond = MathUtils.degToRad(4);
-  cluster.rotation.y += (radiansPerSecond * deltaTime) / 1000;
-};
-
 const state = reactive({
   initialised: false,
 });
@@ -102,6 +97,5 @@ export const useCluster = () => {
   return {
     ...toRefs(state),
     init,
-    tick,
   };
 };

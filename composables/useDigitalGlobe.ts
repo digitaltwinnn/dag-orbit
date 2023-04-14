@@ -293,11 +293,6 @@ const concatBufferAttributes = (
   }
 */
 
-const tick = (deltaTime: number) => {
-  const radiansPerSecond = MathUtils.degToRad(4);
-  globe.rotation.y += (radiansPerSecond * deltaTime) / 1000;
-};
-
 const state = reactive({
   initialised: false,
 });
@@ -307,7 +302,6 @@ export const useDigitalGlobe = () => {
     ...toRefs(state),
     globe,
     init,
-    tick,
     transform,
   };
 };
