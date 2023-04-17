@@ -37,7 +37,7 @@ let mesh: InstancedMesh;
 let globeGeometry: BufferGeometry;
 let mapGeometry: BufferGeometry;
 
-const init = (parent: Object3D) => {
+const init = async (parent: Object3D) => {
   const $img = useImage();
   const imgUrl = $img("/earthspec1k.jpg", { width: 1024 });
   const loader = new ImageLoader();
@@ -58,7 +58,6 @@ const init = (parent: Object3D) => {
       globe.name = "DigitalGlobe";
       globe.add(mesh);
       parent.add(globe);
-      state.initialised = true;
     }
   });
 };
@@ -293,13 +292,8 @@ const concatBufferAttributes = (
   }
 */
 
-const state = reactive({
-  initialised: false,
-});
-
 export const useDigitalGlobe = () => {
   return {
-    ...toRefs(state),
     globe,
     init,
     transform,

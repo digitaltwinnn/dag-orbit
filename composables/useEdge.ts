@@ -1,9 +1,9 @@
 import {
   Color,
   Curve,
-  Group,
   Mesh,
   MeshBasicMaterial,
+  Object3D,
   QuadraticBezierCurve3,
   TubeGeometry,
   Vector3,
@@ -11,8 +11,8 @@ import {
 import { gsap } from "gsap";
 import { SelectiveBloomEffect } from "postprocessing";
 
-export const useEdge = (
-  parent: Group | Mesh,
+export const useEdge = async (
+  parent: Object3D,
   bloomEffect: SelectiveBloomEffect,
   vertex1: { lat: number; lng: number },
   vertex2: { lat: number; lng: number },
@@ -81,20 +81,18 @@ export const useEdge = (
   };
 
   const arc = useGlobeUtils().createSphereArc(vertex1, vertex2, radius);
-  const mesh = createLine(arc, color, 0.025, 0.15);
-  mesh.name = "Edge" + Math.random();
+  const edge = createLine(arc, color, 0.025, 0.15);
+  edge.name = "Edge" + Math.random();
 
   const animatedLine = createLine(arc, color, 0.1, 0.5);
   animatedLine.visible = false;
   animate(animatedLine);
 
-  mesh.add(animatedLine);
-  parent.add(mesh);
-  bloomEffect.selection.add(mesh);
-
-  const state = reactive({});
+  edge.add(animatedLine);
+  parent.add(edge);
+  bloomEffect.selection.add(edge);
 
   return {
-    ...toRefs(state),
+    edge,
   };
 };

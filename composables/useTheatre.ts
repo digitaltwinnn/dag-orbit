@@ -36,7 +36,7 @@ const rafDriver = createRafDriver({ name: "theatre.js" });
 const project = getProject("Orbit");
 const sheet = project.sheet("Intro");
 
-const init = (
+const init = async (
   camera: Camera,
   scene: Scene,
   bloom: SelectiveBloomEffect,
@@ -55,7 +55,6 @@ const init = (
   });
 
   studio.initialize();
-  state.initialised = true;
 };
 
 const setMovementControls = (
@@ -223,13 +222,8 @@ const setSceneControls = (
   return control;
 };
 
-const state = reactive({
-  initialised: false,
-});
-
 export const useTheatre = () => {
   return {
-    ...toRefs(state),
     rafDriver,
     init,
   };

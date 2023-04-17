@@ -8,7 +8,7 @@ const light = new PointLight(0xffffff);
 light.name = "Sun";
 light.intensity = 1;
 
-const init = (parent: Object3D) => {
+const init = async (parent: Object3D) => {
   light.position.set(1000, 0, 1000);
   const loader = new TextureLoader();
   const $img = useImage();
@@ -31,16 +31,10 @@ const init = (parent: Object3D) => {
   flare.addElement(new LensflareElement(circle, 125, 0.9, purple));
   light.add(flare);
   parent.add(light);
-  state.initialised = true;
 };
-
-const state = reactive({
-  initialised: false,
-});
 
 export const useSun = () => {
   return {
-    ...toRefs(state),
     light,
     init,
   };

@@ -15,7 +15,7 @@ const settings = {
 const globe: Mesh = new Mesh(undefined, undefined);
 globe.name = "NaturalGlobe";
 
-const init = (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
+const init = async (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
   const loader = new TextureLoader();
   const $img = useImage();
 
@@ -36,7 +36,7 @@ const init = (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
   globe.geometry = geometry;
   globe.material = material;
 
-  useAtmosphere().init(globe, vAtmosphere, fAtmosphere);
+  await useAtmosphere().init(globe, vAtmosphere, fAtmosphere);
   parent.add(globe);
   animate();
 };
@@ -50,13 +50,8 @@ const animate = () => {
   });
 };
 
-const state = reactive({
-  initialised: false,
-});
-
 export const useNaturalGlobe = () => {
   return {
-    ...toRefs(state),
     globe,
     init,
   };

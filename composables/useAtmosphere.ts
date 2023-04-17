@@ -13,9 +13,9 @@ const settings = {
 };
 
 let uniforms: any;
-let mesh: Mesh;
+let atmos: Mesh;
 
-const init = (parent: Object3D, vertex: any, fragment: any) => {
+const init = async (parent: Object3D, vertex: any, fragment: any) => {
   const atmosphereGeometry = new SphereGeometry(settings.outerRadius, 64, 64);
   const $sun = useSun();
 
@@ -33,19 +33,13 @@ const init = (parent: Object3D, vertex: any, fragment: any) => {
     transparent: true,
   });
 
-  mesh = new Mesh(atmosphereGeometry, atmosphereMaterial);
-  mesh.name = "Atmosphere";
-  parent.add(mesh);
-  state.initialised = true;
+  atmos = new Mesh(atmosphereGeometry, atmosphereMaterial);
+  atmos.name = "Atmosphere";
+  parent.add(atmos);
 };
-
-const state = reactive({
-  initialised: false,
-});
 
 export const useAtmosphere = () => {
   return {
-    ...toRefs(state),
     init,
   };
 };

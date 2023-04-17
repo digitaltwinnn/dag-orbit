@@ -8,7 +8,7 @@ import {
   Object3D,
 } from "three";
 
-export const useSatellite = (
+export const useSatellite = async (
   parent: Object3D,
   bloomEffect: SelectiveBloomEffect,
   size: number,
@@ -19,33 +19,28 @@ export const useSatellite = (
   const innerSize = 0.3 * size;
   const material = new MeshBasicMaterial({ color: color });
   const geometry = new BoxGeometry(innerSize, innerSize, innerSize);
-  const mesh = new Mesh(geometry, material);
-  mesh.name = "Satellite" + Math.random();
-  mesh.lookAt(0, 0, 0);
+  const satellite = new Mesh(geometry, material);
+  satellite.name = "Satellite" + Math.random();
+  satellite.lookAt(0, 0, 0);
 
   const outerGeometry = new BoxGeometry(size, size, size);
   const outerMaterial = material.clone();
   outerMaterial.wireframe = true;
-  mesh.add(new Mesh(outerGeometry, outerMaterial));
-  parent.add(mesh);
-  bloomEffect.selection.add(mesh);
-
-  const state = reactive({
-    position: mesh.position,
-    name: mesh.name,
-    lat: lat,
-    lng: lng,
-  });
+  satellite.add(new Mesh(outerGeometry, outerMaterial));
+  parent.add(satellite);
+  bloomEffect.selection.add(satellite);
 
   const anchor = (altitude: number) => {
-    const target = useGlobeUtils().toVector(state.lat, state.lng, altitude);
-    state.position.set(target.x, target.y, target.z);
-    mesh.lookAt(0, 0, 0);
-    mesh.rotateX(MathUtils.degToRad(90));
+    const target = useGlobeUtils().toVector(lat, lng, altitude);
+    satellite.position.set(target.x, target.y, target.z);
+    satellite.lookAt(0, 0, 0);
+    satellite.rotateX(MathUtils.degToRad(90));
   };
 
   return {
-    ...toRefs(state),
+    satellite,
+    lat,
+    lng,
     anchor,
   };
 };

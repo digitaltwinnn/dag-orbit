@@ -6,7 +6,8 @@ const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
 type Satellite = {
   lat: number;
   lng: number;
-  name: string;
+  id: number;
+  ip: number[];
 };
 
 const settings = {
@@ -21,43 +22,36 @@ const settings = {
 const satellites: Satellite[] = [];
 const cluster = new Group();
 cluster.name = "Cluster";
-let bloomEffect: SelectiveBloomEffect;
 
-const init = (parent: Object3D, effect: SelectiveBloomEffect, url: string) => {
-  bloomEffect = effect;
-  $fetch(url).then((nodes: any) => {
-    refresh(nodes);
-    parent.add(cluster);
-    state.initialised = true;
-  });
+const init = async (
+  parent: Object3D,
+  effect: SelectiveBloomEffect,
+  url: string
+) => {
+  const nodes: any[] = await $fetch(url);
+  const newSatellites = await NodesToSatellites(nodes);
+  satellites.push(...newSatellites);
+
+  await drawSatellites(newSatellites, effect);
+  await drawEdges(newSatellites, effect);
+  parent.add(cluster);
 };
 
-const refresh = (nodes: any[]) => {
+const NodesToSatellites = async (nodes: any[]): Promise<Satellite[]> => {
+  const satellites: Satellite[] = [];
   nodes.forEach((node) => {
-    const sats = findByLatLng(node.host.latitude, node.host.longitude);
-    if (sats.length == 0) {
-      const color = new Color(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
-      const $sat = useSatellite(
-        cluster,
-        bloomEffect,
-        settings.satellite.size,
-        color,
-        node.host.latitude,
-        node.host.longitude
-      );
-      $sat.anchor(settings.radius + settings.satellite.altitude);
-
+    const result = findByLatLng(node.host.latitude, node.host.longitude);
+    if (result.length == 0) {
       const satellite = {
-        lat: $sat.lat.value,
-        lng: $sat.lng.value,
-        name: $sat.name.value,
+        lat: node.host.latitude,
+        lng: node.host.longitude,
+        id: 0,
+        ip: [node.ip],
       };
       satellites.push(satellite);
-      drawEdges(satellite, color);
-    } else {
-      //  sats[0].addNode(this.scene, this.earth, node);
     }
   });
+  return satellites;
 };
 
 const findByLatLng = (lat: number, lng: number): Satellite[] => {
@@ -74,28 +68,44 @@ const inRange = (x: number, min: number, max: number): boolean => {
   return (x - min) * (x - max) <= 0;
 };
 
-const drawEdges = (sat: Satellite, color: Color) => {
-  satellites.forEach((satellite: Satellite) => {
-    if (satellite.name != sat.name) {
-      const $edge = useEdge(
+const drawSatellites = async (
+  sats: Satellite[],
+  effect: SelectiveBloomEffect
+) => {
+  await Promise.all(
+    sats.map(async (sat) => {
+      const color = new Color(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
+      const $sat = await useSatellite(
         cluster,
-        bloomEffect,
-        { lat: sat.lat, lng: sat.lng },
-        { lat: satellite.lat, lng: satellite.lng },
-        settings.radius + settings.satellite.altitude,
-        color
+        effect,
+        settings.satellite.size,
+        color,
+        sat.lat,
+        sat.lng
       );
-    }
-  });
+      sat.id = $sat.satellite.id;
+      $sat.anchor(settings.radius + settings.satellite.altitude);
+    })
+  );
 };
 
-const state = reactive({
-  initialised: false,
-});
+const drawEdges = async (sats: Satellite[], effect: SelectiveBloomEffect) => {
+  const source = [1, 2, 3, 4];
+  const target = [1, 2, 3, 4];
+  const lines: { source: number; target: number }[] = [];
+
+  source.map(async (s) => {
+    target.map((t) => {
+      if (s != t) {
+        lines.push({ source: s, target: t });
+      }
+    });
+  });
+  // remove 2,1 if we also have 1,2
+};
 
 export const useCluster = () => {
   return {
-    ...toRefs(state),
     init,
   };
 };

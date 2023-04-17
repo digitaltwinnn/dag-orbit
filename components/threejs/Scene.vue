@@ -11,23 +11,23 @@ import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 
 export default {
-  mounted() {
+  async mounted() {
     const el = document.getElementById("scene-container");
     if (el != null) {
-      const $main = useScene(el);
+      const $main = await useScene(el);
+
       const $sun = useSun();
       const $naturalGlobe = useNaturalGlobe();
       const $digitalGlobe = useDigitalGlobe();
       const $cluster = useCluster();
+      // const $theatre = useTheatre();
 
-      $sun.init($main.scene);
-      $naturalGlobe.init($main.scene, vAtmosphere, fAtmosphere);
-      $digitalGlobe.init($naturalGlobe.globe);
-      $cluster.init($naturalGlobe.globe, $main.bloom, "/api/nodes");
-
+      await $sun.init($main.scene);
+      await $naturalGlobe.init($main.scene, vAtmosphere, fAtmosphere);
+      await $digitalGlobe.init($naturalGlobe.globe);
+      await $cluster.init($naturalGlobe.globe, $main.bloom, "/api/nodes");
       /*
-      const $theatre = useTheatre();
-      $theatre.init(
+      await $theatre.init(
         $main.camera, $main.scene, $main.bloom,
         [$main.light, $sun.light],
         [$natural.globe, $digital.globe, $cluster.cluster]
@@ -40,7 +40,6 @@ export default {
         // $theatre.rafDriver.tick(time, deltaTime, frame);
       });
     }
-  },
+  }
 }
-
 </script>
