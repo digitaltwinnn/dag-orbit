@@ -30,7 +30,6 @@ const init = async (
 ) => {
   const nodes: any[] = await $fetch(url);
   const newSatellites = await NodesToSatellites(nodes);
-  satellites.push(...newSatellites);
 
   await drawSatellites(newSatellites, effect);
   await drawEdges(newSatellites, effect);
@@ -38,7 +37,7 @@ const init = async (
 };
 
 const NodesToSatellites = async (nodes: any[]): Promise<Satellite[]> => {
-  const satellites: Satellite[] = [];
+  const newSatellites: Satellite[] = [];
   nodes.forEach((node) => {
     const result = findByLatLng(node.host.latitude, node.host.longitude);
     if (result.length == 0) {
@@ -48,10 +47,11 @@ const NodesToSatellites = async (nodes: any[]): Promise<Satellite[]> => {
         id: 0,
         ip: [node.ip],
       };
+      newSatellites.push(satellite);
       satellites.push(satellite);
     }
   });
-  return satellites;
+  return newSatellites;
 };
 
 const findByLatLng = (lat: number, lng: number): Satellite[] => {
@@ -90,18 +90,36 @@ const drawSatellites = async (
 };
 
 const drawEdges = async (sats: Satellite[], effect: SelectiveBloomEffect) => {
-  const source = [1, 2, 3, 4];
-  const target = [1, 2, 3, 4];
-  const lines: { source: number; target: number }[] = [];
+  const sources = [...sats];
+  const targets = [...sats];
+  const lines: { source: Satellite; target: Satellite }[] = [];
 
-  source.map(async (s) => {
-    target.map((t) => {
-      if (s != t) {
-        lines.push({ source: s, target: t });
+  sources.map(async (source) => {
+    targets.map((target) => {
+      if (source.id != target.id) {
+        const mirror = lines.find((line) => {
+          return line.source.id == target.id && line.target.id == source.id;
+        });
+        if (!mirror) {
+          lines.push({ source: source, target: target });
+        }
       }
     });
   });
-  // remove 2,1 if we also have 1,2
+
+  await Promise.all(
+    lines.map((line) => {
+      const color = new Color(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
+      const $edge = useEdge(
+        cluster,
+        effect,
+        { lat: line.source.lat, lng: line.source.lng },
+        { lat: line.target.lat, lng: line.target.lng },
+        settings.radius + settings.satellite.altitude,
+        color
+      );
+    })
+  );
 };
 
 export const useCluster = () => {
