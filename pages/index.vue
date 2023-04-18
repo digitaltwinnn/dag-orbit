@@ -24,9 +24,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 export default {
     mounted() {
         this.initScrollTrigger();
-        this.getNodes().then((nodes) => {
-            this.$refs.threejs.cluster.refresh(nodes);
-        });
     },
     methods: {
         initScrollTrigger() {
@@ -40,8 +37,8 @@ export default {
                     markers: true
                 },
             })
-
-            gsap.to(this.$refs.threejs.appScene.get().background, {
+            /*
+            gsap.to(useScene().background.value, {
                 duration: 6, r: 0, g: 0, b: 0,
                 scrollTrigger: {
                     trigger: ".panel-1",
@@ -49,8 +46,8 @@ export default {
                     markers: true
                 }
             });
-
-            gsap.to(this.$refs.threejs.naturalGlobe.get().position, {
+            */
+            gsap.to(useNaturalGlobe().globe.position, {
                 x: -200, y: -200, z: -200,
                 scrollTrigger: {
                     trigger: ".panel-1",
@@ -58,15 +55,6 @@ export default {
                     markers: true
                 }
             });
-            gsap.to(this.$refs.threejs.digitalGlobe.get().position, {
-                x: 200, y: 200, z: 200,
-                scrollTrigger: {
-                    trigger: ".panel-1",
-                    scrub: 0.6,
-                    markers: true
-                }
-            });
-
             gsap.to(".test2", {
                 scrollTrigger: {
                     trigger: ".panel-2",
@@ -77,10 +65,6 @@ export default {
                 transformOrigin: "center center",
             })
         },
-        getNodes() {
-            const nodes = $fetch("/api/nodes");
-            return nodes;
-        }
     }
 }
 </script>

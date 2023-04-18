@@ -1,7 +1,7 @@
-import { Curve, Vector2, Vector3 } from "three";
+import { Vector3, Vector2, Curve } from "three";
 
-class GlobeUtils {
-  static toVector(lat: number, lng: number, radius: number): Vector3 {
+export const useGlobeUtils = () => {
+  const toVector = (lat: number, lng: number, radius: number): Vector3 => {
     const latRad = lat * (Math.PI / 180);
     const lonRad = -lng * (Math.PI / 180);
     return new Vector3(
@@ -9,9 +9,9 @@ class GlobeUtils {
       Math.sin(latRad) * radius,
       Math.cos(latRad) * Math.sin(lonRad) * radius
     );
-  }
+  };
 
-  static toLatLng(vector: Vector3) {
+  const toLatLng = (vector: Vector3) => {
     const v = vector.clone();
     const norm = v.normalize();
 
@@ -21,33 +21,33 @@ class GlobeUtils {
     const lng = (Math.PI - lngRads) * (180 / Math.PI);
 
     return [lat, lng - 180];
-  }
+  };
 
-  static latLongToXY(
+  const latLongToXY = (
     lat: number,
     long: number,
     width: number,
     height: number
-  ): Vector2 {
+  ): Vector2 => {
     const y = (-1 * lat + 90) * (height / 180);
     const x = (long + 180) * (width / 360);
     return new Vector2(Math.floor(x), Math.floor(y));
-  }
+  };
 
-  static createSphereArc(
+  const createSphereArc = (
     o: { lat: number; lng: number },
     d: { lat: number; lng: number },
     radius: number
-  ): Curve<Vector3> {
-    const origin = GlobeUtils.toVector(o.lat, o.lng, radius);
-    const dest = GlobeUtils.toVector(d.lat, d.lng, radius);
+  ): Curve<Vector3> => {
+    const origin = toVector(o.lat, o.lng, radius);
+    const dest = toVector(d.lat, d.lng, radius);
 
     const sphereArc = new Curve<Vector3>();
-    sphereArc.getPoint = this.greatCircleFunction(origin, dest);
+    sphereArc.getPoint = greatCircleFunction(origin, dest);
     return sphereArc;
-  }
+  };
 
-  static greatCircleFunction(P: Vector3, Q: Vector3) {
+  const greatCircleFunction = (P: Vector3, Q: Vector3) => {
     const angle = P.angleTo(Q);
     return function (t: number) {
       const X = new Vector3()
@@ -58,7 +58,12 @@ class GlobeUtils {
         .divideScalar(Math.sin(angle));
       return X;
     };
-  }
-}
+  };
 
-export { GlobeUtils };
+  return {
+    toVector,
+    toLatLng,
+    latLongToXY,
+    createSphereArc,
+  };
+};

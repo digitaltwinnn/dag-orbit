@@ -6,67 +6,40 @@
 </template>
 
 <script>
-import { AppRenderer } from "../../threejs/scene/AppRenderer";
-import { AppCamera } from "../../threejs/scene/AppCamera";
-import { AppScene } from "../../threejs/scene/AppScene";
-import { AppTheatre } from "../../threejs/scene/AppTheatre";
-
-import { DigitalGlobe } from "../../threejs/globe/DigitalGlobe";
-import { NaturalGlobe } from "../../threejs/globe/NaturalGlobe";
-import { Sun } from "../../threejs/globe/Sun";
-import { Cluster } from "~~/threejs/cluster/l0/Cluster";
-
 import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
-
 import { gsap } from "gsap";
 
 export default {
-  mounted() {
-
+  async mounted() {
     const el = document.getElementById("scene-container");
     if (el != null) {
-      // setup the threejs renderer, camera, scene and (sun)light
-      this.appRenderer = markRaw(new AppRenderer(el));
-      this.appCam = markRaw(new AppCamera(innerWidth, innerHeight, this.appRenderer));
-      this.appScene = markRaw(new AppScene(this.appRenderer, this.appCam));
-      this.sun = markRaw(new Sun(this.appScene));
-      this.sun.get().position.set(1000, 0, 1000)
+      const $main = await useScene(el);
 
-      // setup a global animation loop using gsap
+      const $sun = useSun();
+      const $naturalGlobe = useNaturalGlobe();
+      const $digitalGlobe = useDigitalGlobe();
+      const $cluster = useCluster();
+      // const $theatre = useTheatre();
+
+      await $sun.init($main.scene);
+      await $naturalGlobe.init($main.scene, vAtmosphere, fAtmosphere);
+      await $digitalGlobe.init($naturalGlobe.globe);
+      await $cluster.init($naturalGlobe.globe, $main.bloom, "/api/nodes");
+      /*
+      await $theatre.init(
+        $main.camera, $main.scene, $main.bloom,
+        [$main.light, $sun.light],
+        [$natural.globe, $digital.globe, $cluster.cluster]
+      )
+      */
+
+      // setup animations
       gsap.ticker.add((time, deltaTime, frame) => {
-        this.appScene.tick(time, deltaTime, frame);
+        $main.tick(time, deltaTime, frame);
+        // $theatre.rafDriver.tick(time, deltaTime, frame);
       });
-
-      //window.addEventListener("resize", this.onWindowResize, false);
-
-      // add meshes to the scene
-      this.digitalGlobe = markRaw(new DigitalGlobe(this.appScene));
-      this.naturalGlobe = markRaw(new NaturalGlobe(this.appScene, this.sun, vAtmosphere, fAtmosphere));
-      this.cluster = markRaw(new Cluster(this.appScene));
-
-      // setup the animation sequences
-      this.appTheatre = markRaw(new AppTheatre(
-        this.appCam,
-        this.appScene,
-        this.sun,
-        this.naturalGlobe,
-        this.digitalGlobe,
-        this.cluster));
-    }
-  },
-  data() {
-    return {
-      appRenderer: AppRenderer,
-      appCam: AppCamera,
-      appScene: AppScene,
-      appTheatre: AppTheatre,
-      naturalGlobe: NaturalGlobe,
-      digitalGlobe: DigitalGlobe,
-      sun: Sun,
-      cluster: Cluster,
     }
   }
 }
-
 </script>

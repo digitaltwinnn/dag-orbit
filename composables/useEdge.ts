@@ -1,49 +1,38 @@
 import {
   Color,
   Curve,
-  Group,
   Mesh,
   MeshBasicMaterial,
+  Object3D,
   QuadraticBezierCurve3,
   TubeGeometry,
   Vector3,
 } from "three";
 import { gsap } from "gsap";
-import { GlobeUtils } from "~~/threejs/utils/GlobeUtils";
+import { SelectiveBloomEffect } from "postprocessing";
 
-class Edge {
-  private mesh!: Mesh;
-  private tubeSegments = 256;
-  private radiusSegments = 6;
+export const useEdge = async (
+  parent: Object3D,
+  bloomEffect: SelectiveBloomEffect,
+  vertex1: { lat: number; lng: number },
+  vertex2: { lat: number; lng: number },
+  radius: number,
+  color: Color
+) => {
+  const settings = {
+    tubeSegments: 256,
+    radiusSegments: 6,
+  };
 
-  constructor(
-    cluster: Group,
-    vertex1: { lat: number; lng: number },
-    vertex2: { lat: number; lng: number },
-    radius: number,
-    color: Color
-  ) {
-    const arc = GlobeUtils.createSphereArc(vertex1, vertex2, radius);
-    this.mesh = this.createLine(arc, color, 0.025, 0.15);
-    this.mesh.name = "L0 Edge";
-    cluster.add(this.mesh);
-
-    // animate another line between start & end
-    const animatedLine = this.createLine(arc, color, 0.1, 0.5);
-    animatedLine.visible = false;
-    this.mesh.add(animatedLine);
-    this.animateLine(animatedLine);
-  }
-
-  private animateLine(l: Mesh): void {
-    const geom: TubeGeometry = l.geometry as TubeGeometry;
+  const animate = (line: Mesh) => {
+    const geom: TubeGeometry = line.geometry as TubeGeometry;
     const offset = 3;
-    const max = 6 * this.tubeSegments * this.radiusSegments;
+    const max = 6 * settings.tubeSegments * settings.radiusSegments;
     const size = 0.15 * max;
 
-    let line = { t: 0 };
+    let target = { t: 0 };
     let start, end, count;
-    gsap.to(line, {
+    gsap.to(target, {
       duration: 3,
       t: 1,
       repeat: -1,
@@ -51,7 +40,7 @@ class Edge {
       repeatDelay: Math.random() * 30,
       yoyo: true,
       onStart: function () {
-        l.visible = true;
+        line.visible = true;
       },
       onUpdate: function () {
         end = this.targets()[0].t * (max + size);
@@ -69,23 +58,19 @@ class Edge {
         geom.setDrawRange(start, count);
       },
     });
-  }
+  };
 
-  public get(): Mesh {
-    return this.mesh;
-  }
-
-  private createLine(
+  const createLine = (
     path: QuadraticBezierCurve3 | Curve<Vector3>,
     color: Color,
     width: number,
     opacity: number
-  ): Mesh {
+  ): Mesh => {
     const geometry = new TubeGeometry(
       path,
-      this.tubeSegments,
+      settings.tubeSegments,
       width,
-      this.radiusSegments
+      settings.radiusSegments
     );
     const material = new MeshBasicMaterial({
       color: color,
@@ -93,7 +78,21 @@ class Edge {
       opacity: opacity,
     });
     return new Mesh(geometry, material);
-  }
-}
+  };
 
-export { Edge };
+  const arc = useGlobeUtils().createSphereArc(vertex1, vertex2, radius);
+  const edge = createLine(arc, color, 0.025, 0.15);
+  edge.name = "Edge" + Math.random();
+
+  const animatedLine = createLine(arc, color, 0.1, 0.5);
+  animatedLine.visible = false;
+  animate(animatedLine);
+
+  edge.add(animatedLine);
+  parent.add(edge);
+  bloomEffect.selection.add(edge);
+
+  return {
+    edge,
+  };
+};
