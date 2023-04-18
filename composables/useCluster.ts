@@ -1,13 +1,16 @@
+import createGraph, { Graph } from "ngraph.graph";
 import { SelectiveBloomEffect } from "postprocessing";
 import { Color, Group, MathUtils, Object3D } from "three";
 
 const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
 
+type Edge = { source: Satellite; target: Satellite };
 type Satellite = {
   lat: number;
   lng: number;
   id: number;
-  ip: number[];
+  objectId: number;
+  nodeIPs: number[];
 };
 
 const settings = {
@@ -19,44 +22,103 @@ const settings = {
   },
 };
 
-const satellites: Satellite[] = [];
+const graph: Graph = createGraph();
 const cluster = new Group();
 cluster.name = "Cluster";
+let satelliteId = 0;
 
 const init = async (
   parent: Object3D,
   effect: SelectiveBloomEffect,
   url: string
 ) => {
+  // get nodes, add to graph
   const nodes: any[] = await $fetch(url);
-  const newSatellites = await NodesToSatellites(nodes);
+  nodes.map((node) => {
+    graph.addNode(node.ip, node);
+  });
 
-  await drawSatellites(newSatellites, effect);
-  await drawEdges(newSatellites, effect);
+  // group nodes into satellites, add to graph and link to satellite
+  const satellites = await NodesToSatellites(nodes);
+  satellites.map((sat) => {
+    graph.addNode(sat.id, sat);
+    sat.nodeIPs.map((nodeIP) => {
+      graph.addLink(sat.id, nodeIP);
+    });
+  });
+
+  // link the satellites together (n-n relation)
+  const newEdges = simulateSatelliteEdges(satellites);
+  newEdges.map((edge) => {
+    graph.addLink(edge.source.id, edge.target.id);
+  });
+
+  await drawSatellites(satellites, effect);
+  await drawEdges(newEdges, effect);
   parent.add(cluster);
+
+  /*
+  console.log("nodes " + nodes.length);
+  console.log("new satellites " + satellites.length);
+  console.log("new edges " + newEdges.length);
+  console.log("graph nodes " + graph.getNodesCount());
+  console.log("graph links " + graph.getLinkCount());
+  */
+};
+
+const simulateSatelliteEdges = (sats: Satellite[]): Edge[] => {
+  const sources = [...sats];
+  const targets = [...sats];
+  const edges: Edge[] = [];
+
+  sources.map(async (source) => {
+    targets.map((target) => {
+      if (source.id != target.id) {
+        const mirror = edges.find((edge) => {
+          return edge.source.id == target.id && edge.target.id == source.id;
+        });
+        if (!mirror) {
+          edges.push({ source: source, target: target });
+        }
+      }
+    });
+  });
+  return edges;
 };
 
 const NodesToSatellites = async (nodes: any[]): Promise<Satellite[]> => {
-  const newSatellites: Satellite[] = [];
+  const satellites: Satellite[] = [];
   nodes.forEach((node) => {
-    const result = findByLatLng(node.host.latitude, node.host.longitude);
-    if (result.length == 0) {
+    const satsInRange = searchSatellites(
+      node.host.latitude,
+      node.host.longitude,
+      satellites
+    );
+    if (satsInRange.length == 0) {
       const satellite = {
         lat: node.host.latitude,
         lng: node.host.longitude,
-        id: 0,
-        ip: [node.ip],
+        id: satelliteId++,
+        objectId: -1,
+        nodeIPs: [node.ip],
       };
-      newSatellites.push(satellite);
       satellites.push(satellite);
+    } else {
+      satsInRange.map((sat) => {
+        sat.nodeIPs.push(node.ip);
+      });
     }
   });
-  return newSatellites;
+  return satellites;
 };
 
-const findByLatLng = (lat: number, lng: number): Satellite[] => {
+const searchSatellites = (
+  lat: number,
+  lng: number,
+  target: Satellite[]
+): Satellite[] => {
   const proximity = settings.satellite.proximity;
-  const sats = satellites.filter((s: Satellite) => {
+  const sats = target.filter((s: Satellite) => {
     const latInRange = inRange(lat, s.lat - proximity, s.lat + proximity);
     const lngInRange = inRange(lng, s.lng - proximity, s.lng + proximity);
     return latInRange && lngInRange;
@@ -69,52 +131,35 @@ const inRange = (x: number, min: number, max: number): boolean => {
 };
 
 const drawSatellites = async (
-  sats: Satellite[],
+  satellites: Satellite[],
   effect: SelectiveBloomEffect
 ) => {
   await Promise.all(
-    sats.map(async (sat) => {
+    satellites.map(async (satellite) => {
       const color = new Color(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
       const $sat = await useSatellite(
         cluster,
         effect,
         settings.satellite.size,
         color,
-        sat.lat,
-        sat.lng
+        satellite.lat,
+        satellite.lng
       );
-      sat.id = $sat.satellite.id;
+      satellite.objectId = $sat.satellite.id;
       $sat.anchor(settings.radius + settings.satellite.altitude);
     })
   );
 };
 
-const drawEdges = async (sats: Satellite[], effect: SelectiveBloomEffect) => {
-  const sources = [...sats];
-  const targets = [...sats];
-  const lines: { source: Satellite; target: Satellite }[] = [];
-
-  sources.map(async (source) => {
-    targets.map((target) => {
-      if (source.id != target.id) {
-        const mirror = lines.find((line) => {
-          return line.source.id == target.id && line.target.id == source.id;
-        });
-        if (!mirror) {
-          lines.push({ source: source, target: target });
-        }
-      }
-    });
-  });
-
+const drawEdges = async (edges: Edge[], effect: SelectiveBloomEffect) => {
   await Promise.all(
-    lines.map((line) => {
+    edges.map((edge) => {
       const color = new Color(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
       const $edge = useEdge(
         cluster,
         effect,
-        { lat: line.source.lat, lng: line.source.lng },
-        { lat: line.target.lat, lng: line.target.lng },
+        { lat: edge.source.lat, lng: edge.source.lng },
+        { lat: edge.target.lat, lng: edge.target.lng },
         settings.radius + settings.satellite.altitude,
         color
       );
