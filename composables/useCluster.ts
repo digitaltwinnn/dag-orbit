@@ -4,7 +4,11 @@ import { Color, Group, MathUtils, Object3D } from "three";
 
 const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
 
-type Edge = { source: Satellite; target: Satellite };
+type Edge = {
+  source: Satellite;
+  target: Satellite;
+};
+
 type Satellite = {
   lat: number;
   lng: number;
@@ -32,61 +36,24 @@ const init = async (
   effect: SelectiveBloomEffect,
   url: string
 ) => {
-  // get nodes, add to graph
+  const nodes = await nodesToGraph(url);
+  const satellites = await satellitesToGraph(nodes);
+  const edges = await edgesToGraph(satellites);
+
+  await drawSatellites(satellites, effect);
+  await drawEdges(edges, effect);
+  parent.add(cluster);
+};
+
+const nodesToGraph = async (url: string): Promise<any[]> => {
   const nodes: any[] = await $fetch(url);
   nodes.map((node) => {
     graph.addNode(node.ip, node);
   });
-
-  // group nodes into satellites, add to graph and link to satellite
-  const satellites = await NodesToSatellites(nodes);
-  satellites.map((sat) => {
-    graph.addNode(sat.id, sat);
-    sat.nodeIPs.map((nodeIP) => {
-      graph.addLink(sat.id, nodeIP);
-    });
-  });
-
-  // link the satellites together (n-n relation)
-  const newEdges = simulateSatelliteEdges(satellites);
-  newEdges.map((edge) => {
-    graph.addLink(edge.source.id, edge.target.id);
-  });
-
-  await drawSatellites(satellites, effect);
-  await drawEdges(newEdges, effect);
-  parent.add(cluster);
-
-  /*
-  console.log("nodes " + nodes.length);
-  console.log("new satellites " + satellites.length);
-  console.log("new edges " + newEdges.length);
-  console.log("graph nodes " + graph.getNodesCount());
-  console.log("graph links " + graph.getLinkCount());
-  */
+  return nodes;
 };
 
-const simulateSatelliteEdges = (sats: Satellite[]): Edge[] => {
-  const sources = [...sats];
-  const targets = [...sats];
-  const edges: Edge[] = [];
-
-  sources.map(async (source) => {
-    targets.map((target) => {
-      if (source.id != target.id) {
-        const mirror = edges.find((edge) => {
-          return edge.source.id == target.id && edge.target.id == source.id;
-        });
-        if (!mirror) {
-          edges.push({ source: source, target: target });
-        }
-      }
-    });
-  });
-  return edges;
-};
-
-const NodesToSatellites = async (nodes: any[]): Promise<Satellite[]> => {
+const satellitesToGraph = async (nodes: any[]): Promise<Satellite[]> => {
   const satellites: Satellite[] = [];
   nodes.forEach((node) => {
     const satsInRange = searchSatellites(
@@ -109,7 +76,40 @@ const NodesToSatellites = async (nodes: any[]): Promise<Satellite[]> => {
       });
     }
   });
+
+  satellites.map((sat) => {
+    graph.addNode(sat.id, sat);
+    sat.nodeIPs.map((nodeIP) => {
+      graph.addLink(sat.id, nodeIP);
+    });
+  });
+
   return satellites;
+};
+
+const edgesToGraph = async (sats: Satellite[]): Promise<Edge[]> => {
+  const sources = [...sats];
+  const targets = [...sats];
+  const edges: Edge[] = [];
+
+  sources.map(async (source) => {
+    targets.map((target) => {
+      if (source.id != target.id) {
+        const mirror = edges.find((edge) => {
+          return edge.source.id == target.id && edge.target.id == source.id;
+        });
+        if (!mirror) {
+          edges.push({ source: source, target: target });
+        }
+      }
+    });
+  });
+
+  edges.map((edge) => {
+    graph.addLink(edge.source.id, edge.target.id);
+  });
+
+  return edges;
 };
 
 const searchSatellites = (
