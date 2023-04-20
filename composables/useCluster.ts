@@ -15,20 +15,6 @@ import { gsap } from "gsap";
 
 const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
 
-type Edge = {
-  source: Satellite;
-  target: Satellite;
-};
-
-type Satellite = {
-  lat: number;
-  lng: number;
-  id: number;
-  objectId: number;
-  nodeIPs: number[];
-  color: Color;
-};
-
 const settings = {
   radius: 100,
   satellite: {
@@ -57,15 +43,15 @@ const init = async (
   parent.add(cluster);
 };
 
-const nodesToGraph = async (url: string): Promise<any[]> => {
-  const nodes: any[] = await $fetch(url);
+const nodesToGraph = async (url: string): Promise<L0Node[]> => {
+  const nodes: L0Node[] = await $fetch(url);
   nodes.map((node) => {
     graph.addNode(node.ip, node);
   });
   return nodes;
 };
 
-const satellitesToGraph = async (nodes: any[]): Promise<Satellite[]> => {
+const satellitesToGraph = async (nodes: L0Node[]): Promise<Satellite[]> => {
   const satellites: Satellite[] = [];
   nodes.forEach((node) => {
     const satsInRange = searchSatellites(
