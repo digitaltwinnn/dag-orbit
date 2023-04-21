@@ -13,6 +13,7 @@
     "nuxt": "^3.3.1"
   },
   "dependencies": {
+    "@nuxt/devtools": "^0.4.1",
     "@theatre/core": "^0.6.0",
     "@vercel/analytics": "^0.1.4",
     "gsap": "^3.11.3",
