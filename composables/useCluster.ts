@@ -1,26 +1,19 @@
 import createGraph, { Graph } from "ngraph.graph";
 import { SelectiveBloomEffect } from "postprocessing";
-import {
-  BufferGeometry,
-  Color,
-  Float32BufferAttribute,
-  Group,
-  LineBasicMaterial,
-  LineSegments,
-  MathUtils,
-  Object3D,
-  Vector3,
-} from "three";
-import { gsap } from "gsap";
-
-const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
+import { Color, Group, MathUtils, Object3D } from "three";
 
 const settings = {
-  radius: 100,
+  colors: ["#ff0000", "#00ff00", "#0000ff"],
+  globe: {
+    radius: 100,
+  },
   satellite: {
     altitude: 20,
     size: 2,
     proximity: 0.5,
+  },
+  edge: {
+    animated: 100,
   },
 };
 
@@ -37,9 +30,11 @@ const init = async (
   const nodes = await nodesToGraph(url);
   const satellites = await satellitesToGraph(nodes);
   const edges = await edgesToGraph(satellites);
-
+  
   await drawSatellites(satellites, effect);
-  await drawEdges(edges, effect);
+  await useEdges(cluster, edges, effect);
+  await useAnimatedEdges(cluster, edges, settings.edge.animated, effect);
+
   parent.add(cluster);
 };
 
@@ -60,7 +55,10 @@ const satellitesToGraph = async (nodes: L0Node[]): Promise<Satellite[]> => {
       satellites
     );
     if (satsInRange.length == 0) {
-      const color = new Color(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
+      const color = new Color(
+        settings.colors[MathUtils.randInt(0, settings.colors.length - 1)]
+      );
+
       const satellite = {
         lat: node.host.latitude,
         lng: node.host.longitude,
@@ -145,63 +143,9 @@ const drawSatellites = async (
         satellite.lng
       );
       satellite.objectId = $sat.satellite.id;
-      $sat.anchor(settings.radius + settings.satellite.altitude);
+      $sat.anchor(settings.globe.radius + settings.satellite.altitude);
     })
   );
-};
-
-const drawEdges = async (edges: Edge[], effect: SelectiveBloomEffect) => {
-  const points: Vector3[] = [];
-  const indicies: number[] = [];
-  const colors: number[] = [];
-
-  const lineSize = 50;
-  let linePos = 0;
-  let colorPos = 0;
-
-  edges.map((edge) => {
-    // points
-    const arc = useGlobeUtils().createSphereArc(
-      edge.source,
-      edge.target,
-      settings.radius + settings.satellite.altitude
-    );
-    points.push(...arc.getPoints(lineSize));
-
-    // indices
-    for (let i = 0; i < lineSize; i++) {
-      const indice = [linePos + i, linePos + i + 1];
-      indicies.push(...indice);
-    }
-
-    // colors
-    let color;
-    for (let i = 0; i <= lineSize; i++) {
-      color = gsap.utils.interpolate(
-        edge.source.color,
-        edge.target.color,
-        i / lineSize
-      );
-      colors[colorPos++] = color.r;
-      colors[colorPos++] = color.g;
-      colors[colorPos++] = color.b;
-    }
-
-    linePos += lineSize + 1;
-  });
-
-  const material = new LineBasicMaterial({
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.5,
-  });
-  const geometry = new BufferGeometry().setFromPoints(points);
-  geometry.setIndex(indicies);
-  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
-  const lineSegments = new LineSegments(geometry, material);
-
-  cluster.add(lineSegments);
-  effect.selection.add(lineSegments);
 };
 
 export const useCluster = () => {
