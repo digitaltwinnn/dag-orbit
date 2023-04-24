@@ -30,11 +30,9 @@ const init = async (
   const nodes = await nodesToGraph(url);
   const satellites = await satellitesToGraph(nodes);
   const edges = await edgesToGraph(satellites);
-  
+
   await drawSatellites(satellites, effect);
   await useEdges(cluster, edges, effect);
-  await useAnimatedEdges(cluster, edges, settings.edge.animated, effect);
-
   parent.add(cluster);
 };
 
