@@ -9,11 +9,6 @@ import {
 } from "three";
 import { gsap } from "gsap";
 
-type Edge = {
-  source: Satellite;
-  target: Satellite;
-};
-
 const settings = {
   globe: {
     radius: 120,
