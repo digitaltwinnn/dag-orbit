@@ -22,8 +22,9 @@ const settings = {
     points: 50,
     opacity: 0.5,
     animation: {
-      points: 8,
-      duriation: 1,
+      points: 10,
+      duriation: 2,
+      highlight: 0.4,
     },
   },
 };
@@ -34,13 +35,13 @@ export const useEdges = async (
   effect: SelectiveBloomEffect
 ) => {
   const points: Vector3[] = [];
-  const indicies: number[] = [];
+  const indices: number[] = [];
   const colors: number[] = [];
 
   const init = () => {
     let linePos = 0;
     let colorPos = 0;
-    edges.map(async (edge) => {
+    edges.map((edge) => {
       // points
       const arc = useGlobeUtils().createSphereArc(
         edge.source,
@@ -52,8 +53,9 @@ export const useEdges = async (
       // indices
       for (let i = 0; i < settings.line.points; i++) {
         const indice = [linePos + i, linePos + i + 1];
-        indicies.push(...indice);
+        indices.push(...indice);
       }
+      linePos += settings.line.points + 1;
 
       // colors
       let color;
@@ -67,8 +69,6 @@ export const useEdges = async (
         colors[colorPos++] = color.g;
         colors[colorPos++] = color.b;
       }
-
-      linePos += settings.line.points + 1;
     });
 
     const material = new LineBasicMaterial({
@@ -77,7 +77,7 @@ export const useEdges = async (
       opacity: settings.line.opacity,
     });
     const geometry = new BufferGeometry().setFromPoints(points);
-    geometry.setIndex(indicies);
+    geometry.setIndex(indices);
     geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
     const edgeLines = new LineSegments(geometry, material);
 
@@ -89,7 +89,7 @@ export const useEdges = async (
   const animate = (edgeLines: LineSegments) => {
     const line = settings.line.animation.points;
     let max = settings.line.points;
-    let start, end, offset: number;
+    let start: number, end: number, offset: number;
 
     const newColor = edgeLines.geometry.attributes.color as any;
     let target = { t: 0 };
@@ -99,9 +99,8 @@ export const useEdges = async (
       repeat: -1,
       yoyo: true,
       onUpdate: function () {
-        const lines = colors.length / 3;
-        for (let i = 0; i < lines; i++) {
-          offset = i * settings.line.points;
+        for (let i = 0; i < edges.length; i++) {
+          offset = i * (settings.line.points + 1);
           end = offset + Math.floor(this.targets()[0].t * (max + line));
           start = end - line;
 
@@ -111,11 +110,12 @@ export const useEdges = async (
             end = offset + max;
           }
 
-          for (let i = 3 * offset; i < 3 * (offset + max); i += 3) {
+          const highlight = settings.line.animation.highlight;
+          for (let i = 3 * offset; i <= 3 * (offset + max); i += 3) {
             if (i > 3 * start && i < 3 * end) {
-              newColor.array[i] = 10 * colors[i];
-              newColor.array[i + 1] = 10 * colors[i + 1];
-              newColor.array[i + 2] = 10 * colors[i + 2];
+              newColor.array[i] = colors[i] + highlight;
+              newColor.array[i + 1] = colors[i + 1] + highlight;
+              newColor.array[i + 2] = colors[i + 2] + highlight;
             } else {
               newColor.array[i] = colors[i];
               newColor.array[i + 1] = colors[i + 1];
