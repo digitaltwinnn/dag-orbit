@@ -3,7 +3,7 @@ import { SelectiveBloomEffect } from "postprocessing";
 import { Color, Group, MathUtils, Object3D } from "three";
 
 const settings = {
-  colors: ["#ff0000", "#00ff00", "#0000ff"],
+  colors: ["#1E90FE", "#1467C8", "#1053AD"],
   globe: {
     radius: 100,
   },
