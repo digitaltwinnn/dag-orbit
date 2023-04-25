@@ -17,22 +17,21 @@ import { gsap } from "gsap";
 
 const GLOBE = 0;
 const MAP = 1;
-const MAXDOTS = 11500;
-const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
 
 const settings = {
+  colors: ["#1E90FE", "#1467C8", "#1053AD"],
   mode: GLOBE,
   globe: {
     density: 0.5,
     rows: 150,
     radius: 130,
+    maxDots: 11500,
   },
   map: {
     step: 4.2,
   },
 };
 
-let globe: Group;
 let mesh: InstancedMesh;
 let globeGeometry: BufferGeometry;
 let mapGeometry: BufferGeometry;
@@ -53,11 +52,9 @@ const init = async (parent: Object3D) => {
       globeGeometry = createGlobeGeometry(image, context);
       mapGeometry = createMapGeometry(image, context);
 
-      mesh = createMesh(globeGeometry);
-      globe = new Group();
-      globe.name = "DigitalGlobe";
-      globe.add(mesh);
-      parent.add(globe);
+      mesh = instancedMeshFromGeometry(globeGeometry);
+      mesh.name = "DigitalGlobe";
+      parent.add(mesh);
     }
   });
 };
@@ -99,8 +96,8 @@ const createGlobeGeometry = (
       }
     }
   }
-  if (dots.length < MAXDOTS) {
-    for (let i = 0; MAXDOTS - dots.length; i++) {
+  if (dots.length < settings.globe.maxDots) {
+    for (let i = 0; settings.globe.maxDots - dots.length; i++) {
       dots.push(new Vector3(0, 0, 0));
     }
   }
@@ -126,8 +123,8 @@ const createMapGeometry = (
       }
     }
   }
-  if (dots.length < MAXDOTS) {
-    for (let i = 0; MAXDOTS - dots.length; i++) {
+  if (dots.length < settings.globe.maxDots) {
+    for (let i = 0; settings.globe.maxDots - dots.length; i++) {
       dots.push(new Vector3(0, 0, 0));
     }
   }
@@ -176,7 +173,7 @@ const rotatePositions = (
   return new BufferAttribute(rotation, 3);
 };
 
-const createMesh = (geom: BufferGeometry): InstancedMesh => {
+const instancedMeshFromGeometry = (geom: BufferGeometry): InstancedMesh => {
   let geometry: BufferGeometry = geom.clone();
 
   const size = geometry.attributes.position.array.length / 3;
@@ -203,7 +200,9 @@ const createMesh = (geom: BufferGeometry): InstancedMesh => {
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
 
-    color.set(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
+    color.set(
+      settings.colors[MathUtils.randInt(0, settings.colors.length - 1)]
+    );
     mesh.setColorAt(i, color);
   }
 
@@ -294,7 +293,7 @@ const concatBufferAttributes = (
 
 export const useDigitalGlobe = () => {
   return {
-    globe,
+    mesh,
     init,
     transform,
   };
