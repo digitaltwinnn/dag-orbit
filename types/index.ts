@@ -25,7 +25,6 @@ declare global {
     lat: number;
     lng: number;
     id: number;
-    objectId: number;
     nodeIPs: number[];
     color: Color;
   };

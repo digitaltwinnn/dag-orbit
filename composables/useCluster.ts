@@ -24,15 +24,15 @@ let satelliteId = 0;
 
 const init = async (
   parent: Object3D,
-  effect: SelectiveBloomEffect,
+  bloom: SelectiveBloomEffect,
   url: string
 ) => {
   const nodes = await nodesToGraph(url);
   const satellites = await satellitesToGraph(nodes);
   const edges = await edgesToGraph(satellites);
 
-  await drawSatellites(satellites, effect);
-  await useEdges(cluster, edges, effect);
+  await useSatellites(cluster, satellites, bloom);
+  await useEdges(cluster, edges, bloom);
   parent.add(cluster);
 };
 
@@ -124,26 +124,6 @@ const searchSatellites = (
 
 const inRange = (x: number, min: number, max: number): boolean => {
   return (x - min) * (x - max) <= 0;
-};
-
-const drawSatellites = async (
-  satellites: Satellite[],
-  effect: SelectiveBloomEffect
-) => {
-  await Promise.all(
-    satellites.map(async (satellite) => {
-      const $sat = await useSatellite(
-        cluster,
-        effect,
-        settings.satellite.size,
-        satellite.color,
-        satellite.lat,
-        satellite.lng
-      );
-      satellite.objectId = $sat.satellite.id;
-      $sat.anchor(settings.globe.radius + settings.satellite.altitude);
-    })
-  );
 };
 
 export const useCluster = () => {
