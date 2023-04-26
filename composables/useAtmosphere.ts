@@ -1,5 +1,6 @@
 import {
   FrontSide,
+  Light,
   Mesh,
   Object3D,
   ShaderMaterial,
@@ -15,15 +16,19 @@ const settings = {
 let uniforms: any;
 let atmos: Mesh;
 
-const init = async (parent: Object3D, vertex: any, fragment: any) => {
+const init = async (
+  parent: Object3D,
+  light: Light,
+  vertex: any,
+  fragment: any
+) => {
   const atmosphereGeometry = new SphereGeometry(settings.outerRadius, 64, 64);
-  const $sun = useSun();
 
   uniforms = {
     earthCenter: new Uniform(parent.position),
     earthRadius: new Uniform(settings.innerRadius),
     atmosphereRadius: new Uniform(settings.outerRadius),
-    lightDirection: new Uniform($sun.light.position),
+    lightDirection: new Uniform(light.position),
   };
   const atmosphereMaterial = new ShaderMaterial({
     uniforms: uniforms,

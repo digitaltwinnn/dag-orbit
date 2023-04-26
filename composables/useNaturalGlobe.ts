@@ -1,5 +1,6 @@
 import { gsap } from "gsap";
 import {
+  Light,
   MathUtils,
   Mesh,
   MeshPhongMaterial,
@@ -10,6 +11,7 @@ import {
 
 export const useNaturalGlobe = async (
   parent: Object3D,
+  light: Light,
   vAtmosphere: any,
   fAtmosphere: any
 ) => {
@@ -46,7 +48,7 @@ export const useNaturalGlobe = async (
   mesh.name = "NaturalGlobe";
   parent.add(mesh);
 
-  await useAtmosphere().init(mesh, vAtmosphere, fAtmosphere);
+  await useAtmosphere().init(mesh, light, vAtmosphere, fAtmosphere);
   animate();
 
   return {

@@ -14,12 +14,11 @@ onMounted(async () => {
   const el = document.getElementById("scene-container");
   if (el != null) {
     const { scene, bloom, tick } = await useScene(el);
-    const { light, init: initSun } = useSun();
-    const { mesh: natural } = await useNaturalGlobe(scene, vAtmosphere, fAtmosphere);
+    const { light } = await useSun(scene);
+    const { mesh: natural } = await useNaturalGlobe(scene, light, vAtmosphere, fAtmosphere);
     const { mesh: digital } = await useDigitalGlobe(natural);
     const { init: initCluster } = useCluster();
 
-    await initSun(scene);
     await initCluster(natural, bloom, "/api/nodes");
 
     // setup animations

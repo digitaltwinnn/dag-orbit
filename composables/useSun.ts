@@ -4,15 +4,18 @@ import {
   LensflareElement,
 } from "three/examples/jsm/objects/Lensflare";
 
-const light = new PointLight(0xffffff);
-light.name = "Sun";
-light.intensity = 1;
+export const useSun = async (parent: Object3D) => {
+  const settings = {
+    intensity: 1,
+  };
 
-const init = async (parent: Object3D) => {
+  const light = new PointLight(0xffffff);
+  light.name = "Sun";
+  light.intensity = settings.intensity;
   light.position.set(1000, 0, 1000);
+
   const loader = new TextureLoader();
   const $img = useImage();
-
   const sun = loader.load($img("/sun.jpg", { width: 320 }));
   const hexagon = loader.load($img("/hexagon.jpg", { width: 320 }));
   const circle = loader.load($img("/circle.jpg", { width: 320 }));
@@ -31,11 +34,8 @@ const init = async (parent: Object3D) => {
   flare.addElement(new LensflareElement(circle, 125, 0.9, purple));
   light.add(flare);
   parent.add(light);
-};
 
-export const useSun = () => {
   return {
     light,
-    init,
   };
 };
