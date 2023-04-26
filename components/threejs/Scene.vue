@@ -5,39 +5,28 @@
   </div>
 </template>
 
-<script>
+<script setup >
 import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 
-export default {
-  async mounted() {
-    const el = document.getElementById("scene-container");
-    if (el != null) {
-      const $main = await useScene(el);
+onMounted(async () => {
+  const el = document.getElementById("scene-container");
+  if (el != null) {
+    const { scene, bloom, tick } = await useScene(el);
+    const { light, init: initSun } = useSun();
+    const { mesh: natural } = await useNaturalGlobe(scene, vAtmosphere, fAtmosphere);
+    const { mesh: digital } = await useDigitalGlobe(natural);
+    const { init: initCluster } = useCluster();
 
-      const $sun = useSun();
-      const $naturalGlobe = await useNaturalGlobe($main.scene, vAtmosphere, fAtmosphere);
-      const $digitalGlobe = await useDigitalGlobe($naturalGlobe.mesh);
-      const $cluster = useCluster();
-      // const $theatre = useTheatre();
+    await initSun(scene);
+    await initCluster(natural, bloom, "/api/nodes");
 
-      await $sun.init($main.scene);
-      await $cluster.init($naturalGlobe.mesh, $main.bloom, "/api/nodes");
-      /*
-      await $theatre.init(
-        $main.camera, $main.scene, $main.bloom,
-        [$main.light, $sun.light],
-        [$natural.globe, $digital.globe, $cluster.cluster]
-      )
-      */
-
-      // setup animations
-      gsap.ticker.add((time, deltaTime, frame) => {
-        $main.tick(time, deltaTime, frame);
-        // $theatre.rafDriver.tick(time, deltaTime, frame);
-      });
-    }
+    // setup animations
+    gsap.ticker.add((time, deltaTime, frame) => {
+      tick(time, deltaTime, frame);
+      // $theatre.rafDriver.tick(time, deltaTime, frame);
+    });
   }
-}
+});
 </script>
