@@ -41,6 +41,7 @@ export const useSatellites = async (
       settings.globe.radius
     );
     dummy.position.set(position.x, position.y, position.z);
+    dummy.lookAt(0, 0, 0);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
 
