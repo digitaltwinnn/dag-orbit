@@ -17,9 +17,7 @@ onMounted(async () => {
     const { light } = await useSun(scene);
     const { mesh: natural } = await useNaturalGlobe(scene, light, vAtmosphere, fAtmosphere);
     const { mesh: digital } = await useDigitalGlobe(natural);
-    const { init: initCluster } = useCluster();
-
-    await initCluster(natural, bloom, "/api/nodes");
+    const { cluster } = await useCluster(natural, bloom, "/api/nodes");
 
     // setup animations
     gsap.ticker.add((time, deltaTime, frame) => {
