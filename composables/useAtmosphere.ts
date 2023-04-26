@@ -8,23 +8,20 @@ import {
   Uniform,
 } from "three";
 
-const settings = {
-  innerRadius: 100,
-  outerRadius: 103,
-};
-
-let uniforms: any;
-let atmos: Mesh;
-
-const init = async (
+export const useAtmosphere = (
   parent: Object3D,
   light: Light,
-  vertex: any,
-  fragment: any
+  vertex: string,
+  fragment: string
 ) => {
+  const settings = {
+    innerRadius: 100,
+    outerRadius: 103,
+  };
+
   const atmosphereGeometry = new SphereGeometry(settings.outerRadius, 64, 64);
 
-  uniforms = {
+  const uniforms = {
     earthCenter: new Uniform(parent.position),
     earthRadius: new Uniform(settings.innerRadius),
     atmosphereRadius: new Uniform(settings.outerRadius),
@@ -38,13 +35,11 @@ const init = async (
     transparent: true,
   });
 
-  atmos = new Mesh(atmosphereGeometry, atmosphereMaterial);
+  const atmos = new Mesh(atmosphereGeometry, atmosphereMaterial);
   atmos.name = "Atmosphere";
   parent.add(atmos);
-};
 
-export const useAtmosphere = () => {
   return {
-    init,
+    atmos,
   };
 };

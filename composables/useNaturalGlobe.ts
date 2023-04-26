@@ -12,8 +12,8 @@ import {
 export const useNaturalGlobe = async (
   parent: Object3D,
   light: Light,
-  vAtmosphere: any,
-  fAtmosphere: any
+  vAtmosphere: string,
+  fAtmosphere: string
 ) => {
   const settings = {
     radius: 100,
@@ -48,7 +48,7 @@ export const useNaturalGlobe = async (
   mesh.name = "NaturalGlobe";
   parent.add(mesh);
 
-  await useAtmosphere().init(mesh, light, vAtmosphere, fAtmosphere);
+  useAtmosphere(mesh, light, vAtmosphere, fAtmosphere);
   animate();
 
   return {
