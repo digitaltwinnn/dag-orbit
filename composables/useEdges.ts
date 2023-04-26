@@ -9,76 +9,24 @@ import {
 } from "three";
 import { gsap } from "gsap";
 
-const settings = {
-  globe: {
-    radius: 120,
-  },
-  line: {
-    points: 50,
-    opacity: 0.5,
-    animation: {
-      points: 10,
-      duriation: 2,
-      highlight: 0.4,
-    },
-  },
-};
-
 export const useEdges = async (
   parent: Object3D,
   edges: Edge[],
-  effect: SelectiveBloomEffect
+  bloom: SelectiveBloomEffect
 ) => {
-  const points: Vector3[] = [];
-  const indices: number[] = [];
-  const colors: number[] = [];
-
-  const init = () => {
-    let linePos = 0;
-    let colorPos = 0;
-    edges.map((edge) => {
-      // points
-      const arc = useGlobeUtils().createSphereArc(
-        edge.source,
-        edge.target,
-        settings.globe.radius
-      );
-      points.push(...arc.getPoints(settings.line.points));
-
-      // indices
-      for (let i = 0; i < settings.line.points; i++) {
-        const indice = [linePos + i, linePos + i + 1];
-        indices.push(...indice);
-      }
-      linePos += settings.line.points + 1;
-
-      // colors
-      let color;
-      for (let i = 0; i <= settings.line.points; i++) {
-        color = gsap.utils.interpolate(
-          edge.source.color,
-          edge.target.color,
-          i / settings.line.points
-        );
-        colors[colorPos++] = color.r;
-        colors[colorPos++] = color.g;
-        colors[colorPos++] = color.b;
-      }
-    });
-
-    const material = new LineBasicMaterial({
-      vertexColors: true,
-      transparent: true,
-      opacity: settings.line.opacity,
-    });
-    const geometry = new BufferGeometry().setFromPoints(points);
-    geometry.setIndex(indices);
-    geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
-    const edgeLines = new LineSegments(geometry, material);
-
-    parent.add(edgeLines);
-    effect.selection.add(edgeLines);
-    animate(edgeLines);
+  const settings = {
+    globe: {
+      radius: 120,
+    },
+    line: {
+      points: 50,
+      opacity: 0.5,
+      animation: {
+        points: 10,
+        duriation: 2,
+        highlight: 0.4,
+      },
+    },
   };
 
   const animate = (edgeLines: LineSegments) => {
@@ -123,7 +71,58 @@ export const useEdges = async (
     });
   };
 
-  init();
+  const points: Vector3[] = [];
+  const indices: number[] = [];
+  const colors: number[] = [];
 
-  return { edges };
+  let linePos = 0;
+  let colorPos = 0;
+  edges.map((edge) => {
+    // points
+    const arc = useGlobeUtils().createSphereArc(
+      edge.source,
+      edge.target,
+      settings.globe.radius
+    );
+    points.push(...arc.getPoints(settings.line.points));
+
+    // indices
+    for (let i = 0; i < settings.line.points; i++) {
+      const indice = [linePos + i, linePos + i + 1];
+      indices.push(...indice);
+    }
+    linePos += settings.line.points + 1;
+
+    // colors
+    let color;
+    for (let i = 0; i <= settings.line.points; i++) {
+      color = gsap.utils.interpolate(
+        edge.source.color,
+        edge.target.color,
+        i / settings.line.points
+      );
+      colors[colorPos++] = color.r;
+      colors[colorPos++] = color.g;
+      colors[colorPos++] = color.b;
+    }
+  });
+
+  const material = new LineBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    opacity: settings.line.opacity,
+  });
+  const geometry = new BufferGeometry().setFromPoints(points);
+  geometry.setIndex(indices);
+  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  const mesh = new LineSegments(geometry, material);
+  mesh.name = "EdgeLines";
+
+  parent.add(mesh);
+  bloom.selection.add(mesh);
+  animate(mesh);
+
+  return {
+    mesh,
+  };
 };
