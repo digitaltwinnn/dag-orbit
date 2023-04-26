@@ -18,13 +18,12 @@ export default {
 
       const $sun = useSun();
       const $naturalGlobe = useNaturalGlobe();
-      const $digitalGlobe = useDigitalGlobe();
+      const $digitalGlobe = await useDigitalGlobe($naturalGlobe.globe);
       const $cluster = useCluster();
       // const $theatre = useTheatre();
 
       await $sun.init($main.scene);
       await $naturalGlobe.init($main.scene, vAtmosphere, fAtmosphere);
-      await $digitalGlobe.init($naturalGlobe.globe);
       await $cluster.init($naturalGlobe.globe, $main.bloom, "/api/nodes");
       /*
       await $theatre.init(
