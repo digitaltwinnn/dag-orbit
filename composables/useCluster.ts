@@ -4,20 +4,11 @@ import { Color, Group, MathUtils, Object3D } from "three";
 
 const settings = {
   colors: ["#1E90FE", "#1467C8", "#1053AD"],
-  globe: {
-    radius: 100,
-  },
-  satellite: {
-    altitude: 20,
-    size: 2,
+  node: {
     proximity: 0.5,
-  },
-  edge: {
-    animated: 100,
   },
 };
 
-const graph: Graph = createGraph();
 const cluster = new Group();
 cluster.name = "Cluster";
 let satelliteId = 0;
@@ -27,24 +18,42 @@ const init = async (
   bloom: SelectiveBloomEffect,
   url: string
 ) => {
-  const nodes = await nodesToGraph(url);
-  const satellites = await satellitesToGraph(nodes);
-  const edges = await edgesToGraph(satellites);
+  const nodes: L0Node[] = await $fetch(url);
+  const satellites = toSatellites(nodes);
+  const edges = toEdges(satellites);
+  const graph = toGraph(nodes, satellites, edges);
 
-  await useSatellites(cluster, satellites, bloom);
-  await useEdges(cluster, edges, bloom);
+  const $satellites = await useSatellites(cluster, satellites, bloom);
+  const $edges = await useEdges(cluster, edges, bloom);
   parent.add(cluster);
 };
 
-const nodesToGraph = async (url: string): Promise<L0Node[]> => {
-  const nodes: L0Node[] = await $fetch(url);
+const toGraph = (
+  nodes: L0Node[],
+  satellites: Satellite[],
+  edges: Edge[]
+): Graph => {
+  const graph = createGraph();
+
   nodes.map((node) => {
     graph.addNode(node.ip, node);
   });
-  return nodes;
+
+  satellites.map((sat) => {
+    graph.addNode(sat.id, sat);
+    sat.nodeIPs.map((nodeIP) => {
+      graph.addLink(sat.id, nodeIP);
+    });
+  });
+
+  edges.map((edge) => {
+    graph.addLink(edge.source.id, edge.target.id);
+  });
+
+  return graph;
 };
 
-const satellitesToGraph = async (nodes: L0Node[]): Promise<Satellite[]> => {
+const toSatellites = (nodes: L0Node[]): Satellite[] => {
   const satellites: Satellite[] = [];
   nodes.forEach((node) => {
     const satsInRange = searchSatellites(
@@ -73,17 +82,10 @@ const satellitesToGraph = async (nodes: L0Node[]): Promise<Satellite[]> => {
     }
   });
 
-  satellites.map((sat) => {
-    graph.addNode(sat.id, sat);
-    sat.nodeIPs.map((nodeIP) => {
-      graph.addLink(sat.id, nodeIP);
-    });
-  });
-
   return satellites;
 };
 
-const edgesToGraph = async (sats: Satellite[]): Promise<Edge[]> => {
+const toEdges = (sats: Satellite[]): Edge[] => {
   const sources = [...sats];
   const targets = [...sats];
   const edges: Edge[] = [];
@@ -101,10 +103,6 @@ const edgesToGraph = async (sats: Satellite[]): Promise<Edge[]> => {
     });
   });
 
-  edges.map((edge) => {
-    graph.addLink(edge.source.id, edge.target.id);
-  });
-
   return edges;
 };
 
@@ -113,7 +111,7 @@ const searchSatellites = (
   lng: number,
   target: Satellite[]
 ): Satellite[] => {
-  const proximity = settings.satellite.proximity;
+  const proximity = settings.node.proximity;
   const sats = target.filter((s: Satellite) => {
     const latInRange = inRange(lat, s.lat - proximity, s.lat + proximity);
     const lngInRange = inRange(lng, s.lng - proximity, s.lng + proximity);
