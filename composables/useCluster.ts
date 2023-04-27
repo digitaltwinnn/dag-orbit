@@ -10,7 +10,7 @@ export const useCluster = async (
   const settings = {
     colors: ["#1E90FE", "#1467C8", "#1053AD"],
     satellite: {
-      proximity: 0.5,
+      proximity: 0.1,
     },
   };
 
@@ -125,7 +125,7 @@ export const useCluster = async (
   const edges = toEdges(satellites);
   const graph = toGraph(nodes, edges);
 
-  const $satellites = await useSatellites(cluster, satellites, bloom);
+  const $satellites = await useSatellites(cluster, satellites);
   const $edges = await useEdges(cluster, edges, bloom);
   parent.add(cluster);
 
