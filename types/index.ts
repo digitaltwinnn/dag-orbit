@@ -1,7 +1,5 @@
 import { Color } from "three";
 
-export {};
-
 declare global {
   type L0Node = {
     ip: number;
@@ -16,16 +14,16 @@ declare global {
       longitude: number;
     };
   };
+
   type Edge = {
     source: Satellite;
     target: Satellite;
+    visible: boolean;
   };
 
   type Satellite = {
-    lat: number;
-    lng: number;
-    id: number;
-    nodeIPs: number[];
+    node: L0Node;
     color: Color;
+    visible: boolean;
   };
 }

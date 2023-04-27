@@ -36,8 +36,8 @@ export const useSatellites = async (
   for (let i = 0; i < satellites.length; i++) {
     const satellite = satellites[i];
     position = useGlobeUtils().toVector(
-      satellite.lat,
-      satellite.lng,
+      satellite.node.host.latitude,
+      satellite.node.host.longitude,
       settings.globe.radius
     );
     dummy.position.set(position.x, position.y, position.z);

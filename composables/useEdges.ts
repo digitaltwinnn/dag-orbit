@@ -19,12 +19,12 @@ export const useEdges = async (
       radius: 120,
     },
     line: {
-      points: 50,
-      opacity: 0.5,
+      points: 30,
+      opacity: 0.4,
       animation: {
-        points: 10,
+        points: 4,
         duriation: 2,
-        highlight: 0.4,
+        highlight: 0.5,
       },
     },
   };
@@ -35,6 +35,7 @@ export const useEdges = async (
     let start: number, end: number, offset: number;
 
     const newColor = edgeLines.geometry.attributes.color as any;
+    const highlight = settings.line.animation.highlight;
     let target = { t: 0 };
     gsap.to(target, {
       duration: settings.line.animation.duriation,
@@ -44,7 +45,7 @@ export const useEdges = async (
       onUpdate: function () {
         for (let i = 0; i < edges.length; i++) {
           offset = i * (settings.line.points + 1);
-          end = offset + Math.floor(this.targets()[0].t * (max + line));
+          end = offset + this.targets()[0].t * (max + line);
           start = end - line;
 
           if (end < offset + line) {
@@ -53,7 +54,6 @@ export const useEdges = async (
             end = offset + max;
           }
 
-          const highlight = settings.line.animation.highlight;
           for (let i = 3 * offset; i <= 3 * (offset + max); i += 3) {
             if (i > 3 * start && i < 3 * end) {
               newColor.array[i] = colors[i] + highlight;
@@ -71,17 +71,25 @@ export const useEdges = async (
     });
   };
 
+  // invisible edges at the end to be hidden using setDrawRange
+  edges.sort((e1, e2) => {
+    return e1.visible === e2.visible ? 0 : e1.visible ? -1 : 1;
+  });
+  const visibleEdges = edges.filter((e) => {
+    return e.visible;
+  }).length;
+
+  // populate the lineSgements for all the edges
   const points: Vector3[] = [];
   const indices: number[] = [];
   const colors: number[] = [];
-
   let linePos = 0;
   let colorPos = 0;
   edges.map((edge) => {
     // points
     const arc = useGlobeUtils().createSphereArc(
-      edge.source,
-      edge.target,
+      edge.source.node.host,
+      edge.target.node.host,
       settings.globe.radius
     );
     points.push(...arc.getPoints(settings.line.points));
@@ -115,6 +123,8 @@ export const useEdges = async (
   const geometry = new BufferGeometry().setFromPoints(points);
   geometry.setIndex(indices);
   geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  const edgeIndices = 2 * settings.line.points;
+  geometry.setDrawRange(0, 1 + edgeIndices * visibleEdges);
   const mesh = new LineSegments(geometry, material);
   mesh.name = "EdgeLines";
 

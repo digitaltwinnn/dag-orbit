@@ -35,12 +35,12 @@ export const useGlobeUtils = () => {
   };
 
   const createSphereArc = (
-    o: { lat: number; lng: number },
-    d: { lat: number; lng: number },
+    o: { latitude: number; longitude: number },
+    d: { latitude: number; longitude: number },
     radius: number
   ): Curve<Vector3> => {
-    const origin = toVector(o.lat, o.lng, radius);
-    const dest = toVector(d.lat, d.lng, radius);
+    const origin = toVector(o.latitude, o.longitude, radius);
+    const dest = toVector(d.latitude, d.longitude, radius);
 
     const sphereArc = new Curve<Vector3>();
     sphereArc.getPoint = greatCircleFunction(origin, dest);

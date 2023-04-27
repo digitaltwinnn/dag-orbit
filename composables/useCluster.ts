@@ -7,26 +7,31 @@ export const useCluster = async (
   bloom: SelectiveBloomEffect,
   url: string
 ) => {
-  const toGraph = (
-    nodes: L0Node[],
-    satellites: Satellite[],
-    edges: Edge[]
-  ): Graph => {
+  const settings = {
+    colors: ["#1E90FE", "#1467C8", "#1053AD"],
+    satellite: {
+      proximity: 0.5,
+    },
+  };
+
+  const toGraph = (nodes: L0Node[], edges: Edge[]): Graph => {
     const graph = createGraph();
 
     nodes.map((node) => {
       graph.addNode(node.ip, node);
     });
 
+    /* maybe virtual nodes/satellites to show relation to datacenter/location
     satellites.map((sat) => {
       graph.addNode(sat.id, sat);
       sat.nodeIPs.map((nodeIP) => {
         graph.addLink(sat.id, nodeIP);
       });
     });
+    */
 
     edges.map((edge) => {
-      graph.addLink(edge.source.id, edge.target.id);
+      graph.addLink(edge.source.node.ip, edge.target.node.ip);
     });
 
     return graph;
@@ -35,30 +40,19 @@ export const useCluster = async (
   const toSatellites = (nodes: L0Node[]): Satellite[] => {
     const satellites: Satellite[] = [];
     nodes.forEach((node) => {
-      const satsInRange = searchSatellites(
+      const nearbySatellites = searchSatellites(
         node.host.latitude,
         node.host.longitude,
         satellites
       );
-      if (satsInRange.length == 0) {
-        const color = new Color(
-          settings.colors[MathUtils.randInt(0, settings.colors.length - 1)]
-        );
 
-        const satellite = {
-          lat: node.host.latitude,
-          lng: node.host.longitude,
-          id: satelliteId++,
-          objectId: -1,
-          nodeIPs: [node.ip],
-          color: color,
-        };
-        satellites.push(satellite);
-      } else {
-        satsInRange.map((sat) => {
-          sat.nodeIPs.push(node.ip);
-        });
-      }
+      satellites.push({
+        node: node,
+        color: new Color(
+          settings.colors[MathUtils.randInt(0, settings.colors.length - 1)]
+        ),
+        visible: nearbySatellites.length == 0,
+      });
     });
 
     return satellites;
@@ -71,12 +65,24 @@ export const useCluster = async (
 
     sources.map(async (source) => {
       targets.map((target) => {
-        if (source.id != target.id) {
-          const mirror = edges.find((edge) => {
-            return edge.source.id == target.id && edge.target.id == source.id;
+        if (source.node.ip != target.node.ip) {
+          const edgeExists = edges.find((e) => {
+            return (
+              e.source.node.ip == target.node.ip &&
+              e.target.node.ip == source.node.ip
+            );
           });
-          if (!mirror) {
-            edges.push({ source: source, target: target });
+
+          const sameLocation =
+            source.node.host.latitude == target.node.host.latitude &&
+            source.node.host.longitude == target.node.host.longitude;
+
+          if (!edgeExists && !sameLocation) {
+            edges.push({
+              source: source,
+              target: target,
+              visible: source.visible && target.visible,
+            });
           }
         }
       });
@@ -90,10 +96,18 @@ export const useCluster = async (
     lng: number,
     target: Satellite[]
   ): Satellite[] => {
-    const proximity = settings.node.proximity;
+    const proximity = settings.satellite.proximity;
     const sats = target.filter((s: Satellite) => {
-      const latInRange = inRange(lat, s.lat - proximity, s.lat + proximity);
-      const lngInRange = inRange(lng, s.lng - proximity, s.lng + proximity);
+      const latInRange = inRange(
+        lat,
+        s.node.host.latitude - proximity,
+        s.node.host.latitude + proximity
+      );
+      const lngInRange = inRange(
+        lng,
+        s.node.host.longitude - proximity,
+        s.node.host.longitude + proximity
+      );
       return latInRange && lngInRange;
     });
     return sats;
@@ -102,22 +116,14 @@ export const useCluster = async (
   const inRange = (x: number, min: number, max: number): boolean => {
     return (x - min) * (x - max) <= 0;
   };
-  
-  const settings = {
-    colors: ["#1E90FE", "#1467C8", "#1053AD"],
-    node: {
-      proximity: 0.5,
-    },
-  };
 
   const cluster = new Group();
   cluster.name = "Cluster";
-  let satelliteId = 0;
 
   const nodes: L0Node[] = await $fetch(url);
   const satellites = toSatellites(nodes);
   const edges = toEdges(satellites);
-  const graph = toGraph(nodes, satellites, edges);
+  const graph = toGraph(nodes, edges);
 
   const $satellites = await useSatellites(cluster, satellites, bloom);
   const $edges = await useEdges(cluster, edges, bloom);
