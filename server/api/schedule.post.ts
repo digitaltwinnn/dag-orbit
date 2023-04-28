@@ -1,6 +1,10 @@
 import nodeModel from "../model/node.model";
 import { AnyBulkWriteOperation } from "mongodb";
 
+export const config = {
+  runtime: "edge",
+};
+
 export default defineEventHandler(async (event) => {
   let updates = 0;
 
