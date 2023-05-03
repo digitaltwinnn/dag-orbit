@@ -14,12 +14,8 @@ import {
 } from "three";
 import { gsap } from "gsap";
 
-const GLOBE = 0;
-const MAP = 1;
-
 const settings = {
   colors: ["#1E90FE", "#1467C8", "#1053AD"],
-  mode: GLOBE,
   globe: {
     density: 0.5,
     rows: 150,
@@ -32,7 +28,7 @@ const settings = {
 };
 
 export const useDigitalGlobe = async (parent: Object3D) => {
-  const createGlobeGeometry = (
+  const createGlobeOrientedGeometry = (
     image: HTMLImageElement,
     context: CanvasRenderingContext2D
   ): BufferGeometry => {
@@ -78,11 +74,11 @@ export const useDigitalGlobe = async (parent: Object3D) => {
 
     const geometry = new BufferGeometry();
     geometry.setAttribute("position", dotsToPositions(dots));
-    geometry.setAttribute("rotation", rotatePositions(geometry, GLOBE));
+    geometry.setAttribute("rotation", rotatePositionsToGlobe(geometry));
     return geometry;
   };
 
-  const createMapGeometry = (
+  const createMapOrientedGeometry = (
     image: HTMLImageElement,
     context: CanvasRenderingContext2D
   ): BufferGeometry => {
@@ -105,7 +101,7 @@ export const useDigitalGlobe = async (parent: Object3D) => {
 
     const geometry = new BufferGeometry();
     geometry.setAttribute("position", dotsToPositions(dots));
-    geometry.setAttribute("rotation", rotatePositions(geometry, MAP));
+    geometry.setAttribute("rotation", rotatePositionsToMap(geometry));
     return geometry;
   };
 
@@ -121,24 +117,17 @@ export const useDigitalGlobe = async (parent: Object3D) => {
     return new BufferAttribute(position, 3);
   };
 
-  const rotatePositions = (
-    geom: BufferGeometry,
-    mode: number
-  ): BufferAttribute => {
+  const rotatePositionsToGlobe = (geom: BufferGeometry): BufferAttribute => {
     const rotation = new Float32Array(geom.attributes.position.array.length);
     const dummy = new Object3D();
 
     for (let i = 0; i < rotation.length; i += 3) {
-      if (mode == GLOBE) {
-        dummy.position.set(
-          geom.attributes.position.array[i],
-          geom.attributes.position.array[i + 1],
-          geom.attributes.position.array[i + 2]
-        );
-        dummy.lookAt(0, 0, 0);
-      } else {
-        dummy.rotation.set(0, 0, Math.PI / 2);
-      }
+      dummy.position.set(
+        geom.attributes.position.array[i],
+        geom.attributes.position.array[i + 1],
+        geom.attributes.position.array[i + 2]
+      );
+      dummy.lookAt(0, 0, 0);
 
       rotation[i] = dummy.rotation.x;
       rotation[i + 1] = dummy.rotation.y;
@@ -147,27 +136,42 @@ export const useDigitalGlobe = async (parent: Object3D) => {
     return new BufferAttribute(rotation, 3);
   };
 
-  const instancedMeshFromGeometry = (geom: BufferGeometry): InstancedMesh => {
-    let geometry: BufferGeometry = geom.clone();
+  const rotatePositionsToMap = (geom: BufferGeometry): BufferAttribute => {
+    const rotation = new Float32Array(geom.attributes.position.array.length);
+    const dummy = new Object3D();
 
-    const size = geometry.attributes.position.array.length / 3;
+    for (let i = 0; i < rotation.length; i += 3) {
+      dummy.rotation.set(0, 0, Math.PI / 2);
+      rotation[i] = dummy.rotation.x;
+      rotation[i + 1] = dummy.rotation.y;
+      rotation[i + 2] = dummy.rotation.z;
+    }
+    return new BufferAttribute(rotation, 3);
+  };
+
+  const instancedMeshFromGeometry = (
+    geometry: BufferGeometry
+  ): InstancedMesh => {
+    const instances = geometry.attributes.position.array.length / 3;
     const circle = new CircleGeometry(0.7, 6);
     const instancedCircle = new InstancedBufferGeometry().copy(circle);
     const material = new MeshPhongMaterial({ side: DoubleSide });
 
-    const mesh = new InstancedMesh(instancedCircle, material, size);
+    const mesh = new InstancedMesh(instancedCircle, material, instances);
     const dummy = new Object3D();
     const color = new Color();
     let i3 = 0;
-    for (let i = 0; i < size; i++) {
-      i3 += 3;
+    for (let i = 0; i < instances; i++) {
       dummy.position.set(
         geometry.attributes.position.array[i3],
         geometry.attributes.position.array[i3 + 1],
         geometry.attributes.position.array[i3 + 2]
       );
-
-      dummy.lookAt(0, 0, 0);
+      dummy.rotation.set(
+        geometry.attributes.rotation.array[i3],
+        geometry.attributes.rotation.array[i3 + 1],
+        geometry.attributes.rotation.array[i3 + 2]
+      );
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
 
@@ -175,6 +179,7 @@ export const useDigitalGlobe = async (parent: Object3D) => {
         settings.colors[MathUtils.randInt(0, settings.colors.length - 1)]
       );
       mesh.setColorAt(i, color);
+      i3 += 3;
     }
 
     return mesh;
@@ -185,15 +190,14 @@ export const useDigitalGlobe = async (parent: Object3D) => {
     let end: number[] = [];
 
     subject = concatBufferAttributes(
-      mapGeometry.attributes.position.array,
-      mapGeometry.attributes.rotation.array
+      mapOrientation.attributes.position.array,
+      mapOrientation.attributes.rotation.array
     );
     end = concatBufferAttributes(
-      globeGeometry.attributes.position.array,
-      globeGeometry.attributes.rotation.array
+      globeOrientation.attributes.position.array,
+      globeOrientation.attributes.rotation.array
     );
 
-    settings.mode = GLOBE;
     animateTransformation(subject, end);
   };
 
@@ -202,15 +206,14 @@ export const useDigitalGlobe = async (parent: Object3D) => {
     let end: number[] = [];
 
     subject = concatBufferAttributes(
-      globeGeometry.attributes.position.array,
-      globeGeometry.attributes.rotation.array
+      globeOrientation.attributes.position.array,
+      globeOrientation.attributes.rotation.array
     );
     end = concatBufferAttributes(
-      mapGeometry.attributes.position.array,
-      mapGeometry.attributes.rotation.array
+      mapOrientation.attributes.position.array,
+      mapOrientation.attributes.rotation.array
     );
 
-    settings.mode = MAP;
     animateTransformation(subject, end);
   };
 
@@ -250,8 +253,8 @@ export const useDigitalGlobe = async (parent: Object3D) => {
   };
 
   let mesh: InstancedMesh = new InstancedMesh(undefined, undefined, 0);
-  let globeGeometry: BufferGeometry;
-  let mapGeometry: BufferGeometry;
+  let globeOrientation: BufferGeometry;
+  let mapOrientation: BufferGeometry;
 
   const $img = useImage();
   const imgUrl = $img("/earthspec1k.jpg", { width: 1024 });
@@ -265,10 +268,11 @@ export const useDigitalGlobe = async (parent: Object3D) => {
   context ? context.drawImage(image, 0, 0) : null;
 
   if (context) {
-    globeGeometry = createGlobeGeometry(image, context);
-    mapGeometry = createMapGeometry(image, context);
+    globeOrientation = createGlobeOrientedGeometry(image, context);
+    mapOrientation = createMapOrientedGeometry(image, context);
 
-    mesh = instancedMeshFromGeometry(globeGeometry);
+    const orientation = globeOrientation;
+    mesh = instancedMeshFromGeometry(orientation);
     mesh.name = "DigitalGlobe";
     parent.add(mesh);
   }
