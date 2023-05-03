@@ -1,5 +1,6 @@
 import {
   FrontSide,
+  Light,
   Mesh,
   Object3D,
   ShaderMaterial,
@@ -7,23 +8,24 @@ import {
   Uniform,
 } from "three";
 
-const settings = {
-  innerRadius: 100,
-  outerRadius: 103,
-};
+export const useAtmosphere = (
+  parent: Object3D,
+  light: Light,
+  vertex: string,
+  fragment: string
+) => {
+  const settings = {
+    innerRadius: 100,
+    outerRadius: 103,
+  };
 
-let uniforms: any;
-let atmos: Mesh;
-
-const init = async (parent: Object3D, vertex: any, fragment: any) => {
   const atmosphereGeometry = new SphereGeometry(settings.outerRadius, 64, 64);
-  const $sun = useSun();
 
-  uniforms = {
+  const uniforms = {
     earthCenter: new Uniform(parent.position),
     earthRadius: new Uniform(settings.innerRadius),
     atmosphereRadius: new Uniform(settings.outerRadius),
-    lightDirection: new Uniform($sun.light.position),
+    lightDirection: new Uniform(light.position),
   };
   const atmosphereMaterial = new ShaderMaterial({
     uniforms: uniforms,
@@ -33,13 +35,11 @@ const init = async (parent: Object3D, vertex: any, fragment: any) => {
     transparent: true,
   });
 
-  atmos = new Mesh(atmosphereGeometry, atmosphereMaterial);
+  const atmos = new Mesh(atmosphereGeometry, atmosphereMaterial);
   atmos.name = "Atmosphere";
   parent.add(atmos);
-};
 
-export const useAtmosphere = () => {
   return {
-    init,
+    atmos,
   };
 };

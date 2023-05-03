@@ -1,5 +1,6 @@
 import { gsap } from "gsap";
 import {
+  Light,
   MathUtils,
   Mesh,
   MeshPhongMaterial,
@@ -8,17 +9,27 @@ import {
   TextureLoader,
 } from "three";
 
-const settings = {
-  radius: 100,
-};
+export const useNaturalGlobe = async (
+  parent: Object3D,
+  light: Light,
+  vAtmosphere: string,
+  fAtmosphere: string
+) => {
+  const settings = {
+    radius: 100,
+  };
 
-const globe: Mesh = new Mesh(undefined, undefined);
-globe.name = "NaturalGlobe";
+  const animate = () => {
+    gsap.to(mesh.rotation, {
+      y: MathUtils.degToRad(360),
+      duration: 60,
+      repeat: -1,
+      ease: "linear",
+    });
+  };
 
-const init = async (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
   const loader = new TextureLoader();
   const $img = useImage();
-
   const mapImgUrl = $img("/earthmap.jpg", { width: 1536 });
   const specularImgUrl = $img("/earthspec1k.jpg", { width: 640 });
   const bumpImgUrl = $img("/earthbump10k.jpg", { width: 1536 });
@@ -33,26 +44,14 @@ const init = async (parent: Object3D, vAtmosphere: any, fAtmosphere: any) => {
     bumpScale: 1,
   });
 
-  globe.geometry = geometry;
-  globe.material = material;
+  const mesh: Mesh = new Mesh(geometry, material);
+  mesh.name = "NaturalGlobe";
+  parent.add(mesh);
 
-  await useAtmosphere().init(globe, vAtmosphere, fAtmosphere);
-  parent.add(globe);
+  useAtmosphere(mesh, light, vAtmosphere, fAtmosphere);
   animate();
-};
 
-const animate = () => {
-  gsap.to(globe.rotation, {
-    y: MathUtils.degToRad(360),
-    duration: 60,
-    repeat: -1,
-    ease: "linear",
-  });
-};
-
-export const useNaturalGlobe = () => {
   return {
-    globe,
-    init,
+    mesh,
   };
 };

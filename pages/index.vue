@@ -38,7 +38,7 @@ export default {
                 },
             })
             /*
-            gsap.to(useScene().background.value, {
+            gsap.to(this.$refs.threejs.scene.background.value, {
                 duration: 6, r: 0, g: 0, b: 0,
                 scrollTrigger: {
                     trigger: ".panel-1",
@@ -46,8 +46,7 @@ export default {
                     markers: true
                 }
             });
-            */
-            gsap.to(useNaturalGlobe().globe.position, {
+            gsap.to(this.$refs.threejs.mesh.position, {
                 x: -200, y: -200, z: -200,
                 scrollTrigger: {
                     trigger: ".panel-1",
@@ -55,6 +54,7 @@ export default {
                     markers: true
                 }
             });
+            */
             gsap.to(".test2", {
                 scrollTrigger: {
                     trigger: ".panel-2",

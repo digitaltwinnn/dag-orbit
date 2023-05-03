@@ -99,6 +99,12 @@ export const useScene = async (el: HTMLElement) => {
     stats.showPanel(0);
   }
 
+  window.addEventListener("resize", () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+
   const tick = (deltaTime: number) => {
     stats.begin();
     if (controls.enabled) {

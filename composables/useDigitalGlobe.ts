@@ -1,5 +1,4 @@
 import {
-  Group,
   BufferGeometry,
   ImageLoader,
   Vector3,
@@ -15,264 +14,270 @@ import {
 } from "three";
 import { gsap } from "gsap";
 
-const GLOBE = 0;
-const MAP = 1;
-const MAXDOTS = 11500;
-const COLORS = ["#1E90FE", "#1467C8", "#1053AD"];
-
 const settings = {
-  mode: GLOBE,
+  colors: ["#1E90FE", "#1467C8", "#1053AD"],
   globe: {
     density: 0.5,
     rows: 150,
     radius: 130,
+    maxDots: 11500,
   },
   map: {
     step: 4.2,
   },
 };
 
-let globe: Group;
-let mesh: InstancedMesh;
-let globeGeometry: BufferGeometry;
-let mapGeometry: BufferGeometry;
+export const useDigitalGlobe = async (parent: Object3D) => {
+  const createGlobeOrientedGeometry = (
+    image: HTMLImageElement,
+    context: CanvasRenderingContext2D
+  ): BufferGeometry => {
+    const dots = [];
+    const $util = useGlobeUtils();
 
-const init = async (parent: Object3D) => {
-  const $img = useImage();
-  const imgUrl = $img("/earthspec1k.jpg", { width: 1024 });
-  const loader = new ImageLoader();
+    for (let lat = -90; lat <= 90; lat += 180 / settings.globe.rows) {
+      const r =
+        Math.cos((Math.abs(lat) * Math.PI) / 180) * settings.globe.radius;
+      const circumference = r * Math.PI * 2;
+      const dotsForLat = circumference * settings.globe.density;
 
-  loader.load(imgUrl, (image) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = image.width;
-    canvas.height = image.height;
-    const context = canvas.getContext("2d", { willReadFrequently: true });
-    context ? context.drawImage(image, 0, 0) : null;
-
-    if (context) {
-      globeGeometry = createGlobeGeometry(image, context);
-      mapGeometry = createMapGeometry(image, context);
-
-      mesh = createMesh(globeGeometry);
-      globe = new Group();
-      globe.name = "DigitalGlobe";
-      globe.add(mesh);
-      parent.add(globe);
-    }
-  });
-};
-
-const createGlobeGeometry = (
-  image: HTMLImageElement,
-  context: CanvasRenderingContext2D
-): BufferGeometry => {
-  const dots = [];
-  const $util = useGlobeUtils();
-
-  for (let lat = -90; lat <= 90; lat += 180 / settings.globe.rows) {
-    const r = Math.cos((Math.abs(lat) * Math.PI) / 180) * settings.globe.radius;
-    const circumference = r * Math.PI * 2;
-    const dotsForLat = circumference * settings.globe.density;
-
-    for (let x = 0; x < dotsForLat; x++) {
-      const long = -180 + (x * 360) / dotsForLat;
-      const coordinate = $util.latLongToXY(
-        lat,
-        long,
-        image.width,
-        image.height
-      );
-      const pixelData = context.getImageData(
-        coordinate.x,
-        coordinate.y,
-        1,
-        1
-      ).data;
-
-      if (pixelData[0] <= 5) {
-        dots.push(
-          $util
-            .toVector(lat, long, settings.globe.radius)
-            .normalize()
-            .multiplyScalar(settings.globe.radius)
+      for (let x = 0; x < dotsForLat; x++) {
+        const long = -180 + (x * 360) / dotsForLat;
+        const coordinate = $util.latLongToXY(
+          lat,
+          long,
+          image.width,
+          image.height
         );
+        const pixelData = context.getImageData(
+          coordinate.x,
+          coordinate.y,
+          1,
+          1
+        ).data;
+
+        if (pixelData[0] <= 5) {
+          dots.push(
+            $util
+              .toVector(lat, long, settings.globe.radius)
+              .normalize()
+              .multiplyScalar(settings.globe.radius)
+          );
+        }
       }
     }
-  }
-  if (dots.length < MAXDOTS) {
-    for (let i = 0; MAXDOTS - dots.length; i++) {
-      dots.push(new Vector3(0, 0, 0));
-    }
-  }
-
-  const geometry = new BufferGeometry();
-  geometry.setAttribute("position", dotsToPositions(dots));
-  geometry.setAttribute("rotation", rotatePositions(geometry, GLOBE));
-  return geometry;
-};
-
-const createMapGeometry = (
-  image: HTMLImageElement,
-  context: CanvasRenderingContext2D
-): BufferGeometry => {
-  const dots = [];
-  for (let x = 0; x < image.width; x += settings.map.step) {
-    for (let y = 0; y < image.height; y += settings.map.step) {
-      const pixelData = context.getImageData(x, y, 1, 1).data;
-      if (pixelData[0] <= 5) {
-        const posX = x - 0.5 * image.width;
-        const posY = -y + 0.5 * image.height;
-        dots.push(new Vector3(posX / 3, posY / 3, 0));
+    if (dots.length < settings.globe.maxDots) {
+      for (let i = 0; settings.globe.maxDots - dots.length; i++) {
+        dots.push(new Vector3(0, 0, 0));
       }
     }
-  }
-  if (dots.length < MAXDOTS) {
-    for (let i = 0; MAXDOTS - dots.length; i++) {
-      dots.push(new Vector3(0, 0, 0));
+
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", dotsToPositions(dots));
+    geometry.setAttribute("rotation", rotatePositionsToGlobe(geometry));
+    return geometry;
+  };
+
+  const createMapOrientedGeometry = (
+    image: HTMLImageElement,
+    context: CanvasRenderingContext2D
+  ): BufferGeometry => {
+    const dots = [];
+    for (let x = 0; x < image.width; x += settings.map.step) {
+      for (let y = 0; y < image.height; y += settings.map.step) {
+        const pixelData = context.getImageData(x, y, 1, 1).data;
+        if (pixelData[0] <= 5) {
+          const posX = x - 0.5 * image.width;
+          const posY = -y + 0.5 * image.height;
+          dots.push(new Vector3(posX / 3, posY / 3, 0));
+        }
+      }
     }
-  }
+    if (dots.length < settings.globe.maxDots) {
+      for (let i = 0; settings.globe.maxDots - dots.length; i++) {
+        dots.push(new Vector3(0, 0, 0));
+      }
+    }
 
-  const geometry = new BufferGeometry();
-  geometry.setAttribute("position", dotsToPositions(dots));
-  geometry.setAttribute("rotation", rotatePositions(geometry, MAP));
-  return geometry;
-};
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", dotsToPositions(dots));
+    geometry.setAttribute("rotation", rotatePositionsToMap(geometry));
+    return geometry;
+  };
 
-const dotsToPositions = (dots: Vector3[]): BufferAttribute => {
-  const position = new Float32Array(dots.length * 3);
-  let i3 = 0;
+  const dotsToPositions = (dots: Vector3[]): BufferAttribute => {
+    const position = new Float32Array(dots.length * 3);
+    let i3 = 0;
 
-  for (let i = 0; i < dots.length; i++) {
-    position[i3++] = dots[i].x;
-    position[i3++] = dots[i].y;
-    position[i3++] = dots[i].z;
-  }
-  return new BufferAttribute(position, 3);
-};
+    for (let i = 0; i < dots.length; i++) {
+      position[i3++] = dots[i].x;
+      position[i3++] = dots[i].y;
+      position[i3++] = dots[i].z;
+    }
+    return new BufferAttribute(position, 3);
+  };
 
-const rotatePositions = (
-  geom: BufferGeometry,
-  mode: number
-): BufferAttribute => {
-  const rotation = new Float32Array(geom.attributes.position.array.length);
-  const dummy = new Object3D();
+  const rotatePositionsToGlobe = (geom: BufferGeometry): BufferAttribute => {
+    const rotation = new Float32Array(geom.attributes.position.array.length);
+    const dummy = new Object3D();
 
-  for (let i = 0; i < rotation.length; i += 3) {
-    if (mode == GLOBE) {
+    for (let i = 0; i < rotation.length; i += 3) {
       dummy.position.set(
         geom.attributes.position.array[i],
         geom.attributes.position.array[i + 1],
         geom.attributes.position.array[i + 2]
       );
       dummy.lookAt(0, 0, 0);
-    } else {
+
+      rotation[i] = dummy.rotation.x;
+      rotation[i + 1] = dummy.rotation.y;
+      rotation[i + 2] = dummy.rotation.z;
+    }
+    return new BufferAttribute(rotation, 3);
+  };
+
+  const rotatePositionsToMap = (geom: BufferGeometry): BufferAttribute => {
+    const rotation = new Float32Array(geom.attributes.position.array.length);
+    const dummy = new Object3D();
+
+    for (let i = 0; i < rotation.length; i += 3) {
       dummy.rotation.set(0, 0, Math.PI / 2);
+      rotation[i] = dummy.rotation.x;
+      rotation[i + 1] = dummy.rotation.y;
+      rotation[i + 2] = dummy.rotation.z;
+    }
+    return new BufferAttribute(rotation, 3);
+  };
+
+  const instancedMeshFromGeometry = (
+    geometry: BufferGeometry
+  ): InstancedMesh => {
+    const instances = geometry.attributes.position.array.length / 3;
+    const circle = new CircleGeometry(0.7, 6);
+    const instancedCircle = new InstancedBufferGeometry().copy(circle);
+    const material = new MeshPhongMaterial({ side: DoubleSide });
+
+    const mesh = new InstancedMesh(instancedCircle, material, instances);
+    const dummy = new Object3D();
+    const color = new Color();
+    let i3 = 0;
+    for (let i = 0; i < instances; i++) {
+      dummy.position.set(
+        geometry.attributes.position.array[i3],
+        geometry.attributes.position.array[i3 + 1],
+        geometry.attributes.position.array[i3 + 2]
+      );
+      dummy.rotation.set(
+        geometry.attributes.rotation.array[i3],
+        geometry.attributes.rotation.array[i3 + 1],
+        geometry.attributes.rotation.array[i3 + 2]
+      );
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+
+      color.set(
+        settings.colors[MathUtils.randInt(0, settings.colors.length - 1)]
+      );
+      mesh.setColorAt(i, color);
+      i3 += 3;
     }
 
-    rotation[i] = dummy.rotation.x;
-    rotation[i + 1] = dummy.rotation.y;
-    rotation[i + 2] = dummy.rotation.z;
-  }
-  return new BufferAttribute(rotation, 3);
-};
+    return mesh;
+  };
 
-const createMesh = (geom: BufferGeometry): InstancedMesh => {
-  let geometry: BufferGeometry = geom.clone();
+  const transformToGlobe = () => {
+    let subject: number[] = [];
+    let end: number[] = [];
 
-  const size = geometry.attributes.position.array.length / 3;
-  const circle = new CircleGeometry(0.7, 6);
-  const instancedCircle = new InstancedBufferGeometry().copy(circle);
-  const material = new MeshPhongMaterial({ side: DoubleSide });
-
-  const mesh = new InstancedMesh(instancedCircle, material, size);
-  const dummy = new Object3D();
-  const color = new Color();
-  let i3 = 0;
-  for (let i = 0; i < size; i++) {
-    i3 += 3;
-    dummy.position.set(
-      geometry.attributes.position.array[i3],
-      geometry.attributes.position.array[i3 + 1],
-      geometry.attributes.position.array[i3 + 2]
+    subject = concatBufferAttributes(
+      mapOrientation.attributes.position.array,
+      mapOrientation.attributes.rotation.array
     );
-    if (settings.mode == GLOBE) {
-      dummy.lookAt(0, 0, 0);
-    } else {
-      dummy.rotation.set(0, 0, Math.PI / 2);
+    end = concatBufferAttributes(
+      globeOrientation.attributes.position.array,
+      globeOrientation.attributes.rotation.array
+    );
+
+    animateTransformation(subject, end);
+  };
+
+  const transformToMap = () => {
+    let subject: number[] = [];
+    let end: number[] = [];
+
+    subject = concatBufferAttributes(
+      globeOrientation.attributes.position.array,
+      globeOrientation.attributes.rotation.array
+    );
+    end = concatBufferAttributes(
+      mapOrientation.attributes.position.array,
+      mapOrientation.attributes.rotation.array
+    );
+
+    animateTransformation(subject, end);
+  };
+
+  const concatBufferAttributes = (
+    a: ArrayLike<number>,
+    b: ArrayLike<number>
+  ): number[] => {
+    const array: any[] = [];
+    for (let i = 0; i < a.length; i++) {
+      array.push(a[i]);
     }
-    dummy.updateMatrix();
-    mesh.setMatrixAt(i, dummy.matrix);
+    for (let i = 0; i < b.length; i++) {
+      array.push(b[i]);
+    }
+    return array;
+  };
 
-    color.set(COLORS[MathUtils.randInt(0, COLORS.length - 1)]);
-    mesh.setColorAt(i, color);
+  const animateTransformation = (subject: number[], end: number[]) => {
+    const dummy = new Object3D();
+    let p3, r3;
+    gsap.to(subject, {
+      endArray: end,
+      onUpdate() {
+        p3 = 0;
+        r3 = subject.length / 2;
+        for (let i = 0; i < mesh.count; i++) {
+          dummy.position.set(subject[p3++], subject[p3++], subject[p3++]);
+          dummy.rotation.set(subject[r3++], subject[r3++], subject[r3++]);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(i, dummy.matrix);
+        }
+        mesh.instanceMatrix.needsUpdate = true;
+      },
+      duration: 2,
+      ease: "power3.inOut",
+    });
+  };
+
+  let mesh: InstancedMesh = new InstancedMesh(undefined, undefined, 0);
+  let globeOrientation: BufferGeometry;
+  let mapOrientation: BufferGeometry;
+
+  const $img = useImage();
+  const imgUrl = $img("/earthspec1k.jpg", { width: 1024 });
+  const loader = new ImageLoader();
+
+  const image = await loader.loadAsync(imgUrl);
+  const canvas = document.createElement("canvas");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  context ? context.drawImage(image, 0, 0) : null;
+
+  if (context) {
+    globeOrientation = createGlobeOrientedGeometry(image, context);
+    mapOrientation = createMapOrientedGeometry(image, context);
+
+    const orientation = globeOrientation;
+    mesh = instancedMeshFromGeometry(orientation);
+    mesh.name = "DigitalGlobe";
+    parent.add(mesh);
   }
 
-  return mesh;
-};
-
-const transform = () => {
-  let subject: number[] = [];
-  let end: number[] = [];
-
-  if (settings.mode == MAP) {
-    subject = concatBufferAttributes(
-      mapGeometry.attributes.position.array,
-      mapGeometry.attributes.rotation.array
-    );
-
-    end = concatBufferAttributes(
-      globeGeometry.attributes.position.array,
-      globeGeometry.attributes.rotation.array
-    );
-    settings.mode = GLOBE;
-  } else {
-    subject = concatBufferAttributes(
-      globeGeometry.attributes.position.array,
-      globeGeometry.attributes.rotation.array
-    );
-
-    end = concatBufferAttributes(
-      mapGeometry.attributes.position.array,
-      mapGeometry.attributes.rotation.array
-    );
-    settings.mode = MAP;
-  }
-
-  const dummy = new Object3D();
-  let p3, r3;
-  gsap.to(subject, {
-    endArray: end,
-    onUpdate() {
-      p3 = 0;
-      r3 = subject.length / 2;
-      for (let i = 0; i < mesh.count; i++) {
-        dummy.position.set(subject[p3++], subject[p3++], subject[p3++]);
-        dummy.rotation.set(subject[r3++], subject[r3++], subject[r3++]);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-      }
-      mesh.instanceMatrix.needsUpdate = true;
-    },
-    duration: 2,
-    ease: "power3.inOut",
-  });
-};
-
-const concatBufferAttributes = (
-  a: ArrayLike<number>,
-  b: ArrayLike<number>
-): number[] => {
-  const array: any[] = [];
-  for (let i = 0; i < a.length; i++) {
-    array.push(a[i]);
-  }
-  for (let i = 0; i < b.length; i++) {
-    array.push(b[i]);
-  }
-  return array;
-};
-
-/*
+  /*
   private animateColors() {
     const color = new Color();
     setInterval(() => {
@@ -291,11 +296,9 @@ const concatBufferAttributes = (
     }, 100);
   }
 */
-
-export const useDigitalGlobe = () => {
   return {
-    globe,
-    init,
-    transform,
+    mesh,
+    transformToGlobe,
+    transformToMap,
   };
 };
