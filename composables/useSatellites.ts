@@ -5,13 +5,9 @@ import {
   InstancedMesh,
   MeshBasicMaterial,
   Object3D,
-  Vector3,
 } from "three";
 
 const settings = {
-  globe: {
-    radius: 120,
-  },
   satellite: {
     size: 0.1,
   },
@@ -38,15 +34,13 @@ export const useSatellites = async (
   // populate the instancedMesh matrix for all the satellites
   const dummy = new Object3D();
   const color = new Color();
-  let position = new Vector3();
   for (let i = 0; i < satellites.length; i++) {
     const satellite = satellites[i];
-    position = useGlobeUtils().toVector(
-      satellite.node.host.latitude,
-      satellite.node.host.longitude,
-      settings.globe.radius
+    dummy.position.set(
+      satellite.position.globe.x,
+      satellite.position.globe.y,
+      satellite.position.globe.z
     );
-    dummy.position.set(position.x, position.y, position.z);
     dummy.lookAt(0, 0, 0);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);

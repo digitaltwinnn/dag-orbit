@@ -1,4 +1,4 @@
-import { Color } from "three";
+import { Color, Vector3 } from "three";
 
 declare global {
   type L0Node = {
@@ -12,18 +12,26 @@ declare global {
       org: string;
       latitude: number;
       longitude: number;
-    };
+    }
   };
 
-  type Edge = {
-    source: Satellite;
-    target: Satellite;
-    visible: boolean;
+  type NodeMetrics = {
+    todo: string;
   };
 
   type Satellite = {
     node: L0Node;
     color: Color;
+    position: {
+      globe: Vector3;
+      graph: Vector3;
+    };
+    visible: boolean;
+  };
+
+  type Edge = {
+    source: Satellite;
+    target: Satellite;
     visible: boolean;
   };
 }

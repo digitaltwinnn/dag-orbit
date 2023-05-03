@@ -1,6 +1,7 @@
+import createLayout from "ngraph.forcelayout";
 import createGraph, { Graph } from "ngraph.graph";
 import { SelectiveBloomEffect } from "postprocessing";
-import { Color, Group, MathUtils, Object3D } from "three";
+import { Color, Group, MathUtils, Object3D, Vector3 } from "three";
 
 export const useCluster = async (
   parent: Object3D,
@@ -9,35 +10,30 @@ export const useCluster = async (
 ) => {
   const settings = {
     colors: ["#1E90FE", "#1467C8", "#1053AD"],
+    globe: {
+      radius: 120,
+    },
     satellite: {
       proximity: 0.1,
     },
   };
 
-  const toGraph = (nodes: L0Node[], edges: Edge[]): Graph => {
+  const nodesToGraph = (): Graph => {
     const graph = createGraph();
+    const peers = [...nodes];
 
-    nodes.map((node) => {
+    nodes.forEach(async (node) => {
       graph.addNode(node.ip, node);
-    });
-
-    /* maybe virtual nodes/satellites to show relation to datacenter/location
-    satellites.map((sat) => {
-      graph.addNode(sat.id, sat);
-      sat.nodeIPs.map((nodeIP) => {
-        graph.addLink(sat.id, nodeIP);
+      // node.metrics.peers.forEach((peer) => {
+      peers.forEach((peer) => {
+        graph.addLink(node.ip, peer.ip);
       });
-    });
-    */
-
-    edges.map((edge) => {
-      graph.addLink(edge.source.node.ip, edge.target.node.ip);
     });
 
     return graph;
   };
 
-  const toSatellites = (nodes: L0Node[]): Satellite[] => {
+  const nodesToSatellites = (): Satellite[] => {
     const satellites: Satellite[] = [];
     nodes.forEach((node) => {
       const nearbySatellites = searchSatellites(
@@ -46,8 +42,21 @@ export const useCluster = async (
         satellites
       );
 
+      const graphPosistion = layout.getNodePosition(node.ip);
       satellites.push({
         node: node,
+        position: {
+          globe: useGlobeUtils().toVector(
+            node.host.latitude,
+            node.host.longitude,
+            settings.globe.radius
+          ),
+          graph: new Vector3(
+            graphPosistion.x,
+            graphPosistion.y,
+            graphPosistion.z
+          ),
+        },
         color: new Color(
           settings.colors[MathUtils.randInt(0, settings.colors.length - 1)]
         ),
@@ -58,34 +67,39 @@ export const useCluster = async (
     return satellites;
   };
 
-  const toEdges = (sats: Satellite[]): Edge[] => {
-    const sources = [...sats];
-    const targets = [...sats];
+  const graphLinksToEdges = (): Edge[] => {
     const edges: Edge[] = [];
 
-    sources.map(async (source) => {
-      targets.map((target) => {
-        if (source.node.ip != target.node.ip) {
-          const edgeExists = edges.find((e) => {
-            return (
-              e.source.node.ip == target.node.ip &&
-              e.target.node.ip == source.node.ip
-            );
-          });
-
-          const sameLocation =
-            source.node.host.latitude == target.node.host.latitude &&
-            source.node.host.longitude == target.node.host.longitude;
-
-          if (!edgeExists && !sameLocation) {
-            edges.push({
-              source: source,
-              target: target,
-              visible: source.visible && target.visible,
-            });
-          }
-        }
+    graph.forEachLink((link) => {
+      const source = satellites.find((sat) => {
+        return sat.node.ip == link.fromId;
       });
+      const target = satellites.find((sat) => {
+        return sat.node.ip == link.toId;
+      });
+      if (source && target) {
+        const sameNode = source.node.ip == target.node.ip;
+
+        const sameLocation =
+          source.node.host.latitude == target.node.host.latitude &&
+          source.node.host.longitude == target.node.host.longitude;
+
+        const existingEdge = edges.find((edge) => {
+          return (
+            edge.source.node.ip == target.node.ip &&
+            edge.target.node.ip == source.node.ip
+          );
+        });
+
+        if (!sameNode && !sameLocation && !existingEdge) {
+          edges.push({
+            source: source,
+            target: target,
+            visible: source.visible && target.visible,
+          });
+          // TODO: same location should be shown in graph mode..
+        }
+      }
     });
 
     return edges;
@@ -120,14 +134,31 @@ export const useCluster = async (
   const cluster = new Group();
   cluster.name = "Cluster";
 
+  // get nodes in the L0 cluster
   const nodes: L0Node[] = await $fetch(url);
-  const satellites = toSatellites(nodes);
-  const edges = toEdges(satellites);
-  const graph = toGraph(nodes, edges);
 
+  // create graph layout
+  const graph = nodesToGraph();
+  const layout = createLayout(graph, { dimensions: 3 });
+  for (let i = 0; i < 5; ++i) {
+    layout.step();
+  }
+  const boundingBox = layout.getGraphRect();
+  const upscale = settings.globe.radius / boundingBox.x1;
+  // TODO
+
+  // create objects to manage the presentation
+  const satellites = nodesToSatellites();
+  const edges = graphLinksToEdges();
+
+  // present objects in the scene
   const $satellites = await useSatellites(cluster, satellites);
   const $edges = await useEdges(cluster, edges, bloom);
   parent.add(cluster);
+
+  console.log("nodes: " + nodes.length);
+  console.log("satellite: " + satellites.length);
+  console.log("edges: " + edges.length);
 
   return {
     cluster,
