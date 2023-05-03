@@ -12,7 +12,7 @@ declare global {
       org: string;
       latitude: number;
       longitude: number;
-    }
+    };
   };
 
   type NodeMetrics = {
@@ -22,11 +22,16 @@ declare global {
   type Satellite = {
     node: L0Node;
     color: Color;
-    position: {
-      globe: Vector3;
-      graph: Vector3;
+    orientation: {
+      globe: {
+        position: Vector3;
+        visible: boolean;
+      };
+      graph: {
+        position: Vector3;
+        visible: boolean;
+      };
     };
-    visible: boolean;
   };
 
   type Edge = {

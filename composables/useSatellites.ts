@@ -1,5 +1,7 @@
 import {
   BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
   Color,
   InstancedBufferGeometry,
   InstancedMesh,
@@ -17,36 +19,98 @@ export const useSatellites = async (
   parent: Object3D,
   satellites: Satellite[]
 ) => {
-  const satSize = settings.satellite.size;
-  const cube = new BoxGeometry(satSize, satSize, satSize);
-  const instancedCube = new InstancedBufferGeometry().copy(cube);
-  const material = new MeshBasicMaterial();
-  const mesh = new InstancedMesh(instancedCube, material, satellites.length);
+  const createGlobeOrientedGeometry = (
+    satellites: Satellite[]
+  ): BufferGeometry => {
+    const geometry = new BufferGeometry();
+    const positions = new Float32Array(satellites.length * 3);
 
-  // invisible satellites at the end to be hidden by setting the count value
-  satellites.sort((s1, s2) => {
-    return s1.visible === s2.visible ? 0 : s1.visible ? -1 : 1;
-  });
-  const visibleSatellites = satellites.filter((s) => {
-    return s.visible;
-  }).length;
+    satellites.sort((s1, s2) => {
+      return s1.orientation.globe.visible === s2.orientation.globe.visible
+        ? 0
+        : s1.orientation.globe.visible
+        ? -1
+        : 1;
+    });
+    const visibleSatellites = satellites.filter((s) => {
+      return s.orientation.globe.visible;
+    }).length;
 
-  // populate the instancedMesh matrix for all the satellites
-  const dummy = new Object3D();
-  const color = new Color();
-  for (let i = 0; i < satellites.length; i++) {
-    const satellite = satellites[i];
-    dummy.position.set(
-      satellite.position.globe.x,
-      satellite.position.globe.y,
-      satellite.position.globe.z
+    let i3 = 0;
+    for (let i = 0; i < satellites.length; i++) {
+      positions[i3++] = satellites[i].orientation.globe.position.x;
+      positions[i3++] = satellites[i].orientation.globe.position.y;
+      positions[i3++] = satellites[i].orientation.globe.position.z;
+    }
+    geometry.setAttribute("position", new BufferAttribute(positions, 3));
+    geometry.userData = { visibleSatellites: visibleSatellites };
+    return geometry;
+  };
+
+  const createGraphOrientedGeometry = (satellites: Satellite[]) => {
+    const geometry = new BufferGeometry();
+    const positions = new Float32Array(satellites.length * 3);
+
+    satellites.sort((s1, s2) => {
+      return s1.orientation.graph.visible === s2.orientation.graph.visible
+        ? 0
+        : s1.orientation.graph.visible
+        ? -1
+        : 1;
+    });
+    const visibleSatellites = satellites.filter((s) => {
+      return s.orientation.graph.visible;
+    }).length;
+
+    let i3 = 0;
+    for (let i = 0; i < satellites.length; i++) {
+      positions[i3++] = satellites[i].orientation.graph.position.x;
+      positions[i3++] = satellites[i].orientation.graph.position.y;
+      positions[i3++] = satellites[i].orientation.graph.position.z;
+    }
+    geometry.setAttribute("position", new BufferAttribute(positions, 3));
+    // geometry.scale(10, 10, 10);
+    geometry.userData = { visibleSatellites: visibleSatellites };
+    return geometry;
+  };
+
+  const instancedMeshFromGeometry = (
+    geometry: BufferGeometry
+  ): InstancedMesh => {
+    const instances = geometry.attributes.position.array.length / 3;
+    const cube = new BoxGeometry(
+      settings.satellite.size,
+      settings.satellite.size,
+      settings.satellite.size
     );
-    dummy.lookAt(0, 0, 0);
-    dummy.updateMatrix();
-    mesh.setMatrixAt(i, dummy.matrix);
-    mesh.setColorAt(i, color.set(satellite.color));
-  }
-  mesh.count = visibleSatellites;
+    const instancedCube = new InstancedBufferGeometry().copy(cube);
+    const material = new MeshBasicMaterial();
+    let mesh = new InstancedMesh(instancedCube, material, instances);
+
+    const dummy = new Object3D();
+    const color = new Color();
+    let i3 = 0;
+    for (let i = 0; i < instances; i++) {
+      dummy.position.set(
+        geometry.attributes.position.array[i3++],
+        geometry.attributes.position.array[i3++],
+        geometry.attributes.position.array[i3++]
+      );
+      dummy.lookAt(0, 0, 0);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+      mesh.setColorAt(i, color.set(satellites[i].color));
+    }
+
+    return mesh;
+  };
+
+  const globeOrientation = createGlobeOrientedGeometry(satellites);
+  const graphOrientation = createGraphOrientedGeometry(satellites);
+
+  const orientation = globeOrientation;
+  const mesh = instancedMeshFromGeometry(orientation);
+  mesh.count = orientation.userData.visibleSatellites;
   mesh.name = "Satellites";
   parent.add(mesh);
 

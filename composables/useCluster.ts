@@ -42,25 +42,30 @@ export const useCluster = async (
         satellites
       );
 
-      const graphPosistion = layout.getNodePosition(node.ip);
+      const graphPosition = layout.getNodePosition(node.ip);
       satellites.push({
         node: node,
-        position: {
-          globe: useGlobeUtils().toVector(
-            node.host.latitude,
-            node.host.longitude,
-            settings.globe.radius
-          ),
-          graph: new Vector3(
-            graphPosistion.x,
-            graphPosistion.y,
-            graphPosistion.z
-          ),
+        orientation: {
+          globe: {
+            position: useGlobeUtils().toVector(
+              node.host.latitude,
+              node.host.longitude,
+              settings.globe.radius
+            ),
+            visible: nearbySatellites.length == 0,
+          },
+          graph: {
+            position: new Vector3(
+              graphPosition.x,
+              graphPosition.y,
+              graphPosition.z
+            ),
+            visible: true,
+          },
         },
         color: new Color(
           settings.colors[MathUtils.randInt(0, settings.colors.length - 1)]
         ),
-        visible: nearbySatellites.length == 0,
       });
     });
 
@@ -95,7 +100,7 @@ export const useCluster = async (
           edges.push({
             source: source,
             target: target,
-            visible: source.visible && target.visible,
+            visible: true, // source.visible && target.visible,
           });
           // TODO: same location should be shown in graph mode..
         }
@@ -143,9 +148,6 @@ export const useCluster = async (
   for (let i = 0; i < 5; ++i) {
     layout.step();
   }
-  const boundingBox = layout.getGraphRect();
-  const upscale = settings.globe.radius / boundingBox.x1;
-  // TODO
 
   // create objects to manage the presentation
   const satellites = nodesToSatellites();
@@ -155,10 +157,6 @@ export const useCluster = async (
   const $satellites = await useSatellites(cluster, satellites);
   const $edges = await useEdges(cluster, edges, bloom);
   parent.add(cluster);
-
-  console.log("nodes: " + nodes.length);
-  console.log("satellite: " + satellites.length);
-  console.log("edges: " + edges.length);
 
   return {
     cluster,
