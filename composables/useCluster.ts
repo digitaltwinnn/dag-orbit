@@ -12,9 +12,15 @@ export const useCluster = async (
     colors: ["#1E90FE", "#1467C8", "#1053AD"],
     globe: {
       radius: 120,
-    },
     satellite: {
       proximity: 0.1,
+    },
+    },
+    graph: {
+      scale: 20,
+      satellite: {
+        maxEdges: 10,
+      },
     },
   };
 
@@ -56,9 +62,9 @@ export const useCluster = async (
           },
           graph: {
             position: new Vector3(
-              graphPosition.x,
-              graphPosition.y,
-              graphPosition.z
+              graphPosition.x * settings.graph.scale,
+              graphPosition.y * settings.graph.scale,
+              graphPosition.z ? graphPosition.z * settings.graph.scale : 0
             ),
             visible: true,
           },
@@ -96,11 +102,13 @@ export const useCluster = async (
           );
         });
 
+        const maxEdgesReached = false;
+
         if (!sameNode && !sameLocation && !existingEdge) {
           edges.push({
             source: source,
             target: target,
-            visible: true, // source.visible && target.visible,
+            visible: !maxEdgesReached,
           });
           // TODO: same location should be shown in graph mode..
         }
@@ -115,7 +123,7 @@ export const useCluster = async (
     lng: number,
     target: Satellite[]
   ): Satellite[] => {
-    const proximity = settings.satellite.proximity;
+    const proximity = settings.globe.satellite.proximity;
     const sats = target.filter((s: Satellite) => {
       const latInRange = inRange(
         lat,
@@ -145,7 +153,7 @@ export const useCluster = async (
   // create graph layout
   const graph = nodesToGraph();
   const layout = createLayout(graph, { dimensions: 3 });
-  for (let i = 0; i < 5; ++i) {
+  for (let i = 0; i < 3; ++i) {
     layout.step();
   }
 
