@@ -29,7 +29,6 @@ export const useScene = async (el: HTMLElement) => {
       },
     },
     scene: {
-      background: new Color(0x00005a),
       light: {
         intensity: 0.15,
       },
@@ -47,6 +46,7 @@ export const useScene = async (el: HTMLElement) => {
     antialias: false,
     stencil: false,
     depth: false,
+    alpha: true,
   });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -70,7 +70,6 @@ export const useScene = async (el: HTMLElement) => {
   /* scene */
   const scene = new Scene();
   scene.name = "Scene";
-  scene.background = settings.scene.background;
   const light = new AmbientLight(0xffffff);
   light.name = "Ambient";
   light.intensity = settings.scene.light.intensity;

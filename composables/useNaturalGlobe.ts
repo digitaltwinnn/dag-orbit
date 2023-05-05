@@ -46,6 +46,7 @@ export const useNaturalGlobe = async (
 
   const mesh: Mesh = new Mesh(geometry, material);
   mesh.name = "NaturalGlobe";
+  mesh.position.set(-150, -50, 200);
   parent.add(mesh);
 
   useAtmosphere(mesh, light, vAtmosphere, fAtmosphere);

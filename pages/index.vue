@@ -1,77 +1,102 @@
 <template>
-    <div>
-        <threejsScene ref="threejs" class="background" />
-        <div class="panel-0">
-            <div class="w-64 h-64 bg-green-700"></div>
+    <div class="navbar bg-base-100">
+        <div class="flex-none">
+            <button class="btn btn-square btn-ghost">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    class="inline-block w-5 h-5 stroke-current">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
         </div>
-        <div class="panel-1">
-            <div class="h-full text-blue-700 text-9xl test1">
-                HELLO WORLD
-            </div>
+        <div class="flex-1">
+            <a class="btn btn-ghost normal-case text-xl">daisyUI</a>
         </div>
-        <div class="panel-2">
-            <div class="h-full">
-                <div class="w-64 h-64 bg-blue-500 test2"></div>
-            </div>
+        <div class="flex-none">
+            <select class="select w-full max-w-xs" v-model="colorMode.preference">
+                <option disabled selected>Theme</option>
+                <option v-for="theme of themes" :key="theme">{{ theme }}</option>
+            </select>
         </div>
     </div>
+    <threejsScene class="hero min-h-screen bg-base-200">
+        <div class="hero-content flex-col lg:flex-row">
+            <div class="w-2/6" />
+            <div>
+                <h1 class="text-5xl font-bold">Constellation Network Explorer 3D!</h1>
+                <p class="py-6">A community driven initiative to try out visualisations and to explore the different
+                    concepts
+                    that defined the Constellation Hypergraph and its ecosystem of Metagraphs.</p>
+                <button class="btn btn-primary">Get Started</button>
+            </div>
+        </div>
+    </threejsScene>
 </template>
 
-<script>
+
+<script setup>
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export default {
-    mounted() {
-        this.initScrollTrigger();
-    },
-    methods: {
-        initScrollTrigger() {
-            gsap.registerPlugin(ScrollTrigger);
+const colorMode = useColorMode();
+const themes = [
+    'system',
+    'light',
+    'dark',
+    'cupcake',
+    'bumblebee',
+    'emerald',
+    'corporate',
+    'synthwave',
+    'retro',
+    'cyberpunk',
+    'valentine',
+    'halloween',
+    'garden',
+    'forest',
+    'aqua',
+    'lofi',
+    'pastel',
+    'fantasy',
+    'wireframe',
+    'black',
+    'luxury',
+    'dracula',
+    'cmyk',
+    'autumn',
+    'business',
+    'acid',
+    'lemonade',
+    'night',
+    'coffee',
+    'winter',
+];
 
-            gsap.from(".test1", {
-                opacity: 0,
-                scrollTrigger: {
-                    trigger: ".panel-1",
-                    scrub: 0.6,
-                    markers: true
-                },
-            })
-            /*
-            gsap.to(this.$refs.threejs.scene.background.value, {
-                duration: 6, r: 0, g: 0, b: 0,
-                scrollTrigger: {
-                    trigger: ".panel-1",
-                    scrub: 0.6,
-                    markers: true
-                }
-            });
-            gsap.to(this.$refs.threejs.mesh.position, {
-                x: -200, y: -200, z: -200,
-                scrollTrigger: {
-                    trigger: ".panel-1",
-                    scrub: 0.6,
-                    markers: true
-                }
-            });
-            */
-            gsap.to(".test2", {
-                scrollTrigger: {
-                    trigger: ".panel-2",
-                    scrub: 0.6,
-                    markers: true
-                },
-                rotation: 360,
-                transformOrigin: "center center",
-            })
+onMounted(async () => {
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.from(".test1", {
+        opacity: 0,
+        scrollTrigger: {
+            trigger: ".panel-1",
+            scrub: 0.6,
+            markers: true
         },
-    }
-}
+    })
+    gsap.to(".test2", {
+        scrollTrigger: {
+            trigger: ".panel-2",
+            scrub: 0.6,
+            markers: true
+        },
+        rotation: 360,
+        transformOrigin: "center center",
+    })
+})
 </script>
 
 <style>
 .background {
-    @apply fixed w-full h-screen bg-blue-900;
+    @apply fixed w-full h-screen;
 }
 
 div[class^="panel-"] {
