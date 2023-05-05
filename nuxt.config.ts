@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   build: {
     transpile: ["three", "postprocessing", "gsap", "@theatre/core"],
   },
-  modules: ["@nuxt/image-edge", "@nuxtjs/tailwindcss", "@nuxt/devtools"],
+  modules: ["@nuxt/image-edge", "@nuxtjs/tailwindcss"],
   runtimeConfig: {
     MONGODB_URI: process.env.MONGODB_URI,
   },
