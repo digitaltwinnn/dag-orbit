@@ -2,15 +2,11 @@
     <div class="navbar bg-base-100">
         <div class="flex-none">
             <button class="btn btn-square btn-ghost">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    class="inline-block w-5 h-5 stroke-current">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
-                    </path>
-                </svg>
+                <Bars3Icon class="h-6 w-6" />
             </button>
         </div>
         <div class="flex-1">
-            <a class="btn btn-ghost normal-case text-xl">daisyUI</a>
+            <a class="btn btn-ghost normal-case text-xl">DAG Orbit</a>
         </div>
         <div class="flex-none">
             <select class="select w-full max-w-xs" v-model="colorMode.preference">
@@ -25,8 +21,7 @@
             <div>
                 <h1 class="text-5xl font-bold">Constellation Network Explorer 3D!</h1>
                 <p class="py-6">A community driven initiative to try out visualisations and to explore the different
-                    concepts
-                    that defined the Constellation Hypergraph and its ecosystem of Metagraphs.</p>
+                    concepts that define the Constellation Hypergraph.</p>
                 <button class="btn btn-primary">Get Started</button>
             </div>
         </div>
@@ -37,6 +32,7 @@
 <script setup>
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Bars3Icon } from "@heroicons/vue/24/solid"
 
 const colorMode = useColorMode();
 const themes = [
@@ -93,13 +89,3 @@ onMounted(async () => {
     })
 })
 </script>
-
-<style>
-.background {
-    @apply fixed w-full h-screen;
-}
-
-div[class^="panel-"] {
-    @apply w-full h-screen;
-}
-</style>

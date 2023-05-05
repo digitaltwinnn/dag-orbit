@@ -6,6 +6,7 @@
     "start": "node .output/server/index.mjs"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.0.17",
     "@theatre/core": "^0.6.0",
     "@vercel/analytics": "^1.0.1",
     "autoprefixer": "^10.0.2",
@@ -15,12 +16,13 @@
     "ngraph.forcelayout": "^3.3.1",
     "ngraph.graph": "^20.0.1",
     "postprocessing": "^6.29.0",
-    "three": "^0.144.0"
+    "three": "^0.144.0",
+    "vue": "^3.2.47"
   },
   "devDependencies": {
     "@nuxt/image-edge": "^1.0.0-27919678.2f5b64b",
-    "@nuxtjs/tailwindcss": "^6.1.2",
     "@nuxtjs/color-mode": "^3.2.0",
+    "@nuxtjs/tailwindcss": "^6.1.2",
     "@theatre/studio": "^0.6.0",
     "@types/node": ">=16.10.0",
     "@types/three": "^0.144.0",
