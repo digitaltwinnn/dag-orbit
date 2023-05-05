@@ -11,7 +11,7 @@ import {
 
 const settings = {
   satellite: {
-    size: 0.1,
+    size: 1,
   },
 };
 
