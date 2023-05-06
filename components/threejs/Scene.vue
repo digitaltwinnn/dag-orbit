@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="overflow-x-hidden">
     <div id="stats" class="absolute bottom-0 right-0 m-4" />
-    <div id="scene-container" class="overflow-x-hidden"></div>
+    <div id="scene-container"></div>
     <slot />
   </div>
 </template>

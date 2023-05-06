@@ -1,9 +1,10 @@
 <template>
-    <div class="navbar bg-base-100">
+    
+    <div class="navbar bg-base-100 fixed z-10">
         <div class="flex-none">
-            <button class="btn btn-square btn-ghost">
+            <label for="my-drawer" class="btn drawer-button btn-ghost">
                 <Bars3Icon class="h-6 w-6" />
-            </button>
+            </label>
         </div>
         <div class="flex-1">
             <a class="btn btn-ghost normal-case text-xl">DAG Orbit</a>
@@ -15,17 +16,29 @@
             </select>
         </div>
     </div>
-    <threejsScene class="hero min-h-screen bg-base-200">
-        <div class="hero-content flex-col lg:flex-row">
-            <div class="w-2/6" />
-            <div>
-                <h1 class="text-5xl font-bold">Constellation Network Explorer 3D!</h1>
-                <p class="py-6">A community driven initiative to try out visualisations and to explore the different
-                    concepts that define the Constellation Hypergraph.</p>
-                <button class="btn btn-primary">Get Started</button>
-            </div>
+    <div class="drawer">
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content">
+            <ThreejsScene class="hero min-h-screen bg-base-200">
+                <div class="hero-content flex-col lg:flex-row">
+                    <div class="w-2/6" />
+                    <div>
+                        <h1 class="text-5xl font-bold">Constellation Network Explorer 3D!</h1>
+                        <p class="py-6">A community driven initiative to try out visualisations that explore the different
+                            concepts that define the Constellation Hypergraph and Metagraphs.</p>
+                        <button class="btn btn-primary">Get Started</button>
+                    </div>
+                </div>
+            </ThreejsScene>
         </div>
-    </threejsScene>
+        <div class="drawer-side">
+            <label for="my-drawer" class="drawer-overlay"></label>
+            <ul class="menu p-4 w-80 bg-base-100 text-base-content mt-20">
+                <li><a>Act 1</a></li>
+                <li><a>Act 2</a></li>
+            </ul>
+        </div>
+    </div>
 </template>
 
 
@@ -67,25 +80,4 @@ const themes = [
     'coffee',
     'winter',
 ];
-
-onMounted(async () => {
-    gsap.registerPlugin(ScrollTrigger);
-    gsap.from(".test1", {
-        opacity: 0,
-        scrollTrigger: {
-            trigger: ".panel-1",
-            scrub: 0.6,
-            markers: true
-        },
-    })
-    gsap.to(".test2", {
-        scrollTrigger: {
-            trigger: ".panel-2",
-            scrub: 0.6,
-            markers: true
-        },
-        rotation: 360,
-        transformOrigin: "center center",
-    })
-})
 </script>
