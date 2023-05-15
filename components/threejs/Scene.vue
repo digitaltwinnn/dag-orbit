@@ -6,27 +6,33 @@
   </div>
 </template>
 
-<script setup >
-import vAtmosphere from "~/assets/shaders/atmosphere/vertex.glsl?raw";
-import fAtmosphere from "~/assets/shaders/atmosphere/fragment.glsl?raw";
+<script setup>
+import vAtmos from "~/assets/shaders/atmosphere/vertex.glsl?raw";
+import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 
-onMounted(async () => {
+const isLoading = ref(true);
+const emit = defineEmits(["loaded"]);
+
+const load = async (el) => {
+  const { scene, bloom, tick } = await useScene(el);
+  gsap.ticker.add((time, deltaTime, frame) => {
+    tick(time, deltaTime, frame);
+  });
+
+  const { light } = await useSun(scene);
+  await useNaturalGlobe(scene, light, vAtmos, fAtmos);
+  await useDigitalGlobe(scene);
+  await useCluster(scene, bloom, "/api/nodes");
+
+  isLoading.value = false;
+  emit("loaded", true);
+}
+
+onMounted(() => {
   const el = document.getElementById("scene-container");
   if (el != null) {
-    const { scene, camera, bloom, tick: sceneTick } = await useScene(el);
-    const { light } = await useSun(scene);
-    const { mesh: natural } = await useNaturalGlobe(scene, light, vAtmosphere, fAtmosphere);
-    const { mesh: digital } = await useDigitalGlobe(natural);
-    const { cluster } = await useCluster(natural, bloom, "/api/nodes");
-  //  const { tick: theatreTick } = await useTheatre(
-  //    camera, scene, bloom, [light], [natural, digital, cluster])
-
-    // setup animations
-    gsap.ticker.add((time, deltaTime, frame) => {
-      sceneTick(time, deltaTime, frame);
-   //   theatreTick(time, deltaTime, frame);
-    });
+    load(el);
   }
 });
 </script>

@@ -1,5 +1,4 @@
 <template>
-    
     <div class="navbar bg-base-100 fixed z-10">
         <div class="flex-none">
             <label for="my-drawer" class="btn drawer-button btn-ghost">
@@ -19,14 +18,15 @@
     <div class="drawer">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
         <div class="drawer-content">
-            <ThreejsScene class="hero min-h-screen bg-base-200">
-                <div class="hero-content flex-col lg:flex-row">
+            <ThreejsScene class="hero min-h-screen bg-base-200" @loaded="sceneLoaded">
+                <div class=" hero-content flex-col lg:flex-row">
                     <div class="w-2/6" />
                     <div>
                         <h1 class="text-5xl font-bold">Constellation Network Explorer 3D!</h1>
                         <p class="py-6">A community driven initiative to try out visualisations that explore the different
                             concepts that define the Constellation Hypergraph and Metagraphs.</p>
-                        <button class="btn btn-primary">Get Started</button>
+                        <progress v-if="!pageLoaded" class="progress progress-primary w-full" max="100"></progress>
+                        <button v-else class="btn btn-primary">Get Started</button>
                     </div>
                 </div>
             </ThreejsScene>
@@ -43,9 +43,12 @@
 
 
 <script setup>
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Bars3Icon } from "@heroicons/vue/24/solid"
+import { Bars3Icon } from "@heroicons/vue/24/solid";
+
+const pageLoaded = ref(false);
+const sceneLoaded = (loaded) => {
+    pageLoaded.value = loaded;
+}
 
 const colorMode = useColorMode();
 const themes = [
