@@ -17,14 +17,8 @@ onMounted(async () => {
   const el = document.getElementById("scene-container");
   if (el != null) {
     // get and prepare data
-    const {
-      nodes,
-      graph,
-      satellites,
-      edges,
-      loaded: dataLoaded,
-    } = useCluster();
-    
+    const { satellites, edges, loaded: dataLoaded } = useCluster();
+
     // setup the scene directly
     const { scene, bloom, tick } = useScene(el);
     gsap.ticker.add((time, deltaTime, frame) => {
