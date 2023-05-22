@@ -11,28 +11,46 @@ import vAtmos from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 
-const isLoading = ref(true);
 const emit = defineEmits(["loaded"]);
 
-const load = async (el) => {
-  const { scene, bloom, tick } = await useScene(el);
-  gsap.ticker.add((time, deltaTime, frame) => {
-    tick(time, deltaTime, frame);
-  });
-
-  const { light } = await useSun(scene);
-  await useNaturalGlobe(scene, light, vAtmos, fAtmos);
-  await useDigitalGlobe(scene);
-  await useCluster(scene, bloom, "/api/nodes");
-
-  isLoading.value = false;
-  emit("loaded", true);
-}
-
-onMounted(() => {
+onMounted(async () => {
   const el = document.getElementById("scene-container");
   if (el != null) {
-    load(el);
+    // get and prepare data
+    const {
+      nodes,
+      graph,
+      satellites,
+      edges,
+      loaded: dataLoaded,
+    } = useCluster();
+    
+    // setup the scene directly
+    const { scene, bloom, tick } = useScene(el);
+    gsap.ticker.add((time, deltaTime, frame) => {
+      tick(time, deltaTime, frame);
+    });
+    const { light } = await useSun(scene);
+    await useNaturalGlobe(scene, light, vAtmos, fAtmos);
+    await useDigitalGlobe(scene);
+
+    // setup scene objects when the data is loaded
+    watch(dataLoaded, () => {
+      if (dataLoaded.value) {
+        const { mesh: edgeMesh, loaded: edgesLoaded } = useEdges(edges, bloom);
+        const { mesh: satMesh, loaded: satsLoaded } = useSatellites(satellites);
+
+        // wait till the scene objects are fully loaded
+        watch([edgesLoaded, satsLoaded], () => {
+          if (edgesLoaded.value && satsLoaded.value) {
+            scene.add(edgeMesh);
+            bloom.selection.add(edgeMesh);
+            scene.add(satMesh);
+            emit("loaded", true);
+          }
+        });
+      }
+    });
   }
 });
 </script>

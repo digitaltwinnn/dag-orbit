@@ -16,7 +16,7 @@ import {
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
-export const useScene = async (el: HTMLElement) => {
+export const useScene = (el: HTMLElement) => {
   const settings = {
     renderer: {
       powerPreference: "high-performance",

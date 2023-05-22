@@ -1,26 +1,19 @@
 import createLayout from "ngraph.forcelayout";
 import createGraph, { Graph } from "ngraph.graph";
-import { SelectiveBloomEffect } from "postprocessing";
-import { Color, Group, MathUtils, Object3D, Vector3 } from "three";
+import { Color, MathUtils, Vector3 } from "three";
 
-export const useCluster = async (
-  parent: Object3D,
-  bloom: SelectiveBloomEffect,
-  url: string
-) => {
+export const useCluster = () => {
   const settings = {
+    url: "/api/nodes",
     colors: ["#1E90FE", "#1467C8", "#1053AD"],
     globe: {
       radius: 120,
-    satellite: {
-      proximity: 0.1,
-    },
+      satellite: {
+        proximity: 0.1,
+      },
     },
     graph: {
       scale: 20,
-      satellite: {
-        maxEdges: 10,
-      },
     },
   };
 
@@ -144,29 +137,44 @@ export const useCluster = async (
     return (x - min) * (x - max) <= 0;
   };
 
-  const cluster = new Group();
-  cluster.name = "Cluster";
+  const load = async () => {
+    // get nodes in the L0 cluster
+    /*
+    const { data, error } = await useFetch<L0Node[]>(settings.url);
+    if (data.value) {
+      nodes.push(...toRaw(data.value));
+    }
+    console.log("got the nodes from usefetch " + nodes.length);
+    */
+    nodes = await $fetch(settings.url);
 
-  // get nodes in the L0 cluster
-  const nodes: L0Node[] = await $fetch(url);
+    // create graph layout
+    graph = nodesToGraph();
+    layout = createLayout(graph, { dimensions: 3 });
+    for (let i = 0; i < 3; ++i) {
+      layout.step();
+    }
 
-  // create graph layout
-  const graph = nodesToGraph();
-  const layout = createLayout(graph, { dimensions: 3 });
-  for (let i = 0; i < 3; ++i) {
-    layout.step();
-  }
+    // create objects to manage the presentation
+    satellites.push(...nodesToSatellites());
+    edges.push(...graphLinksToEdges());
+    loaded.value = true;
+  };
 
-  // create objects to manage the presentation
-  const satellites = nodesToSatellites();
-  const edges = graphLinksToEdges();
+    const loaded = ref(false);
+  let nodes: L0Node[] = [];
+  const satellites: Satellite[] = [];
+  const edges: Edge[] = [];
 
-  // present objects in the scene
-  const $satellites = await useSatellites(cluster, satellites);
-  const $edges = await useEdges(cluster, edges, bloom);
-  parent.add(cluster);
+  let graph: Graph = createGraph();
+  let layout: any;
+  load();
 
   return {
-    cluster,
+    nodes,
+    graph,
+    satellites,
+    edges,
+    loaded,
   };
 };

@@ -1,20 +1,14 @@
-import { SelectiveBloomEffect } from "postprocessing";
 import {
   Vector3,
   LineBasicMaterial,
   BufferGeometry,
   Float32BufferAttribute,
   LineSegments,
-  Object3D,
   Line3,
 } from "three";
 import { gsap } from "gsap";
 
-export const useEdges = async (
-  parent: Object3D,
-  edges: Edge[],
-  bloom: SelectiveBloomEffect
-) => {
+export const useEdges = (edges: Edge[]) => {
   const settings = {
     globe: {
       radius: 120,
@@ -138,22 +132,25 @@ export const useEdges = async (
     return geometry;
   };
 
-  const material = new LineBasicMaterial({
-    vertexColors: true,
-  //  transparent: true,
-    opacity: settings.edge.opacity,
-  });
-  const globeOrientation = createGeometry("globe");
-  const graphOrientation = createGeometry("graph");
+  const load = async () => {
+    await new Promise((r) => setTimeout(r, 10));
+    mesh.material = new LineBasicMaterial({
+      vertexColors: true,
+      //  transparent: true,
+      opacity: settings.edge.opacity,
+    });
+    const globeOrientation = createGeometry("globe");
+    const graphOrientation = createGeometry("graph");
 
-  const orientation = globeOrientation;
-  const mesh = new LineSegments(orientation, material);
-  mesh.name = "EdgeLines";
-  parent.add(mesh);
-  bloom.selection.add(mesh);
-  animate(mesh);
-
-  return {
-    mesh,
+    mesh.geometry = globeOrientation;
+    animate(mesh);
+    loaded.value = true;
   };
+
+  const loaded = ref(false);
+  const mesh = new LineSegments(undefined, undefined);
+  mesh.name = "edges";
+  load();
+
+  return { mesh, loaded };
 };

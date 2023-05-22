@@ -15,10 +15,7 @@ const settings = {
   },
 };
 
-export const useSatellites = async (
-  parent: Object3D,
-  satellites: Satellite[]
-) => {
+export const useSatellites = (satellites: Satellite[]) => {
   const createGlobeOrientedGeometry = (
     satellites: Satellite[]
   ): BufferGeometry => {
@@ -105,14 +102,20 @@ export const useSatellites = async (
     return mesh;
   };
 
-  const globeOrientation = createGlobeOrientedGeometry(satellites);
-  const graphOrientation = createGraphOrientedGeometry(satellites);
+  const load = async () => {
+    const globeOrientation = createGlobeOrientedGeometry(satellites);
+    const graphOrientation = createGraphOrientedGeometry(satellites);
 
-  const orientation = globeOrientation;
-  const mesh = instancedMeshFromGeometry(orientation);
-  mesh.count = orientation.userData.visibleSatellites;
+    const orientation = globeOrientation;
+    mesh = instancedMeshFromGeometry(orientation);
+    mesh.count = orientation.userData.visibleSatellites;
+    loaded.value = true;
+  };
+
+  const loaded = ref(false);
+  let mesh = new InstancedMesh(undefined, undefined, 0);
   mesh.name = "Satellites";
-  parent.add(mesh);
+  load();
 
-  return { mesh };
+  return { mesh, loaded };
 };
