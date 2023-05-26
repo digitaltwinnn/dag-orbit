@@ -11,6 +11,7 @@ import {
   InstancedMesh,
   Color,
   MathUtils,
+  Vector2,
 } from "three";
 import { gsap } from "gsap";
 
@@ -33,7 +34,6 @@ export const useDigitalGlobe = async (parent: Object3D) => {
     context: CanvasRenderingContext2D
   ): BufferGeometry => {
     const dots = [];
-    const $util = useGlobeUtils();
 
     for (let lat = -90; lat <= 90; lat += 180 / settings.globe.rows) {
       const r =
@@ -43,12 +43,7 @@ export const useDigitalGlobe = async (parent: Object3D) => {
 
       for (let x = 0; x < dotsForLat; x++) {
         const long = -180 + (x * 360) / dotsForLat;
-        const coordinate = $util.latLongToXY(
-          lat,
-          long,
-          image.width,
-          image.height
-        );
+        const coordinate = latLongToXY(lat, long, image.width, image.height);
         const pixelData = context.getImageData(
           coordinate.x,
           coordinate.y,
@@ -58,8 +53,7 @@ export const useDigitalGlobe = async (parent: Object3D) => {
 
         if (pixelData[0] <= 5) {
           dots.push(
-            $util
-              .toVector(lat, long, settings.globe.radius)
+            toVector(lat, long, settings.globe.radius)
               .normalize()
               .multiplyScalar(settings.globe.radius)
           );
@@ -147,6 +141,27 @@ export const useDigitalGlobe = async (parent: Object3D) => {
       rotation[i + 2] = dummy.rotation.z;
     }
     return new BufferAttribute(rotation, 3);
+  };
+
+  const toVector = (lat: number, lng: number, radius: number): Vector3 => {
+    const latRad = lat * (Math.PI / 180);
+    const lonRad = -lng * (Math.PI / 180);
+    return new Vector3(
+      Math.cos(latRad) * Math.cos(lonRad) * radius,
+      Math.sin(latRad) * radius,
+      Math.cos(latRad) * Math.sin(lonRad) * radius
+    );
+  };
+
+  const latLongToXY = (
+    lat: number,
+    long: number,
+    width: number,
+    height: number
+  ): Vector2 => {
+    const y = (-1 * lat + 90) * (height / 180);
+    const x = (long + 180) * (width / 360);
+    return new Vector2(Math.floor(x), Math.floor(y));
   };
 
   const instancedMeshFromGeometry = (

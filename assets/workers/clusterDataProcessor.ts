@@ -30,6 +30,16 @@ const toGraph = (nodes: L0Node[]): Graph => {
   return graph;
 };
 
+const toVector = (lat: number, lng: number, radius: number): Vector3 => {
+  const latRad = lat * (Math.PI / 180);
+  const lonRad = -lng * (Math.PI / 180);
+  return new Vector3(
+    Math.cos(latRad) * Math.cos(lonRad) * radius,
+    Math.sin(latRad) * radius,
+    Math.cos(latRad) * Math.sin(lonRad) * radius
+  );
+};
+
 const toSatellites = (nodes: L0Node[], layout: Layout<Graph>): Satellite[] => {
   const satellites: Satellite[] = [];
   nodes.forEach((node) => {
@@ -44,7 +54,7 @@ const toSatellites = (nodes: L0Node[], layout: Layout<Graph>): Satellite[] => {
       node: node,
       orientation: {
         globe: {
-          position: useGlobeUtils().toVector(
+          position: toVector(
             node.host.latitude,
             node.host.longitude,
             settings.globe.radius
