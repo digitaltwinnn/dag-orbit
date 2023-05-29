@@ -1,6 +1,7 @@
 import createGraph, { Graph } from "ngraph.graph";
 import createLayout, { Layout } from "ngraph.forcelayout";
 import { Color, MathUtils, Vector3 } from "three";
+import { useGlobeUtils } from "~/composables/useGlobeUtils";
 
 const settings = {
   colors: ["#1E90FE", "#1467C8", "#1053AD"],
@@ -30,18 +31,10 @@ const toGraph = (nodes: L0Node[]): Graph => {
   return graph;
 };
 
-const toVector = (lat: number, lng: number, radius: number): Vector3 => {
-  const latRad = lat * (Math.PI / 180);
-  const lonRad = -lng * (Math.PI / 180);
-  return new Vector3(
-    Math.cos(latRad) * Math.cos(lonRad) * radius,
-    Math.sin(latRad) * radius,
-    Math.cos(latRad) * Math.sin(lonRad) * radius
-  );
-};
-
 const toSatellites = (nodes: L0Node[], layout: Layout<Graph>): Satellite[] => {
   const satellites: Satellite[] = [];
+  const $globeUtils = useGlobeUtils();
+
   nodes.forEach((node) => {
     const nearbySatellites = searchSatellites(
       node.host.latitude,
@@ -54,7 +47,7 @@ const toSatellites = (nodes: L0Node[], layout: Layout<Graph>): Satellite[] => {
       node: node,
       orientation: {
         globe: {
-          position: toVector(
+          position: $globeUtils.toVector(
             node.host.latitude,
             node.host.longitude,
             settings.globe.radius

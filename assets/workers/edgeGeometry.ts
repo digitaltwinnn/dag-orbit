@@ -1,41 +1,6 @@
-import { Curve, Line3, Vector3 } from "three";
+import { Line3, Vector3 } from "three";
 import { gsap } from "gsap";
-
-const toVector = (lat: number, lng: number, radius: number): Vector3 => {
-  const latRad = lat * (Math.PI / 180);
-  const lonRad = -lng * (Math.PI / 180);
-  return new Vector3(
-    Math.cos(latRad) * Math.cos(lonRad) * radius,
-    Math.sin(latRad) * radius,
-    Math.cos(latRad) * Math.sin(lonRad) * radius
-  );
-};
-
-const greatCircleFunction = (P: Vector3, Q: Vector3) => {
-  const angle = P.angleTo(Q);
-  return function (t: number) {
-    const X = new Vector3()
-      .addVectors(
-        P.clone().multiplyScalar(Math.sin((1 - t) * angle)),
-        Q.clone().multiplyScalar(Math.sin(t * angle))
-      )
-      .divideScalar(Math.sin(angle));
-    return X;
-  };
-};
-
-const createSphereArc = (
-  o: { latitude: number; longitude: number },
-  d: { latitude: number; longitude: number },
-  radius: number
-): Curve<Vector3> => {
-  const origin = toVector(o.latitude, o.longitude, radius);
-  const dest = toVector(d.latitude, d.longitude, radius);
-
-  const sphereArc = new Curve<Vector3>();
-  sphereArc.getPoint = greatCircleFunction(origin, dest);
-  return sphereArc;
-};
+import { useGlobeUtils } from "~/composables/useGlobeUtils";
 
 const createGeometry = (
   orientation: string,
@@ -59,12 +24,16 @@ const createGeometry = (
   const points: Vector3[] = [];
   const indices: number[] = [];
   const colors: number[] = [];
+
   let linePos = 0;
   let colorPos = 0;
+
+  const $globeUtils = useGlobeUtils();
+
   edges.forEach((edge) => {
     // points
     if (orientation == "globe") {
-      const arc = createSphereArc(
+      const arc = $globeUtils.createSphereArc(
         edge.source.node.host,
         edge.target.node.host,
         settings.globe.radius
