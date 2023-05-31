@@ -48,12 +48,12 @@ export const useScene = (el: HTMLElement) => {
     depth: false,
     alpha: true,
   });
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(el.clientWidth, el.clientHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   el.appendChild(renderer.domElement);
 
   /* camera */
-  const camera = new PerspectiveCamera(50, innerWidth / innerHeight);
+  const camera = new PerspectiveCamera(50, el.clientWidth / el.clientHeight);
   camera.position.set(
     settings.camera.position.x,
     settings.camera.position.y,
