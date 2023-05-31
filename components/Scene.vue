@@ -1,8 +1,25 @@
 <template>
-  <div class="overflow-x-hidden">
-    <div id="stats" class="absolute bottom-0 right-0 m-4" />
-    <div id="scene-container"></div>
-    <slot />
+  <div>
+    <div id="stats" class="absolute top-20 left-4" />
+    <div id="scene-container" class="w-full h-full"></div>
+    <!--<div>
+      <h1 class="text-5xl font-bold">
+        Constellation Network Explorer 3D!
+      </h1>
+      <p class="py-6">
+        A community driven initiative to try out visualisations that
+        explore the different concepts that define the Constellation
+        Hypergraph and Metagraphs.
+      </p>
+      <progress v-if="!loaded" class="progress progress-primary w-full" max="100"></progress>
+      <button v-else class="btn btn-primary">Get Started</button>
+    </div>-->
+    <Panel class="bg-primary">
+      <div class="base-300 text-9xl text-right">#1</div>
+    </Panel>
+    <Panel class="bg-secondary">
+      <div class="base-300 text-9xl text-right">#2</div>
+    </Panel>
   </div>
 </template>
 
@@ -11,7 +28,7 @@ import vAtmos from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 
-const emit = defineEmits(["loaded"]);
+const loaded = ref(false);
 
 onMounted(async () => {
   const el = document.getElementById("scene-container");
@@ -40,7 +57,7 @@ onMounted(async () => {
             scene.add(edgeMesh);
             bloom.selection.add(edgeMesh);
             scene.add(satMesh);
-            emit("loaded", true);
+            loaded.value = true;
           }
         });
       }
