@@ -1,5 +1,4 @@
 import {
-  BlendFunction,
   EffectComposer,
   EffectPass,
   RenderPass,
@@ -39,6 +38,20 @@ export const useScene = (canvas: HTMLElement) => {
     },
   };
 
+  function resizeRendererToDisplaySize(renderer: WebGLRenderer) {
+    const canvas = renderer.domElement;
+    const pixelRatio = window.devicePixelRatio;
+    // const width  = canvas.clientWidth  * pixelRatio | 0;
+    // const height = canvas.clientHeight * pixelRatio | 0;
+    const width = canvas.clientWidth | 0;
+    const height = canvas.clientHeight | 0;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  }
+
   /* renderer */
   const renderer = new WebGLRenderer({
     powerPreference: settings.renderer.powerPreference,
@@ -48,7 +61,7 @@ export const useScene = (canvas: HTMLElement) => {
     alpha: true,
     canvas: canvas,
   });
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
   renderer.setPixelRatio(window.devicePixelRatio);
 
   /* camera */
@@ -79,8 +92,6 @@ export const useScene = (canvas: HTMLElement) => {
 
   /* bloom */
   const bloom = new SelectiveBloomEffect(scene, camera, {
-    blendFunction: BlendFunction.ADD,
-    mipmapBlur: true,
     luminanceThreshold: settings.bloom.luminanceThreshold,
     luminanceSmoothing: settings.bloom.luminanceSmoothing,
     intensity: settings.bloom.intensity,
@@ -100,16 +111,15 @@ export const useScene = (canvas: HTMLElement) => {
     stats.showPanel(0);
   }
 
-  window.addEventListener("resize", () => {
-    camera.aspect = innerWidth / innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-  });
-
   const tick = (deltaTime: number) => {
     stats.begin();
     if (controls.enabled) {
       controls.update();
+    }
+    if (resizeRendererToDisplaySize(renderer)) {
+      const canvas = renderer.domElement;
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
     }
     composer.render();
     //theatreDriver.tick(deltaTime);
