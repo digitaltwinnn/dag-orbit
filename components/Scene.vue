@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="stats" class="absolute top-20 left-4" />
-    <div id="scene-container" class="w-full h-full"></div>
+    <canvas id="scene-container" class="w-full h-full block"></canvas>
     <!--<div>
       <h1 class="text-5xl font-bold">
         Constellation Network Explorer 3D!
@@ -14,12 +14,6 @@
       <progress v-if="!loaded" class="progress progress-primary w-full" max="100"></progress>
       <button v-else class="btn btn-primary">Get Started</button>
     </div>-->
-    <Panel class="bg-primary">
-      <div class="base-300 text-9xl text-right">#1</div>
-    </Panel>
-    <Panel class="bg-secondary">
-      <div class="base-300 text-9xl text-right">#2</div>
-    </Panel>
   </div>
 </template>
 
@@ -31,13 +25,13 @@ import { gsap } from "gsap";
 const loaded = ref(false);
 
 onMounted(async () => {
-  const el = document.getElementById("scene-container");
-  if (el != null) {
+  const canvas = document.getElementById("scene-container");
+  if (canvas != null) {
     // get and prepare data
     const { satellites, edges, loaded: dataLoaded } = useCluster();
 
     // setup the scene directly
-    const { scene, bloom, tick } = useScene(el);
+    const { scene, bloom, tick } = useScene(canvas);
     gsap.ticker.add((time, deltaTime, frame) => {
       tick(time, deltaTime, frame);
     });

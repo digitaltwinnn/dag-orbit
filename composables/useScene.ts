@@ -7,7 +7,6 @@ import {
 } from "postprocessing";
 import {
   AmbientLight,
-  Color,
   PerspectiveCamera,
   Scene,
   Vector3,
@@ -16,7 +15,7 @@ import {
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 
-export const useScene = (el: HTMLElement) => {
+export const useScene = (canvas: HTMLElement) => {
   const settings = {
     renderer: {
       powerPreference: "high-performance",
@@ -47,13 +46,16 @@ export const useScene = (el: HTMLElement) => {
     stencil: false,
     depth: false,
     alpha: true,
+    canvas: canvas,
   });
-  renderer.setSize(el.clientWidth, el.clientHeight);
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-  el.appendChild(renderer.domElement);
 
   /* camera */
-  const camera = new PerspectiveCamera(50, el.clientWidth / el.clientHeight);
+  const camera = new PerspectiveCamera(
+    50,
+    canvas.clientWidth / canvas.clientHeight
+  );
   camera.position.set(
     settings.camera.position.x,
     settings.camera.position.y,
