@@ -1,6 +1,6 @@
 <template>
   <NavBar />
-  <div class="drawer" style="height: inherit">
+  <div class="drawer">
     <input id="my-drawer" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content flex flex-col" style="overflow-y: hidden">
       <div id="panel-0" class="bg-primary h-screen">
@@ -19,7 +19,7 @@
         </div>
       </div>
     </div>
-    <div class="drawer-side" style="max-height: inherit">
+    <div class="drawer-side">
       <SideBar />
     </div>
   </div>
