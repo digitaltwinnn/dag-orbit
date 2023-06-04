@@ -3,19 +3,6 @@ import createLayout, { Layout } from "ngraph.forcelayout";
 import { Color, MathUtils, Vector3 } from "three";
 import { useGlobeUtils } from "~/composables/useGlobeUtils";
 
-const settings = {
-  colors: ["#1E90FE", "#1467C8", "#1053AD"],
-  globe: {
-    radius: 120,
-    satellite: {
-      proximity: 0.1,
-    },
-  },
-  graph: {
-    scale: 20,
-  },
-};
-
 const toGraph = (nodes: L0Node[]): Graph => {
   const graph = createGraph();
   const peers = [...nodes];
@@ -31,7 +18,11 @@ const toGraph = (nodes: L0Node[]): Graph => {
   return graph;
 };
 
-const toSatellites = (nodes: L0Node[], layout: Layout<Graph>): Satellite[] => {
+const toSatellites = (
+  nodes: L0Node[],
+  layout: Layout<Graph>,
+  settings: any
+): Satellite[] => {
   const satellites: Satellite[] = [];
   const $globeUtils = useGlobeUtils();
 
@@ -39,6 +30,7 @@ const toSatellites = (nodes: L0Node[], layout: Layout<Graph>): Satellite[] => {
     const nearbySatellites = searchSatellites(
       node.host.latitude,
       node.host.longitude,
+      settings.globe.satellite.proximity,
       satellites
     );
 
@@ -115,9 +107,9 @@ const toEdges = (graph: Graph, satellites: Satellite[]): Edge[] => {
 const searchSatellites = (
   lat: number,
   lng: number,
+  proximity: number,
   target: Satellite[]
 ): Satellite[] => {
-  const proximity = settings.globe.satellite.proximity;
   const sats = target.filter((s: Satellite) => {
     const latInRange = inRange(
       lat,
@@ -141,7 +133,8 @@ const inRange = (x: number, min: number, max: number): boolean => {
 self.addEventListener(
   "message",
   function (e) {
-    const nodes: L0Node[] = e.data;
+    const nodes: L0Node[] = e.data.nodes;
+    const settings: L0Node[] = e.data.settings;
     const satellites: Satellite[] = [];
     const edges: Edge[] = [];
 
@@ -153,7 +146,7 @@ self.addEventListener(
     }
 
     // create data objects
-    satellites.push(...toSatellites(nodes, layout));
+    satellites.push(...toSatellites(nodes, layout, settings));
     edges.push(...toEdges(graph, satellites));
 
     self.postMessage({

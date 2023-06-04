@@ -1,8 +1,18 @@
 import clusterDataProcessor from "~/assets/workers/clusterDataProcessor?worker";
 
-export const useCluster = () => {
+export const useCluster = (colors: string[]) => {
   const settings = {
     url: "/api/nodes",
+    colors: colors,
+    globe: {
+      radius: 120,
+      satellite: {
+        proximity: 0.1,
+      },
+    },
+    graph: {
+      scale: 20,
+    },
   };
 
   const clusterDataFromWorker = async () => {
@@ -12,7 +22,7 @@ export const useCluster = () => {
     // start a worker to prepare the data
     return new Promise((resolve, reject) => {
       const worker = new clusterDataProcessor();
-      worker.postMessage(nodes);
+      worker.postMessage({ nodes: nodes, settings: settings });
       worker.addEventListener(
         "message",
         (e: { data: unknown }) => {

@@ -21,6 +21,7 @@
 import vAtmos from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
+import daisyuiColors from "daisyui/src/theming/themes";
 
 const loaded = ref(false);
 
@@ -28,7 +29,12 @@ onMounted(async () => {
   const canvas = document.getElementById("scene-container");
   if (canvas != null) {
     // get and prepare data
-    const { satellites, edges, loaded: dataLoaded } = useCluster();
+    const theme = "forest";
+    const { satellites, edges, loaded: dataLoaded } = useCluster([
+      daisyuiColors["[data-theme=" + theme + "]"].primary,
+      daisyuiColors["[data-theme=" + theme + "]"].secondary,
+      daisyuiColors["[data-theme=" + theme + "]"].accent,
+    ]);
 
     // setup the scene directly
     const { scene, bloom, tick } = useScene(canvas);
