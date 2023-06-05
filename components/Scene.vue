@@ -2,18 +2,6 @@
   <div>
     <div id="stats" class="absolute top-20 left-4" />
     <canvas id="scene-container" class="w-full h-full block"></canvas>
-    <!--<div>
-      <h1 class="text-5xl font-bold">
-        Constellation Network Explorer 3D!
-      </h1>
-      <p class="py-6">
-        A community driven initiative to try out visualisations that
-        explore the different concepts that define the Constellation
-        Hypergraph and Metagraphs.
-      </p>
-      <progress v-if="!loaded" class="progress progress-primary w-full" max="100"></progress>
-      <button v-else class="btn btn-primary">Get Started</button>
-    </div>-->
   </div>
 </template>
 
@@ -23,45 +11,66 @@ import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 import daisyuiColors from "daisyui/src/theming/themes";
 
-const loaded = ref(false);
+const colorMode = useColorMode();
+watch(colorMode, (mode) => {
+  if (mode.preference == mode.value) {
+    console.log(mode.value);
+  }
+});
 
-onMounted(async () => {
-  const canvas = document.getElementById("scene-container");
-  if (canvas != null) {
-    // get and prepare data
-    const theme = "forest";
-    const { satellites, edges, loaded: dataLoaded } = useCluster([
-      daisyuiColors["[data-theme=" + theme + "]"].primary,
-      daisyuiColors["[data-theme=" + theme + "]"].secondary,
-      daisyuiColors["[data-theme=" + theme + "]"].accent,
+// scene is loaded in onMounted
+let $scene, $sun;
+const sceneLoaded = ref(false);
+
+// load data after scene
+let $data;
+const dataLoaded = ref(false);
+watch(sceneLoaded, () => {
+  if (sceneLoaded.value) {
+    $data = useCluster([
+      daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
+      daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
+      daisyuiColors["[data-theme=" + colorMode.value + "]"].accent,
     ]);
-
-    // setup the scene directly
-    const { scene, bloom, tick } = useScene(canvas);
-    gsap.ticker.add((time, deltaTime, frame) => {
-      tick(time, deltaTime, frame);
-    });
-    const { light } = await useSun(scene);
-    await useNaturalGlobe(scene, light, vAtmos, fAtmos);
-    await useDigitalGlobe(scene);
-
-    // setup scene objects when the data is loaded
-    watch(dataLoaded, () => {
-      if (dataLoaded.value) {
-        const { mesh: edgeMesh, loaded: edgesLoaded } = useEdges(edges, bloom);
-        const { mesh: satMesh, loaded: satsLoaded } = useSatellites(satellites);
-
-        // wait till the scene objects are fully loaded
-        watch([edgesLoaded, satsLoaded], () => {
-          if (edgesLoaded.value && satsLoaded.value) {
-            scene.add(edgeMesh);
-            bloom.selection.add(edgeMesh);
-            scene.add(satMesh);
-            loaded.value = true;
-          }
-        });
+    watch($data.loaded, () => {
+      if ($data.loaded.value) {
+        dataLoaded.value = true;
       }
     });
+  }
+});
+
+// load objects after data
+const objectsLoaded = ref(false);
+watch(dataLoaded, () => {
+  if (dataLoaded.value) {
+    const $edges = useEdges($data.edges, $scene.bloom);
+    const $satellites = useSatellites($data.satellites);
+
+    watch([$edges.loaded, $satellites.loaded], () => {
+      if ($edges.loaded.value && $satellites.loaded.value) {
+        $scene.scene.add($edges.mesh);
+        $scene.bloom.selection.add($edges.mesh);
+        $scene.scene.add($satellites.mesh);
+        objectsLoaded.value = true;
+      }
+    });
+  }
+});
+
+onMounted(async () => {
+  // load scene here as it needs the DOM
+  const canvas = document.getElementById("scene-container");
+  if (canvas != null) {
+    $scene = useScene(canvas);
+    gsap.ticker.add((time, deltaTime, frame) => {
+      $scene.tick(time, deltaTime, frame);
+    });
+
+    $sun = await useSun($scene.scene);
+    await useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos);
+    await useDigitalGlobe($scene.scene);
+    sceneLoaded.value = true;
   }
 });
 </script>
