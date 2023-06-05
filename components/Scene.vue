@@ -44,11 +44,16 @@ watch(sceneLoaded, () => {
 const objectsLoaded = ref(false);
 watch(dataLoaded, () => {
   if (dataLoaded.value) {
+    const $globe = useDigitalGlobe([
+      daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
+      daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
+    ]);
     const $edges = useEdges($data.edges, $scene.bloom);
     const $satellites = useSatellites($data.satellites);
 
-    watch([$edges.loaded, $satellites.loaded], () => {
-      if ($edges.loaded.value && $satellites.loaded.value) {
+    watch([$edges.loaded, $satellites.loaded, $globe.loaded], () => {
+      if ($edges.loaded.value && $satellites.loaded.value && $globe.loaded.value) {
+        $scene.scene.add($globe.mesh);
         $scene.scene.add($edges.mesh);
         $scene.bloom.selection.add($edges.mesh);
         $scene.scene.add($satellites.mesh);
@@ -69,7 +74,6 @@ onMounted(async () => {
 
     $sun = await useSun($scene.scene);
     await useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos);
-    await useDigitalGlobe($scene.scene);
     sceneLoaded.value = true;
   }
 });

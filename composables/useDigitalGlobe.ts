@@ -14,20 +14,20 @@ import {
 } from "three";
 import { gsap } from "gsap";
 
-const settings = {
-  colors: ["#1E90FE", "#1467C8", "#1053AD"],
-  globe: {
-    density: 0.5,
-    rows: 150,
-    radius: 130,
-    maxDots: 11500,
-  },
-  map: {
-    step: 4.2,
-  },
-};
+export const useDigitalGlobe = (colors: string[]) => {
+  const settings = {
+    colors: colors,
+    globe: {
+      density: 0.5,
+      rows: 150,
+      radius: 130,
+      maxDots: 11500,
+    },
+    map: {
+      step: 4.2,
+    },
+  };
 
-export const useDigitalGlobe = async (parent: Object3D) => {
   const createGlobeOrientedGeometry = (
     image: HTMLImageElement,
     context: CanvasRenderingContext2D
@@ -252,30 +252,35 @@ export const useDigitalGlobe = async (parent: Object3D) => {
     });
   };
 
+  const loaded = ref(false);
   let mesh: InstancedMesh = new InstancedMesh(undefined, undefined, 0);
   let globeOrientation: BufferGeometry;
   let mapOrientation: BufferGeometry;
 
-  const $img = useImage();
-  const imgUrl = $img("/earthspec1k.jpg", { width: 1024 });
-  const loader = new ImageLoader();
+  const load = async () => {
+    const $img = useImage();
+    const imgUrl = $img("/earthspec1k.jpg", { width: 1024 });
+    const loader = new ImageLoader();
 
-  const image = await loader.loadAsync(imgUrl);
-  const canvas = document.createElement("canvas");
-  canvas.width = image.width;
-  canvas.height = image.height;
-  const context = canvas.getContext("2d", { willReadFrequently: true });
-  context ? context.drawImage(image, 0, 0) : null;
+    const image = loader.load(imgUrl);
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context ? context.drawImage(image, 0, 0) : null;
 
-  if (context) {
-    globeOrientation = createGlobeOrientedGeometry(image, context);
-    mapOrientation = createMapOrientedGeometry(image, context);
+    if (context) {
+      globeOrientation = createGlobeOrientedGeometry(image, context);
+      mapOrientation = createMapOrientedGeometry(image, context);
 
-    const orientation = globeOrientation;
-    mesh = instancedMeshFromGeometry(orientation);
-    mesh.name = "DigitalGlobe";
-    parent.add(mesh);
-  }
+      const orientation = globeOrientation;
+      mesh = instancedMeshFromGeometry(orientation);
+      mesh.name = "DigitalGlobe";
+
+      loaded.value = true;
+    }
+  };
+  load();
 
   /*
   private animateColors() {
@@ -298,6 +303,7 @@ export const useDigitalGlobe = async (parent: Object3D) => {
 */
   return {
     mesh,
+    loaded,
     transformToGlobe,
     transformToMap,
   };
