@@ -11,22 +11,23 @@ import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 import daisyuiColors from "daisyui/src/theming/themes";
 
-const colorMode = useColorMode();
-watch(colorMode, (mode) => {
-  if (mode.preference == mode.value) {
-    console.log(mode.value);
-  }
-});
-
 // scene is loaded in onMounted
 let $scene, $sun;
 const sceneLoaded = ref(false);
 
+const colorMode = useColorMode();
+const colorLoaded = ref(false);
+watch(colorMode, (mode) => {
+  if (mode.preference == mode.value) {
+    colorLoaded.value = true;
+  }
+});
+
 // load data after scene
 let $data;
 const dataLoaded = ref(false);
-watch(sceneLoaded, () => {
-  if (sceneLoaded.value) {
+watch([sceneLoaded, colorLoaded], () => {
+  if (sceneLoaded.value & colorLoaded.value) {
     $data = useCluster([
       daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
       daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
