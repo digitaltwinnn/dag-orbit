@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="w-full h-full">
     <div id="stats" class="absolute top-20 left-4" />
     <canvas id="scene-container" class="w-full h-full block"></canvas>
   </div>

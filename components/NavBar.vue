@@ -1,12 +1,12 @@
 <template>
-    <div class="navbar sticky top-0 z-10 bg-base-100">
+    <div class="navbar top-0">
         <div class="flex-none">
             <label for="my-drawer" class="btn drawer-button btn-ghost">
                 <Bars3Icon class="h-6 w-6" />
             </label>
         </div>
         <div class="flex-1">
-            <a class="btn btn-ghost normal-case text-xl text-base-content">DAG Orbit</a>
+            <a class="btn btn-ghost normal-case text-xl">DAG Orbit</a>
         </div>
         <div class="flex-none">
             <select class="select w-full max-w-xs" v-model="colorMode.preference">
