@@ -11,10 +11,10 @@ import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 import daisyuiColors from "daisyui/src/theming/themes";
 
-// scene is loaded in onMounted
 let $scene, $sun;
 const sceneLoaded = ref(false);
 
+// set the preferred theme
 const colorMode = useColorMode();
 const colorLoaded = ref(false);
 watch(colorMode, (mode) => {
@@ -23,10 +23,10 @@ watch(colorMode, (mode) => {
   }
 });
 
-// load data after scene
+// prepare the presentation data once the theme is set
 let $data;
 const dataLoaded = ref(false);
-watch([sceneLoaded, colorLoaded], () => {
+watch([colorLoaded], () => {
   if (sceneLoaded.value & colorLoaded.value) {
     $data = useCluster([
       daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
@@ -41,31 +41,8 @@ watch([sceneLoaded, colorLoaded], () => {
   }
 });
 
-// load objects after data
-const objectsLoaded = ref(false);
-watch(dataLoaded, () => {
-  if (dataLoaded.value) {
-    const $globe = useDigitalGlobe([
-      daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
-      daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
-    ]);
-    const $edges = useEdges($data.edges, $scene.bloom);
-    const $satellites = useSatellites($data.satellites);
-
-    watch([$edges.loaded, $satellites.loaded, $globe.loaded], () => {
-      if ($edges.loaded.value && $satellites.loaded.value && $globe.loaded.value) {
-        $scene.scene.add($globe.mesh);
-        $scene.scene.add($edges.mesh);
-        $scene.bloom.selection.add($edges.mesh);
-        $scene.scene.add($satellites.mesh);
-        objectsLoaded.value = true;
-      }
-    });
-  }
-});
-
 onMounted(async () => {
-  // load scene here as it needs the DOM
+  // load the scene here as it needs the DOM for its canvas
   const canvas = document.getElementById("scene-container");
   if (canvas != null) {
     $scene = useScene(canvas);
@@ -77,5 +54,28 @@ onMounted(async () => {
     await useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos);
     sceneLoaded.value = true;
   }
+
+  // load objects here (when data is loaded) as some need the DOM anyways
+  const objectsLoaded = ref(false);
+  watch(dataLoaded, () => {
+    if (dataLoaded.value) {
+      const $globe = useDigitalGlobe([
+        daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
+        daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
+      ]);
+      const $edges = useEdges($data.edges, $scene.bloom);
+      const $satellites = useSatellites($data.satellites);
+
+      watch([$edges.loaded, $satellites.loaded, $globe.loaded], () => {
+        if ($edges.loaded.value && $satellites.loaded.value && $globe.loaded.value) {
+          $scene.scene.add($globe.mesh);
+          $scene.scene.add($edges.mesh);
+          $scene.bloom.selection.add($edges.mesh);
+          $scene.scene.add($satellites.mesh);
+          objectsLoaded.value = true;
+        }
+      });
+    }
+  });
 });
 </script>
