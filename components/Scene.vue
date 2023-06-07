@@ -73,11 +73,10 @@ onMounted(async () => {
 
     $sun = await useSun($scene.scene);
     await useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos);
-    const { mesh, loaded } = useDigitalGlobe([
+    await useDigitalGlobe($scene.scene, [
       daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
       daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
     ]);
-    $scene.scene.add(mesh);
     sceneLoaded.value = true;
   }
 });
