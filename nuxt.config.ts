@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   build: {
     transpile: ["three", "postprocessing", "gsap", "@theatre/core"],
   },
-  modules: ["@nuxt/image-edge", "@nuxtjs/tailwindcss", "@nuxtjs/color-mode"],
+  modules: ["@nuxt/image", "@nuxtjs/tailwindcss", "@nuxtjs/color-mode"],
   colorMode: {
     preference: "system",
     dataValue: "theme",
