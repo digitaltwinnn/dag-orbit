@@ -30,8 +30,9 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+gsap.registerPlugin(ScrollTrigger);
+
 onMounted(() => {
-  gsap.registerPlugin(ScrollTrigger);
   gsap.to("#box-1", {
     scrollTrigger: {
       trigger: "#panel-1",
