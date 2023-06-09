@@ -1,6 +1,7 @@
 
-      varying float atmosphereThickness;
+      varying float vAtmosphereThickness;
       varying vec3 vLightDirection;
+      varying vec3 vAtmosphereColor;
       varying vec3 vNormalEyeSpace;
   
       void main(){
@@ -12,5 +13,5 @@
         // based on actual lighting extended a bit
         // and the thickess
         float lightIntensity = max(dot(normal, lightDir) * 1.5, -0.9);
-        gl_FragColor = vec4( (vec3(57.0, 97.0, 262.0) / 256.0) * (0.25 + lightIntensity), atmosphereThickness);
+        gl_FragColor = vec4( (vAtmosphereColor) * (0.25 + lightIntensity), vAtmosphereThickness);
       }

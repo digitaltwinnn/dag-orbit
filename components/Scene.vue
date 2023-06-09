@@ -84,7 +84,13 @@ onMounted(async () => {
     });
 
     $sun = await useSun($scene.scene);
-    await useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos);
+    await useNaturalGlobe(
+      $scene.scene,
+      $sun.light,
+      vAtmos,
+      fAtmos,
+      daisyuiColors["[data-theme=" + colorMode.value + "]"].accent
+    );
     await useDigitalGlobe($scene.scene, [
       daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
       daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,

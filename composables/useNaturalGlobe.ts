@@ -1,5 +1,6 @@
 import { gsap } from "gsap";
 import {
+  Color,
   Light,
   MathUtils,
   Mesh,
@@ -13,7 +14,8 @@ export const useNaturalGlobe = async (
   parent: Object3D,
   light: Light,
   vAtmosphere: string,
-  fAtmosphere: string
+  fAtmosphere: string,
+  atmosphereColor: string
 ) => {
   const settings = {
     radius: 100,
@@ -49,7 +51,8 @@ export const useNaturalGlobe = async (
   mesh.position.set(-150, -50, 200);
   parent.add(mesh);
 
-  useAtmosphere(mesh, light, vAtmosphere, fAtmosphere);
+  const color = new Color(atmosphereColor);
+  useAtmosphere(mesh, light, vAtmosphere, fAtmosphere, color);
   animate();
 
   return {

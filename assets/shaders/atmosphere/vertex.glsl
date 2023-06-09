@@ -2,10 +2,12 @@
 uniform vec3 earthCenter;
 uniform float earthRadius;
 uniform float atmosphereRadius;
+uniform vec3 atmosphereColor;
 uniform vec3 lightDirection;
 
-varying float atmosphereThickness;
+varying float vAtmosphereThickness;
 varying vec3 vLightDirection;
+varying vec3 vAtmosphereColor;
 varying vec3 vNormalEyeSpace;
 
 
@@ -29,7 +31,7 @@ void main(){
 
     if (tca < 0.0) {
         // not intesect, looking in opposite direction
-        atmosphereThickness = 0.0;
+        vAtmosphereThickness = 0.0;
         return;
     }
 
@@ -41,10 +43,11 @@ void main(){
     float thc_earth = 2.0 * sqrt(max(0.0, thc_sq_earth));
 
     float thc = (thc_atmosphere - thc_earth) * 0.01;
-    atmosphereThickness = thc;
+    vAtmosphereThickness = thc;
 
     // 3. the normal light calculation
     vLightDirection = mat3(viewMatrix) * lightDirection;
+    vAtmosphereColor = atmosphereColor;
     vNormalEyeSpace = normalize(normalMatrix * normal);
 
 }
