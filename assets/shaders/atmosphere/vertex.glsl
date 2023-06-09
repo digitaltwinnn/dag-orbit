@@ -40,7 +40,7 @@ void main(){
     float thc_atmosphere = 2.0 * sqrt(thc_sq_atmosphere);
     float thc_earth = 2.0 * sqrt(max(0.0, thc_sq_earth));
 
-    float thc = (thc_atmosphere - thc_earth) * 0.03; // 0.01 - density factor
+    float thc = (thc_atmosphere - thc_earth) * 0.01;
     atmosphereThickness = thc;
 
     // 3. the normal light calculation

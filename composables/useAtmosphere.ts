@@ -15,8 +15,8 @@ export const useAtmosphere = (
   fragment: string
 ) => {
   const settings = {
-    innerRadius: 100,
-    outerRadius: 103,
+    innerRadius: 101,
+    outerRadius: 105,
   };
 
   const atmosphereGeometry = new SphereGeometry(settings.outerRadius, 64, 64);
