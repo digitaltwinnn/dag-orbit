@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import { Bars3Icon } from "@heroicons/vue/24/solid";
+</script>
+
 <template>
   <div class="navbar top-0">
     <div class="flex-none">
@@ -13,7 +17,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { Bars3Icon } from "@heroicons/vue/24/solid";
-</script>

@@ -1,3 +1,24 @@
+<script setup lang="ts">
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+onMounted(() => {
+  gsap.to("#box-1", {
+    scrollTrigger: {
+      trigger: "#panel-1",
+      scrub: 0.6,
+      markers: {
+        fontWeight: "bold",
+      },
+    },
+    rotation: 360,
+    transformOrigin: "center center",
+  });
+});
+</script>
+
 <template>
   <NavBar class="bg-transparent text-neutral-content fixed top-0 z-20" />
   <div class="bg-transparent w-screen h-screen fixed top-0 z-10">
@@ -25,24 +46,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
-
-onMounted(() => {
-  gsap.to("#box-1", {
-    scrollTrigger: {
-      trigger: "#panel-1",
-      scrub: 0.6,
-      markers: {
-        fontWeight: "bold",
-      },
-    },
-    rotation: 360,
-    transformOrigin: "center center",
-  });
-});
-</script>

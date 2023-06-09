@@ -1,11 +1,4 @@
-<template>
-  <div class="w-full h-full">
-    <div id="stats" class="absolute top-20 left-4" />
-    <canvas id="scene-container" class="w-full h-full block"></canvas>
-  </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import vAtmos from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
@@ -18,11 +11,11 @@ gsap.registerPlugin(ScrollTrigger);
 const colorMode = useColorMode();
 
 // scene is loaded in onMounted
-let $scene, $sun;
+let $scene: any, $sun: any;
 const sceneLoaded = ref(false);
 
 // load data after the scene
-let $data;
+let $data: any;
 const dataLoaded = ref(false);
 watch(sceneLoaded, () => {
   if (sceneLoaded.value) {
@@ -41,10 +34,10 @@ watch(sceneLoaded, () => {
 
 // load objects after the data
 const objectsLoaded = ref(false);
-let $edges, $satellites;
+let $edges: any, $satellites: any;
 watch(dataLoaded, () => {
   if (dataLoaded.value) {
-    $edges = useEdges($data.edges, $scene.bloom);
+    $edges = useEdges($data.edges);
     $satellites = useSatellites($data.satellites);
 
     watch([$edges.loaded, $satellites.loaded], () => {
@@ -99,3 +92,10 @@ onMounted(async () => {
   }
 });
 </script>
+
+<template>
+  <div class="w-full h-full">
+    <div id="stats" class="absolute top-20 left-4" />
+    <canvas id="scene-container" class="w-full h-full block"></canvas>
+  </div>
+</template>
