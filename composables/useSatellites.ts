@@ -15,7 +15,7 @@ const settings = {
   },
 };
 
-export const useSatellites = (satellites: Satellite[]) => {
+export const useSatellites = (satellites: Satellite[]): ThreeJsComposable => {
   const createGlobeOrientedGeometry = (
     satellites: Satellite[]
   ): BufferGeometry => {
@@ -107,15 +107,15 @@ export const useSatellites = (satellites: Satellite[]) => {
     const graphOrientation = createGraphOrientedGeometry(satellites);
 
     const orientation = globeOrientation;
-    mesh = instancedMeshFromGeometry(orientation);
-    mesh.count = orientation.userData.visibleSatellites;
+    object = instancedMeshFromGeometry(orientation);
+    object.count = orientation.userData.visibleSatellites;
     loaded.value = true;
   };
 
   const loaded = ref(false);
-  let mesh = new InstancedMesh(undefined, undefined, 0);
-  mesh.name = "Satellites";
+  let object = new InstancedMesh(undefined, undefined, 0);
+  object.name = "Satellites";
   load();
 
-  return { mesh, loaded };
+  return { object, loaded };
 };

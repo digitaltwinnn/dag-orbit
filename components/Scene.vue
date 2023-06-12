@@ -34,17 +34,25 @@ watch(sceneLoaded, () => {
 
 // load objects after the data
 const objectsLoaded = ref(false);
-let $edges: any, $satellites: any;
+let $edges: ThreeJsComposable, $satellites: ThreeJsComposable;
+let $naturalGlobe: ThreeJsComposable;
 watch(dataLoaded, () => {
   if (dataLoaded.value) {
     $edges = useEdges($data.edges);
     $satellites = useSatellites($data.satellites);
+    $naturalGlobe = useNaturalGlobe(
+      $sun.light,
+      vAtmos,
+      fAtmos,
+      daisyuiColors["[data-theme=" + colorMode.value + "]"].accent
+    );
 
-    watch([$edges.loaded, $satellites.loaded], () => {
-      if ($edges.loaded.value && $satellites.loaded.value) {
-        $scene.scene.add($edges.mesh);
-        $scene.bloom.selection.add($edges.mesh);
-        $scene.scene.add($satellites.mesh);
+    watch([$edges.loaded, $satellites.loaded, $naturalGlobe.loaded], () => {
+      if ($edges.loaded.value && $satellites.loaded.value && $naturalGlobe.loaded.value) {
+        $scene.scene.add($edges.object);
+        $scene.bloom.selection.add($edges.object);
+        $scene.scene.add($satellites.object);
+        $scene.scene.add($naturalGlobe.object);
         objectsLoaded.value = true;
       }
     });
@@ -54,12 +62,12 @@ watch(dataLoaded, () => {
 // setup scrolltriggers after the objects
 watch(objectsLoaded, () => {
   if (objectsLoaded.value) {
-    gsap.to($edges.mesh.scale, {
+    gsap.to($edges.object.scale, {
       x: 2,
       y: 2,
       z: 2,
       scrollTrigger: {
-        trigger: ".panel-1",
+        trigger: "#panel-1",
         scrub: 0.6,
         markers: true,
       },
@@ -77,13 +85,7 @@ onMounted(async () => {
     });
 
     $sun = await useSun($scene.scene);
-    await useNaturalGlobe(
-      $scene.scene,
-      $sun.light,
-      vAtmos,
-      fAtmos,
-      daisyuiColors["[data-theme=" + colorMode.value + "]"].accent
-    );
+
     await useDigitalGlobe($scene.scene, [
       daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
       daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,

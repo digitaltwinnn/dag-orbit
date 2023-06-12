@@ -1,4 +1,13 @@
-import { Color, Vector3 } from "three";
+import {
+  Color,
+  Group,
+  InstancedMesh,
+  LineSegments,
+  Mesh,
+  Object3D,
+  PointLight,
+  Vector3,
+} from "three";
 
 declare global {
   type L0Node = {
@@ -38,5 +47,10 @@ declare global {
     source: Satellite;
     target: Satellite;
     visible: boolean;
+  };
+
+  type ThreeJsComposable = {
+    loaded: Ref<boolean>;
+    object: InstancedMesh | Mesh | LineSegments | Group | Object3D | PointLight;
   };
 }

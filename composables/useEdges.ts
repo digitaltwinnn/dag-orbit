@@ -15,7 +15,7 @@ type geometryVertices = {
   visibleEdges: number;
 };
 
-export const useEdges = (edges: Edge[]) => {
+export const useEdges = (edges: Edge[]): ThreeJsComposable => {
   const settings = {
     globe: {
       radius: 120,
@@ -111,8 +111,8 @@ export const useEdges = (edges: Edge[]) => {
   };
 
   const loaded = ref(false);
-  const mesh = new LineSegments(undefined, undefined);
-  mesh.name = "edges";
+  const object = new LineSegments(undefined, undefined);
+  object.name = "edges";
 
   const load = async () => {
     const [globeVertices, graphVertices] = await Promise.all([
@@ -123,16 +123,16 @@ export const useEdges = (edges: Edge[]) => {
     const globeGeometry = geometryFromVertices(globeVertices);
     const graphGeometry = geometryFromVertices(graphVertices);
 
-    mesh.geometry = globeGeometry;
-    mesh.material = new LineBasicMaterial({
+    object.geometry = globeGeometry;
+    object.material = new LineBasicMaterial({
       vertexColors: true,
       opacity: settings.edge.opacity,
     });
 
-    animate(mesh);
+    animate(object);
     loaded.value = true;
   };
   load();
 
-  return { mesh, loaded };
+  return { object, loaded };
 };

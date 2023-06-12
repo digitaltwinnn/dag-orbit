@@ -5,24 +5,22 @@ import {
   MathUtils,
   Mesh,
   MeshPhongMaterial,
-  Object3D,
   SphereGeometry,
   TextureLoader,
 } from "three";
 
-export const useNaturalGlobe = async (
-  parent: Object3D,
+export const useNaturalGlobe = (
   light: Light,
   vAtmosphere: string,
   fAtmosphere: string,
   atmosphereColor: string
-) => {
+): ThreeJsComposable => {
   const settings = {
     radius: 100,
   };
 
   const animate = () => {
-    gsap.to(mesh.rotation, {
+    gsap.to(object.rotation, {
       y: MathUtils.degToRad(360),
       duration: 60,
       repeat: -1,
@@ -30,32 +28,41 @@ export const useNaturalGlobe = async (
     });
   };
 
-  const loader = new TextureLoader();
-  const $img = useImage();
-  const mapImgUrl = $img("/earthmap.jpg", { width: 1536 });
-  const specularImgUrl = $img("/earthspec1k.jpg", { width: 640 });
-  const bumpImgUrl = $img("/earthbump10k.jpg", { width: 1536 });
+  const loaded = ref(false);
+  const object: Mesh = new Mesh(undefined, undefined);
+  object.name = "NaturalGlobe";
 
-  const geometry = new SphereGeometry(settings.radius, 64, 64);
-  const material = new MeshPhongMaterial({
-    specular: 0x333333,
-    shininess: 9,
-    map: loader.load(mapImgUrl),
-    specularMap: loader.load(specularImgUrl),
-    bumpMap: loader.load(bumpImgUrl),
-    bumpScale: 1,
-  });
+  const load = async () => {
+    const loader = new TextureLoader();
+    const $img = useImage();
+    const mapImgUrl = $img("/earthmap.jpg", { width: 1536 });
+    const specularImgUrl = $img("/earthspec1k.jpg", { width: 640 });
+    const bumpImgUrl = $img("/earthbump10k.jpg", { width: 1536 });
 
-  const mesh: Mesh = new Mesh(geometry, material);
-  mesh.name = "NaturalGlobe";
-  mesh.position.set(-150, -50, 200);
-  parent.add(mesh);
+    const geometry = new SphereGeometry(settings.radius, 64, 64);
+    const material = new MeshPhongMaterial({
+      specular: 0x333333,
+      shininess: 9,
+      map: loader.load(mapImgUrl),
+      specularMap: loader.load(specularImgUrl),
+      bumpMap: loader.load(bumpImgUrl),
+      bumpScale: 1,
+    });
 
-  const color = new Color(atmosphereColor);
-  useAtmosphere(mesh, light, vAtmosphere, fAtmosphere, color);
-  animate();
+    object.geometry = geometry;
+    object.material = material;
+    object.position.set(-150, -50, 200);
+
+    const color = new Color(atmosphereColor);
+    useAtmosphere(object, light, vAtmosphere, fAtmosphere, color);
+    animate();
+    loaded.value = true;
+  };
+
+  load();
 
   return {
-    mesh,
+    loaded,
+    object,
   };
 };
