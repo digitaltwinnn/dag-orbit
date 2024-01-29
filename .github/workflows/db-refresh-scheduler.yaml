@@ -7,8 +7,8 @@ jobs:
   database-refresh:
     runs-on: ubuntu-latest
     steps:
-      - name: Refresh active cluster nodes every 15 minutes
-        if: github.event.schedule == '*/15 * * * *'
+      - name: Refresh active cluster nodes every 120 minutes
+        if: github.event.schedule == '*/120 * * * *'
         run: |
           curl --request POST \
           --url 'https://dag-orbit.vercel.app/api/schedule'
