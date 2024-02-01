@@ -39,7 +39,37 @@ const schema: Schema = new Schema(
         type: Number,
         required: true,
       },
-    }
+    },
+    vector: {
+      graph: {
+        x: {
+          type: Number,
+          required: true,
+        },
+        y: {
+          type: Number,
+          required: true,
+        },
+        z: {
+          type: Number,
+          required: true,
+        },
+      },
+      globe: {
+        x: {
+          type: Number,
+          required: true,
+        },
+        y: {
+          type: Number,
+          required: true,
+        },
+        z: {
+          type: Number,
+          required: true,
+        },
+      }
+    },
   },
   { timestamps: true }
 );
