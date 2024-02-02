@@ -22,6 +22,19 @@ declare global {
       latitude: number;
       longitude: number;
     };
+
+    vector: {
+      graph: {
+        x: number,
+        y: number,
+        z: number
+      },
+      globe: {
+        x: number,
+        y: number,
+        z: number
+      },
+    }
   };
 
   type NodeMetrics = {
@@ -31,15 +44,9 @@ declare global {
   type Satellite = {
     node: L0Node;
     color: Color;
-    orientation: {
-      globe: {
-        position: Vector3;
-        visible: boolean;
-      };
-      graph: {
-        position: Vector3;
-        visible: boolean;
-      };
+    visibility: {
+      globe: boolean;
+      graph: boolean;
     };
   };
 

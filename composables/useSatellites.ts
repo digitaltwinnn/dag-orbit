@@ -16,54 +16,66 @@ const settings = {
 };
 
 export const useSatellites = (satellites: Satellite[]): ThreeJsComposable => {
-  const createGlobeOrientedGeometry = (
+  
+  // geometry for InstancedMesh that holds globe positions (hide soverlapping satellites)
+  const createGlobeGeometry = (
     satellites: Satellite[]
   ): BufferGeometry => {
     const geometry = new BufferGeometry();
     const positions = new Float32Array(satellites.length * 3);
 
+    // invisible satellites to the end (InstancedMesh object count hides them)
     satellites.sort((s1, s2) => {
-      return s1.orientation.globe.visible === s2.orientation.globe.visible
+      return s1.visibility.globe === s2.visibility.globe
         ? 0
-        : s1.orientation.globe.visible
-        ? -1
-        : 1;
+        : s1.visibility.globe
+          ? -1
+          : 1;
     });
-    const visibleSatellites = satellites.filter((s) => {
-      return s.orientation.globe.visible;
-    }).length;
 
+    // count the number of satellites that should be visisble in InstancedMesh
+    const visibleSatellites = satellites.filter((s) => {
+      return s.visibility.globe;
+    }).length;
+    // add as user data so that the InstancedMesh can use it for object.count
+    geometry.userData = { visibleSatellites: visibleSatellites };
+
+    // return the geometry for all globe positions (incl. to be hidden)
     let i3 = 0;
     for (let i = 0; i < satellites.length; i++) {
-      positions[i3++] = satellites[i].orientation.globe.position.x;
-      positions[i3++] = satellites[i].orientation.globe.position.y;
-      positions[i3++] = satellites[i].orientation.globe.position.z;
+      positions[i3++] = satellites[i].node.vector.globe.x;
+      positions[i3++] = satellites[i].node.vector.globe.y;
+      positions[i3++] = satellites[i].node.vector.globe.z;
     }
     geometry.setAttribute("position", new BufferAttribute(positions, 3));
-    geometry.userData = { visibleSatellites: visibleSatellites };
     return geometry;
   };
 
-  const createGraphOrientedGeometry = (satellites: Satellite[]) => {
+  // geometry for InstancedMesh that holds graph positions
+  const createGraphGeometry = (satellites: Satellite[]) => {
     const geometry = new BufferGeometry();
     const positions = new Float32Array(satellites.length * 3);
 
+    // always visible
+    /*
     satellites.sort((s1, s2) => {
       return s1.orientation.graph.visible === s2.orientation.graph.visible
         ? 0
         : s1.orientation.graph.visible
-        ? -1
-        : 1;
+          ? -1
+          : 1;
     });
     const visibleSatellites = satellites.filter((s) => {
       return s.orientation.graph.visible;
     }).length;
+    */
+    const visibleSatellites = satellites;
 
     let i3 = 0;
     for (let i = 0; i < satellites.length; i++) {
-      positions[i3++] = satellites[i].orientation.graph.position.x;
-      positions[i3++] = satellites[i].orientation.graph.position.y;
-      positions[i3++] = satellites[i].orientation.graph.position.z;
+      positions[i3++] = satellites[i].node.vector.graph.x;
+      positions[i3++] = satellites[i].node.vector.graph.y;
+      positions[i3++] = satellites[i].node.vector.graph.z;
     }
     geometry.setAttribute("position", new BufferAttribute(positions, 3));
     // geometry.scale(10, 10, 10);
@@ -103,10 +115,10 @@ export const useSatellites = (satellites: Satellite[]): ThreeJsComposable => {
   };
 
   const load = async () => {
-    const globeOrientation = createGlobeOrientedGeometry(satellites);
-    const graphOrientation = createGraphOrientedGeometry(satellites);
+    const globe = createGlobeGeometry(satellites);
+    const graph = createGraphGeometry(satellites);
 
-    const orientation = globeOrientation;
+    const orientation = globe;
     object = instancedMeshFromGeometry(orientation);
     object.count = orientation.userData.visibleSatellites;
     loaded.value = true;

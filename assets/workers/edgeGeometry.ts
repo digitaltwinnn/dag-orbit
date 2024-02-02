@@ -41,8 +41,8 @@ const createGeometry = (
       points.push(...arc.getPoints(settings.edge.points));
     } else if (orientation == "graph") {
       const line = new Line3(
-        edge.source.orientation.graph.position,
-        edge.target.orientation.graph.position
+        edge.source.node.vector.graph,
+        edge.target.node.vector.graph
       );
       const point = new Vector3();
       for (let i = 0; i <= settings.edge.points; i++) {
