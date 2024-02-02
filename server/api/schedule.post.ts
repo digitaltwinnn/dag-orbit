@@ -1,31 +1,37 @@
 import createGraph, { Graph } from "ngraph.graph";
 import nodeModel from "../model/node.model";
+import edgeModel from "../model/edge.model";
 import { AnyBulkWriteOperation } from "mongodb";
 import createLayout from "ngraph.forcelayout";
 import { Vector3 } from "three";
-import { error } from "console";
 
 export const config = {
   runtime: "edge",
 };
 
 export default defineEventHandler(async (event) => {
-  let updates = 0;
+  let nodeUpdates = 0, edgeUpdates = 0;
 
   try {
-    if (process.env.L0_BOOTSTRAP_IP == undefined) throw "o cluster bootstrap ip defined"
-    const nodes = await getClusterDetails(process.env.L0_BOOTSTRAP_IP);
-    updates = await updateNodeCollection(nodes);
+    const nodeGraph = toGraph(await getClusterInfo());
+    nodeUpdates = await updateNodeCollection(nodeGraph);
+    edgeUpdates = await updateEdgeCollection(nodeGraph);
   } catch (e) {
     console.error(e);
   }
 
   return {
-    updates: updates,
+    updated: {
+      nodes: nodeUpdates,
+      edges: edgeUpdates
+    },
   };
 });
 
-async function getClusterDetails(ip: string): Promise<any[]> {
+async function getClusterInfo(): Promise<any[]> {
+  if (process.env.L0_BOOTSTRAP_IP == undefined) throw "no cluster bootstrap ip defined"
+  
+  const ip = process.env.L0_BOOTSTRAP_IP;
   const nodes: any[] = await $fetch("http://" + ip + ":9000/cluster/info");
   await Promise.all(
     nodes.map(async (n, index, array) => {
@@ -37,17 +43,17 @@ async function getClusterDetails(ip: string): Promise<any[]> {
   return nodes;
 }
 
-async function updateNodeCollection(nodes: any[]): Promise<number> {
-
+async function updateNodeCollection(nodeGraph: Graph<any, any>): Promise<number> {
   // calculate all node position vectors in 3d force directed graph
-  const nodeGraph = toGraph(nodes);
   const forceLayout = createLayout(nodeGraph, { dimensions: 3 });
   for (let i = 0; i < 3; ++i) {
     forceLayout.step();
   }
 
+  // update the docs in bulk
   let nodeDocs: AnyBulkWriteOperation[] = [];
-  nodes.forEach((node: any) => {
+  nodeGraph.forEachNode((graphNode: any) => {
+    const node = graphNode.data;
     // get the latitude and longitude coordinates
     const latLong = node.host.loc.split(",").map((coord: string) => {
       const f = parseFloat(coord);
@@ -95,7 +101,31 @@ async function updateNodeCollection(nodes: any[]): Promise<number> {
   return nodeDocs.length;
 }
 
-function toGraph(nodes: L0Node[]): Graph {
+async function updateEdgeCollection(nodeGraph: Graph<any, any>): Promise<number> {
+  const edges: { ip1: Number; ip2: Number; }[] = [];
+
+  edgeModel.deleteMany({})
+
+  let fromIpNr = 0, toIpNr = 0;
+  nodeGraph.forEachLink((graphLink) => {
+    // determine if edge exists already before adding it (link can be bidirectional)
+    fromIpNr = ip4ToNumber(graphLink.fromId.toString());
+    toIpNr = ip4ToNumber(graphLink.toId.toString());
+    const existingEdge = edges.find((edge) => {
+      return (
+        (fromIpNr == edge.ip1 && toIpNr == edge.ip2) ||
+        (toIpNr == edge.ip1 && fromIpNr == edge.ip2));
+    });
+    if (!existingEdge) {
+      edges.push({ ip1: fromIpNr, ip2: toIpNr });
+    }
+  })
+
+  await edgeModel.insertMany(edges);
+  return edges.length;
+}
+
+function toGraph(nodes: any[]): Graph {
   const graph = createGraph();
   const peers = [...nodes];
 
@@ -103,7 +133,9 @@ function toGraph(nodes: L0Node[]): Graph {
     graph.addNode(node.ip, node);
     // node.metrics.peers.forEach((peer) => {
     peers.forEach((peer) => {
-      graph.addLink(node.ip, peer.ip);
+      if (node.ip != peer.ip) {
+        graph.addLink(node.ip, peer.ip);
+      }
     });
   });
 

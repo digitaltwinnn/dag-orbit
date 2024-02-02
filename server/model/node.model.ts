@@ -5,6 +5,7 @@ const schema: Schema = new Schema(
     ip: {
       type: Number,
       required: true,
+      unique: true
     },
     state: {
       type: String,
