@@ -7,16 +7,17 @@ import {
   InstancedMesh,
   MeshBasicMaterial,
   Object3D,
+  Scene,
 } from "three";
 
 const settings = {
   satellite: {
-    size: 1,
+    size: 2,
   },
 };
 
-export const useSatellites = (satellites: Satellite[]): ThreeJsComposable => {
-  
+export const useSatellites = (scene: Scene, satellites: Satellite[]): ThreeJsComposable => {
+
   // geometry for InstancedMesh that holds globe positions (hide soverlapping satellites)
   const createGlobeGeometry = (
     satellites: Satellite[]
@@ -26,16 +27,16 @@ export const useSatellites = (satellites: Satellite[]): ThreeJsComposable => {
 
     // invisible satellites to the end (InstancedMesh object count hides them)
     satellites.sort((s1, s2) => {
-      return s1.visibility.globe === s2.visibility.globe
+      return s1.mode.globe.visible === s2.mode.globe.visible
         ? 0
-        : s1.visibility.globe
+        : s1.mode.globe.visible
           ? -1
           : 1;
     });
 
     // count the number of satellites that should be visisble in InstancedMesh
     const visibleSatellites = satellites.filter((s) => {
-      return s.visibility.globe;
+      return s.mode.globe.visible
     }).length;
     // add as user data so that the InstancedMesh can use it for object.count
     geometry.userData = { visibleSatellites: visibleSatellites };
@@ -43,9 +44,9 @@ export const useSatellites = (satellites: Satellite[]): ThreeJsComposable => {
     // return the geometry for all globe positions (incl. to be hidden)
     let i3 = 0;
     for (let i = 0; i < satellites.length; i++) {
-      positions[i3++] = satellites[i].node.vector.globe.x;
-      positions[i3++] = satellites[i].node.vector.globe.y;
-      positions[i3++] = satellites[i].node.vector.globe.z;
+      positions[i3++] = satellites[i].mode.globe.vector.x;
+      positions[i3++] = satellites[i].mode.globe.vector.y;
+      positions[i3++] = satellites[i].mode.globe.vector.z;
     }
     geometry.setAttribute("position", new BufferAttribute(positions, 3));
     return geometry;
@@ -57,25 +58,22 @@ export const useSatellites = (satellites: Satellite[]): ThreeJsComposable => {
     const positions = new Float32Array(satellites.length * 3);
 
     // always visible
-    /*
     satellites.sort((s1, s2) => {
-      return s1.orientation.graph.visible === s2.orientation.graph.visible
+      return s1.mode.graph.visible === s2.mode.graph.visible
         ? 0
-        : s1.orientation.graph.visible
+        : s1.mode.graph.visible
           ? -1
           : 1;
     });
     const visibleSatellites = satellites.filter((s) => {
-      return s.orientation.graph.visible;
+      return s.mode.graph.visible;
     }).length;
-    */
-    const visibleSatellites = satellites;
 
     let i3 = 0;
     for (let i = 0; i < satellites.length; i++) {
-      positions[i3++] = satellites[i].node.vector.graph.x;
-      positions[i3++] = satellites[i].node.vector.graph.y;
-      positions[i3++] = satellites[i].node.vector.graph.z;
+      positions[i3++] = satellites[i].mode.graph.vector.x;
+      positions[i3++] = satellites[i].mode.graph.vector.y;
+      positions[i3++] = satellites[i].mode.graph.vector.z;
     }
     geometry.setAttribute("position", new BufferAttribute(positions, 3));
     // geometry.scale(10, 10, 10);
@@ -121,6 +119,7 @@ export const useSatellites = (satellites: Satellite[]): ThreeJsComposable => {
     const orientation = globe;
     object = instancedMeshFromGeometry(orientation);
     object.count = orientation.userData.visibleSatellites;
+    scene.add(object);
     loaded.value = true;
   };
 

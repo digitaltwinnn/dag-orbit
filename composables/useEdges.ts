@@ -3,10 +3,12 @@ import {
   Float32BufferAttribute,
   LineBasicMaterial,
   LineSegments,
+  Scene,
   Vector3,
 } from "three";
 import { gsap } from "gsap";
 import edgeGeometryWorker from "~/assets/workers/edgeGeometry?worker";
+import { SelectiveBloomEffect } from "postprocessing";
 
 type geometryVertices = {
   points: Vector3[];
@@ -15,7 +17,7 @@ type geometryVertices = {
   visibleEdges: number;
 };
 
-export const useEdges = (edges: Edge[]): ThreeJsComposable => {
+export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edges: Edge[]): ThreeJsComposable => {
   const settings = {
     globe: {
       radius: 120,
@@ -128,7 +130,8 @@ export const useEdges = (edges: Edge[]): ThreeJsComposable => {
       vertexColors: true,
       opacity: settings.edge.opacity,
     });
-
+    scene.add(object);
+    bloom.selection.add(object);
     animate(object);
     loaded.value = true;
   };

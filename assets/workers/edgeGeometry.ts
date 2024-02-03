@@ -29,6 +29,7 @@ const createGeometry = (
   let colorPos = 0;
 
   const $globeUtils = useGlobeUtils();
+  const point = new Vector3();
 
   edges.forEach((edge) => {
     // points
@@ -40,11 +41,7 @@ const createGeometry = (
       );
       points.push(...arc.getPoints(settings.edge.points));
     } else if (orientation == "graph") {
-      const line = new Line3(
-        edge.source.node.vector.graph,
-        edge.target.node.vector.graph
-      );
-      const point = new Vector3();
+      const line = new Line3(edge.source.mode.graph.vector, edge.target.mode.graph.vector);
       for (let i = 0; i <= settings.edge.points; i++) {
         line.at(i / settings.edge.points, point);
         points.push(point.clone());

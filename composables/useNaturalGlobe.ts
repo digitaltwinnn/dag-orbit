@@ -5,11 +5,13 @@ import {
   MathUtils,
   Mesh,
   MeshPhongMaterial,
+  Scene,
   SphereGeometry,
   TextureLoader,
 } from "three";
 
 export const useNaturalGlobe = (
+  scene: Scene,
   light: Light,
   vAtmosphere: string,
   fAtmosphere: string,
@@ -51,11 +53,11 @@ export const useNaturalGlobe = (
 
     object.geometry = geometry;
     object.material = material;
-    object.position.set(-150, -50, 200);
+    scene.add(object);
 
     const color = new Color(atmosphereColor);
     useAtmosphere(object, light, vAtmosphere, fAtmosphere, color);
-    animate();
+    // animate();
     loaded.value = true;
   };
 
