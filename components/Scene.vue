@@ -43,8 +43,8 @@ onMounted(async () => {
       );
       useDigitalGlobe($scene.scene, colors);
       useSatellites($scene.scene, $processedData.satellites);
-    //  useEdges($scene.scene, $scene.bloom, $processedData.edges);
-    }, { immediate: true });
+      useEdges($scene.scene, $scene.bloom, $processedData.edges);
+    });
 
     /*
               // page scroll animations
