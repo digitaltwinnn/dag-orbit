@@ -1,11 +1,4 @@
-declare global { type dot = {
-    x: number;
-    y: number;
-    z: number;
-  };
-}
-
-export const globedots = [
+export const globedots: Dot[] = [
     {
         "x": -2.0203478186758312,
         "y": -129.9714888517299,

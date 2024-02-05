@@ -49,8 +49,14 @@ declare global {
     visible: boolean;
   };
 
-  type ThreeJsComposable = {
-    loaded: Ref<boolean>;
-    object: InstancedMesh | Mesh | LineSegments | Group | Object3D | PointLight;
+  type Dot = {
+    x: number;
+    y: number;
+    z: number;
   };
+
+type ThreeJsComposable = {
+  loaded: Ref<boolean>;
+  object: InstancedMesh | Mesh | LineSegments | Group | Object3D | PointLight;
+};
 }

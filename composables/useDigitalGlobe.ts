@@ -1,7 +1,6 @@
 import {
   BufferGeometry,
   ImageLoader,
-  Vector3,
   BufferAttribute,
   Object3D,
   CircleGeometry,
@@ -13,6 +12,7 @@ import {
   MathUtils,
 } from "three";
 import { globedots } from "~/assets/dots/dots.globe";
+import { mapdots } from "~/assets/dots/dots.map";
 import { gsap } from "gsap";
 
 export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
@@ -94,6 +94,7 @@ export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
     image: HTMLImageElement,
     context: CanvasRenderingContext2D
   ): BufferGeometry => {
+    /*
     const dots = [];
     for (let x = 0; x < image.width; x += settings.map.step) {
       for (let y = 0; y < image.height; y += settings.map.step) {
@@ -110,14 +111,15 @@ export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
         dots.push(new Vector3(0, 0, 0));
       }
     }
+    */
 
     const geometry = new BufferGeometry();
-    geometry.setAttribute("position", dotsToPositions(dots));
+    geometry.setAttribute("position", dotsToPositions(mapdots));
     geometry.setAttribute("rotation", rotatePositionsToMap(geometry));
     return geometry;
   };
 
-  const dotsToPositions = (dots: dot[]): BufferAttribute => {
+  const dotsToPositions = (dots: Dot[]): BufferAttribute => {
     const position = new Float32Array(dots.length * 3);
     let i3 = 0;
 
