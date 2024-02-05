@@ -12,6 +12,7 @@ import {
   Color,
   MathUtils,
 } from "three";
+import { globedots } from "~/assets/dots/dots.globe";
 import { gsap } from "gsap";
 
 export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
@@ -32,37 +33,47 @@ export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
     image: HTMLImageElement,
     context: CanvasRenderingContext2D
   ): BufferGeometry => {
+    /*
     const dots = [];
     const $globeUtils = useGlobeUtils();
 
+    let r = 0;
+    let circumference = 0;
+    let dotsForLat = 0;
+
+    let long = 0;
+    let coordinate = { x: 0, y: 0 };
+    let pixelData = null;
+
     for (let lat = -90; lat <= 90; lat += 180 / settings.globe.rows) {
-      const r =
-        Math.cos((Math.abs(lat) * Math.PI) / 180) * settings.globe.radius;
-      const circumference = r * Math.PI * 2;
-      const dotsForLat = circumference * settings.globe.density;
+      r = Math.cos((Math.abs(lat) * Math.PI) / 180) * settings.globe.radius;
+      circumference = r * Math.PI * 2;
+      dotsForLat = circumference * settings.globe.density;
 
-      for (let x = 0; x < dotsForLat; x++) {
-        const long = -180 + (x * 360) / dotsForLat;
-        const coordinate = $globeUtils.latLongToXY(
-          lat,
-          long,
-          image.width,
-          image.height
-        );
-        const pixelData = context.getImageData(
-          coordinate.x,
-          coordinate.y,
-          1,
-          1
-        ).data;
-
-        if (pixelData[0] <= 5) {
-          dots.push(
-            $globeUtils
-              .toVector(lat, long, settings.globe.radius)
-              .normalize()
-              .multiplyScalar(settings.globe.radius)
+      if (dotsForLat >= 1) {
+        for (let x = 0; x < dotsForLat; x++) {
+          long = -180 + (x * 360) / dotsForLat;
+          coordinate = $globeUtils.latLongToXY(
+            lat,
+            long,
+            image.width,
+            image.height
           );
+
+          pixelData = context.getImageData(
+            coordinate.x,
+            coordinate.y,
+            1,
+            1
+          ).data;
+          if (pixelData[0] <= 5) {
+            dots.push(
+              $globeUtils
+                .toVector(lat, long, settings.globe.radius)
+                .normalize()
+                .multiplyScalar(settings.globe.radius)
+            );
+          }
         }
       }
     }
@@ -71,9 +82,10 @@ export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
         dots.push(new Vector3(0, 0, 0));
       }
     }
+    */
 
     const geometry = new BufferGeometry();
-    geometry.setAttribute("position", dotsToPositions(dots));
+    geometry.setAttribute("position", dotsToPositions(globedots));
     geometry.setAttribute("rotation", rotatePositionsToGlobe(geometry));
     return geometry;
   };
@@ -105,7 +117,7 @@ export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
     return geometry;
   };
 
-  const dotsToPositions = (dots: Vector3[]): BufferAttribute => {
+  const dotsToPositions = (dots: dot[]): BufferAttribute => {
     const position = new Float32Array(dots.length * 3);
     let i3 = 0;
 
@@ -252,6 +264,27 @@ export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
     });
   };
 
+
+  const animate = () => {
+    const color = new Color();
+    const animateColors = () => {
+      for (let i = 0; i < mesh.count; i++) {
+        if (Math.random() > 0.98) {
+          color.set(
+            colors[MathUtils.randInt(0, colors.length - 1)]
+          );
+          mesh.setColorAt(i, color);
+        }
+      }
+
+      if (mesh.instanceColor) {
+        mesh.instanceColor.needsUpdate = true;
+      }
+
+    }
+    gsap.set(animateColors, { delay: 1, onRepeat: animateColors, repeat: -1, repeatDelay: 0.1 });
+  }
+
   let mesh: InstancedMesh = new InstancedMesh(undefined, undefined, 0);
   let globeOrientation: BufferGeometry;
   let mapOrientation: BufferGeometry;
@@ -275,27 +308,9 @@ export const useDigitalGlobe = async (parent: Object3D, colors: string[]) => {
     mesh = instancedMeshFromGeometry(orientation);
     mesh.name = "DigitalGlobe";
     parent.add(mesh);
+    animate();
   }
 
-  /*
-  private animateColors() {
-    const color = new Color();
-    setInterval(() => {
-      for (let i = 0; i < this.mesh.count; i++) {
-        if (Math.random() > 0.98) {
-          color.set(
-            shieldColors[MathUtils.randInt(0, shieldColors.length - 1)]
-          );
-          this.mesh.setColorAt(i, color);
-        }
-      }
-
-      if (this.mesh.instanceColor) {
-        this.mesh.instanceColor.needsUpdate = true;
-      }
-    }, 100);
-  }
-*/
   return {
     mesh,
     transformToGlobe,
