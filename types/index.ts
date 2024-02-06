@@ -54,9 +54,4 @@ declare global {
     y: number;
     z: number;
   };
-
-type ThreeJsComposable = {
-  loaded: Ref<boolean>;
-  object: InstancedMesh | Mesh | LineSegments | Group | Object3D | PointLight;
-};
 }

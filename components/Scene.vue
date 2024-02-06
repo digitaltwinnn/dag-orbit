@@ -8,8 +8,20 @@ import { useClusterDataProcessor } from "~/composables/useClusterDataProcessor";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// set the preferred theme
+// set the preferred theme and watch it (for threejs objects)
 const colorMode = useColorMode();
+let changeDigtalGlobeColor: (newColors: string[]) => void;
+let changeSatelliteColor: (newColors: string[]) => void;
+
+watch(colorMode, () => {
+  const colors = [
+    daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
+    daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
+    daisyuiColors["[data-theme=" + colorMode.value + "]"].accent,
+  ]
+  if (changeDigtalGlobeColor) changeDigtalGlobeColor(colors);
+  if (changeSatelliteColor) changeSatelliteColor(colors);
+})
 
 // get the latest cluster information from our db
 const nodesResponse: L0Node[] = await $fetch("/api/nodes");
@@ -41,24 +53,27 @@ onMounted(async () => {
         fAtmos,
         "#54a6ef",
       );
-      useDigitalGlobe($scene.scene, colors);
-      useSatellites($scene.scene, $processedData.satellites);
-      useEdges($scene.scene, $scene.bloom, $processedData.edges);
+
+      const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
+      changeDigtalGlobeColor = $digitalGlobe.changeColor;
+
+      const $satellites = useSatellites($scene.scene, $scene.bloom, $processedData);
+      changeSatelliteColor = $satellites.changeColor;
     });
 
+    // page scroll animations
     /*
-              // page scroll animations
-          gsap.to($satellites.object.scale, {
-            x: 2,
-            y: 2,
-            z: 2,
-            scrollTrigger: {
-              trigger: "#panel-1",
-              scrub: 0.6,
-              markers: true,
-            },
-          });
-          */
+    gsap.to($satellites.object.scale, {
+      x: 2,
+      y: 2,
+      z: 2,
+      scrollTrigger: {
+        trigger: "#panel-1",
+        scrub: 0.6,
+        markers: true,
+      },
+    })
+    */
   }
 });
 </script>

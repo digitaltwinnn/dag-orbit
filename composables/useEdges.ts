@@ -1,23 +1,16 @@
 import {
   BufferGeometry,
+  Color,
   Float32BufferAttribute,
   LineBasicMaterial,
   LineSegments,
   Scene,
-  Vector3,
 } from "three";
 import { gsap } from "gsap";
 import edgeGeometryWorker from "~/assets/workers/edgeGeometry?worker";
 import { SelectiveBloomEffect } from "postprocessing";
 
-type geometryVertices = {
-  points: Vector3[];
-  indices: number[];
-  colors: number[];
-  visibleEdges: number;
-};
-
-export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edges: Edge[]): ThreeJsComposable => {
+export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
   const settings = {
     globe: {
       radius: 120,
@@ -33,13 +26,19 @@ export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edges: Edge[
     },
   };
 
-  const animate = (edgeLines: LineSegments) => {
+  let globeGeometry: BufferGeometry;
+  let graphGeometry: BufferGeometry;
+  const edges = new LineSegments(undefined, undefined);
+  edges.name = "Edges";
+  const loaded = ref(false);
+
+  const animate = () => {
     const edgePoints = settings.edge.animation.points;
     let max = settings.edge.points;
     let start: number, end: number, offset: number;
 
-    const newColor = edgeLines.geometry.attributes.color as any;
-    const originalColor = edgeLines.geometry.attributes.color.clone();
+    const newColor = edges.geometry.attributes.color as any;
+    const originalColor = edges.geometry.attributes.color.clone();
     const highlight = settings.edge.animation.highlight;
     let target = { t: 0 };
     gsap.to(target, {
@@ -48,7 +47,7 @@ export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edges: Edge[
       repeat: -1,
       yoyo: true,
       onUpdate: function () {
-        for (let i = 0; i < edges.length; i++) {
+        for (let i = 0; i < edgeData.length; i++) {
           offset = i * (settings.edge.points + 1);
           end = offset + this.targets()[0].t * (max + edgePoints);
           start = end - edgePoints;
@@ -71,24 +70,61 @@ export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edges: Edge[
             }
           }
         }
-        edgeLines.geometry.attributes.color.needsUpdate = true;
+        edges.geometry.attributes.color.needsUpdate = true;
       },
     });
   };
 
-  const geometryVerticesFromWorker = (
+  const changeColor = (satellites: Satellite[]) => {
+    const errorColor = new Color("black");
+    const colors: number[] = [];
+    let colorPos = 0;
+
+    let source, target, color;
+    edgeData.forEach((edge) => {
+      // find the new colors of the edge
+      source = satellites.find((sat) => { return edge.source.node.ip == sat.node.ip && sat.mode.globe.visible });
+      target = satellites.find((sat) => { return edge.target.node.ip == sat.node.ip && sat.mode.globe.visible });
+      if (source && target) {
+        edge.source.color = source.color.clone();
+        edge.target.color = target.color.clone();
+      } else {
+        edge.source.color = errorColor.clone();
+        edge.target.color = errorColor.clone();
+      }
+
+      // create the color array 
+      for (let i = 0; i <= settings.edge.points; i++) {
+        color = gsap.utils.interpolate(
+          edge.source.color,
+          edge.target.color,
+          i / settings.edge.points
+        );
+        colors[colorPos++] = color.r;
+        colors[colorPos++] = color.g;
+        colors[colorPos++] = color.b;
+      }
+    })
+
+    edges.geometry.setAttribute(
+      "color",
+      new Float32BufferAttribute(colors, 3)
+    );
+  }
+
+  const getVertices = (
     orientation: string
-  ): Promise<geometryVertices> => {
+  ): Promise<GeometryVertices> => {
     return new Promise((resolve, reject) => {
       const worker = new edgeGeometryWorker();
       worker.postMessage({
         orientation: orientation,
         settings: settings,
-        edges: edges,
+        edges: edgeData,
       });
       worker.addEventListener(
         "message",
-        (e: { data: geometryVertices }) => {
+        (e: { data: GeometryVertices }) => {
           if (e.data) {
             resolve(e.data);
             worker.terminate();
@@ -99,7 +135,7 @@ export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edges: Edge[
     });
   };
 
-  const geometryFromVertices = (vertices: geometryVertices): BufferGeometry => {
+  const createGeometry = (vertices: GeometryVertices): BufferGeometry => {
     const geometry = new BufferGeometry().setFromPoints(vertices.points);
     geometry.setIndex(vertices.indices);
     geometry.setAttribute(
@@ -112,30 +148,26 @@ export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edges: Edge[
     return geometry;
   };
 
-  const loaded = ref(false);
-  const object = new LineSegments(undefined, undefined);
-  object.name = "edges";
-
   const load = async () => {
     const [globeVertices, graphVertices] = await Promise.all([
-      geometryVerticesFromWorker("globe"),
-      geometryVerticesFromWorker("graph"),
+      getVertices("globe"),
+      getVertices("graph"),
     ]);
 
-    const globeGeometry = geometryFromVertices(globeVertices);
-    const graphGeometry = geometryFromVertices(graphVertices);
+    globeGeometry = createGeometry(globeVertices);
+    graphGeometry = createGeometry(graphVertices);
 
-    object.geometry = globeGeometry;
-    object.material = new LineBasicMaterial({
+    edges.geometry = globeGeometry;
+    edges.material = new LineBasicMaterial({
       vertexColors: true,
       opacity: settings.edge.opacity,
     });
-    scene.add(object);
-    bloom.selection.add(object);
-    animate(object);
+    scene.add(edges);
+    bloom.selection.add(edges);
+    animate();
     loaded.value = true;
   };
   load();
 
-  return { object, loaded };
+  return { edges, loaded, changeColor };
 };

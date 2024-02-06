@@ -100,12 +100,15 @@ const toEdges = (graph: Graph, satellites: Satellite[]): Edge[] => {
                 return sat.node.ip == link.toId;
             });
             if (source && target) {
-                edges.push({
-                    source: source,
-                    target: target,
-                    // TODO different for globe and graph
-                    visible: (source.mode.globe.visible && target.mode.globe.visible),
-                });
+                if (source.mode.globe.visible && target.mode.globe.visible) {
+                    // TODO: will only create globe edges (graph has many many more visible sats (all))
+                    edges.push({
+                        source: source,
+                        target: target,
+                        // TODO different for globe and graph, can't be captured here
+                        visible: (source.mode.globe.visible && target.mode.globe.visible),
+                    });
+                }
             }
         }
     });
