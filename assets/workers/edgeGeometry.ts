@@ -6,12 +6,7 @@ const createGeometry = (
   orientation: string,
   settings: any,
   edges: Edge[]
-): {
-  points: Vector3[];
-  indices: number[];
-  colors: number[];
-  visibleEdges: number;
-} => {
+): GeometryVertices => {
   // invisible edges at the end to be hidden using setDrawRange
   edges.sort((e1, e2) => {
     return e1.visible === e2.visible ? 0 : e1.visible ? -1 : 1;
@@ -31,7 +26,7 @@ const createGeometry = (
   const $globeUtils = useGlobeUtils();
   const point = new Vector3();
 
-  edges.forEach((edge) => {
+  edges.map((edge) => {
     // points
     if (orientation == "globe") {
       const arc = $globeUtils.createSphereArc(

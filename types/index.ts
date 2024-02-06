@@ -54,4 +54,11 @@ declare global {
     y: number;
     z: number;
   };
+
+  type GeometryVertices = {
+    points: Vector3[];
+    indices: number[];
+    colors: number[];
+    visibleEdges: number;
+  };
 }
