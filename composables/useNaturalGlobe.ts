@@ -16,13 +16,13 @@ export const useNaturalGlobe = (
   vAtmosphere: string,
   fAtmosphere: string,
   atmosphereColor: string
-): ThreeJsComposable => {
+) => {
   const settings = {
     radius: 100,
   };
 
   const animate = () => {
-    gsap.to(object.rotation, {
+    gsap.to(globe.rotation, {
       y: MathUtils.degToRad(360),
       duration: 60,
       repeat: -1,
@@ -31,8 +31,8 @@ export const useNaturalGlobe = (
   };
 
   const loaded = ref(false);
-  const object: Mesh = new Mesh(undefined, undefined);
-  object.name = "NaturalGlobe";
+  const globe: Mesh = new Mesh(undefined, undefined);
+  globe.name = "NaturalGlobe";
 
   const load = async () => {
     const loader = new TextureLoader();
@@ -51,20 +51,19 @@ export const useNaturalGlobe = (
       bumpScale: 1,
     });
 
-    object.geometry = geometry;
-    object.material = material;
-    scene.add(object);
+    globe.geometry = geometry;
+    globe.material = material;
+    scene.add(globe);
 
     const color = new Color(atmosphereColor);
-    useAtmosphere(object, light, vAtmosphere, fAtmosphere, color);
-    // animate();
+    useAtmosphere(globe, light, vAtmosphere, fAtmosphere, color);
+    animate();
     loaded.value = true;
   };
-
   load();
 
   return {
     loaded,
-    object,
+    globe,
   };
 };
