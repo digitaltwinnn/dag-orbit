@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { SpeedInsights } from "@vercel/speed-insights/nuxt";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -20,6 +21,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <SpeedInsights />
   <NavBar class="bg-transparent text-neutral-content fixed top-0 z-20" />
   <div class="bg-transparent w-screen h-screen fixed top-0 z-10">
     <Scene />
