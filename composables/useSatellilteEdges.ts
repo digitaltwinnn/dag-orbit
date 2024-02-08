@@ -1,16 +1,15 @@
 import {
   BufferGeometry,
-  Color,
   Float32BufferAttribute,
   LineBasicMaterial,
   LineSegments,
   Scene,
 } from "three";
 import { gsap } from "gsap";
-import edgeGeometryWorker from "~/assets/workers/edgeGeometry?worker";
+import lineSegmentsWorker from "~/assets/workers/createLineSegments?worker";
 import { SelectiveBloomEffect } from "postprocessing";
 
-export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
+export const useSatelliteEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
   const settings = {
     globe: {
       radius: 120,
@@ -26,10 +25,8 @@ export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeData: Ed
     },
   };
 
-  let globeGeometry: BufferGeometry;
-  let graphGeometry: BufferGeometry;
   const edges = new LineSegments(undefined, undefined);
-  edges.name = "Edges";
+  edges.name = "SatelliteEdges";
   const loaded = ref(false);
 
   const animate = () => {
@@ -75,51 +72,44 @@ export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeData: Ed
     });
   };
 
-  const changeColor = (satellites: Satellite[]) => {
-    const errorColor = new Color("black");
-    const colors: number[] = [];
-    let colorPos = 0;
+  const getColors = (satelliteData: Satellite[]): Promise<number[]> => {
+    return new Promise((resolve, reject) => {
+      const worker = new lineSegmentsWorker();
+      worker.postMessage({
+        cmd: "createColors",
+        linePoints: settings.edge.points,
+        edges: edgeData,
+        satellites: satelliteData,
+      });
+      worker.addEventListener(
+        "message",
+        (e: { data: number[] }) => {
+          if (e.data) {
+            resolve(e.data);
+            worker.terminate();
+          }
+        },
+        false
+      );
+    });
+  };
 
-    let source, target, color;
-    edgeData.forEach((edge) => {
-      // find the new colors of the edge
-      source = satellites.find((sat) => { return edge.source.node.ip == sat.node.ip && sat.mode.globe.visible });
-      target = satellites.find((sat) => { return edge.target.node.ip == sat.node.ip && sat.mode.globe.visible });
-      if (source && target) {
-        edge.source.color = source.color.clone();
-        edge.target.color = target.color.clone();
-      } else {
-        edge.source.color = errorColor.clone();
-        edge.target.color = errorColor.clone();
-      }
-
-      // create the color array 
-      for (let i = 0; i <= settings.edge.points; i++) {
-        color = gsap.utils.interpolate(
-          edge.source.color,
-          edge.target.color,
-          i / settings.edge.points
-        );
-        colors[colorPos++] = color.r;
-        colors[colorPos++] = color.g;
-        colors[colorPos++] = color.b;
-      }
-    })
-
+  const changeColor = async (satelliteData: Satellite[]) => {
+    const colors = await getColors(satelliteData);
     edges.geometry.setAttribute(
       "color",
       new Float32BufferAttribute(colors, 3)
     );
   }
 
-  const getVertices = (
-    orientation: string
-  ): Promise<GeometryVertices> => {
+  const getVertices = (): Promise<GeometryVertices> => {
     return new Promise((resolve, reject) => {
-      const worker = new edgeGeometryWorker();
+      const worker = new lineSegmentsWorker();
       worker.postMessage({
-        orientation: orientation,
-        settings: settings,
+        cmd: "createGeometry",
+        lineType: "arc",
+        linePoints: settings.edge.points,
+        arcRadius: settings.globe.radius,
         edges: edgeData,
       });
       worker.addEventListener(
@@ -138,26 +128,13 @@ export const useEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeData: Ed
   const createGeometry = (vertices: GeometryVertices): BufferGeometry => {
     const geometry = new BufferGeometry().setFromPoints(vertices.points);
     geometry.setIndex(vertices.indices);
-    geometry.setAttribute(
-      "color",
-      new Float32BufferAttribute(vertices.colors, 3)
-    );
-    const edgeIndices = 2 * settings.edge.points;
-    geometry.setDrawRange(0, 1 + edgeIndices * vertices.visibleEdges);
-
+    geometry.setAttribute("color", new Float32BufferAttribute(vertices.colors, 3));
     return geometry;
   };
 
   const load = async () => {
-    const [globeVertices, graphVertices] = await Promise.all([
-      getVertices("globe"),
-      getVertices("graph"),
-    ]);
-
-    globeGeometry = createGeometry(globeVertices);
-    graphGeometry = createGeometry(graphVertices);
-
-    edges.geometry = globeGeometry;
+    const vertices = await getVertices();
+    edges.geometry = createGeometry(vertices);;
     edges.material = new LineBasicMaterial({
       vertexColors: true,
       opacity: settings.edge.opacity,

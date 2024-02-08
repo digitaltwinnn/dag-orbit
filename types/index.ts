@@ -1,13 +1,4 @@
-import {
-  Color,
-  Group,
-  InstancedMesh,
-  LineSegments,
-  Mesh,
-  Object3D,
-  PointLight,
-  Vector3,
-} from "three";
+import { Color, Vector3 } from "three";
 
 declare global {
   type L0Node = {
@@ -22,10 +13,6 @@ declare global {
       latitude: number;
       longitude: number;
     };
-  };
-
-  type NodeMetrics = {
-    todo: string;
   };
 
   type Satellite = {
@@ -59,6 +46,5 @@ declare global {
     points: Vector3[];
     indices: number[];
     colors: number[];
-    visibleEdges: number;
   };
 }

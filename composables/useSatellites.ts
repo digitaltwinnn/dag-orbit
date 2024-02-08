@@ -18,7 +18,7 @@ const settings = {
   },
 };
 
-export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: { satellites: Satellite[], edges: Edge[] }) => {
+export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: { satellites: Satellite[]; edges: Edge[] }) => {
   const loaded = ref(false);
   let changeEdgeColor: (satellites: Satellite[]) => void;
   let satellites = new InstancedMesh(undefined, undefined, 0);
@@ -31,16 +31,12 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
 
     // invisible satellites to the end (InstancedMesh object count hides them)
     data.satellites.sort((s1, s2) => {
-      return s1.mode.globe.visible === s2.mode.globe.visible
-        ? 0
-        : s1.mode.globe.visible
-          ? -1
-          : 1;
+      return s1.mode.globe.visible === s2.mode.globe.visible ? 0 : s1.mode.globe.visible ? -1 : 1;
     });
 
     // count the number of satellites that should be visisble in InstancedMesh
     const visibleSatellites = data.satellites.filter((s) => {
-      return s.mode.globe.visible
+      return s.mode.globe.visible;
     }).length;
     // add as user data so that the InstancedMesh can use it for object.count
     geometry.userData = { visibleSatellites: visibleSatellites };
@@ -51,7 +47,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
       positions[i3++] = sat.mode.globe.vector.x;
       positions[i3++] = sat.mode.globe.vector.y;
       positions[i3++] = sat.mode.globe.vector.z;
-    })
+    });
     geometry.setAttribute("position", new BufferAttribute(positions, 3));
     return geometry;
   };
@@ -63,11 +59,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
 
     // always visible
     data.satellites.sort((s1, s2) => {
-      return s1.mode.graph.visible === s2.mode.graph.visible
-        ? 0
-        : s1.mode.graph.visible
-          ? -1
-          : 1;
+      return s1.mode.graph.visible === s2.mode.graph.visible ? 0 : s1.mode.graph.visible ? -1 : 1;
     });
     const visibleSatellites = data.satellites.filter((s) => {
       return s.mode.graph.visible;
@@ -78,7 +70,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
       positions[i3++] = sat.mode.graph.vector.x;
       positions[i3++] = sat.mode.graph.vector.y;
       positions[i3++] = sat.mode.graph.vector.z;
-    })
+    });
     geometry.setAttribute("position", new BufferAttribute(positions, 3));
     geometry.userData = { visibleSatellites: visibleSatellites };
     return geometry;
@@ -86,11 +78,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
 
   const instancedMeshFromGeometry = (geometry: BufferGeometry): InstancedMesh => {
     const instances = geometry.attributes.position.array.length / 3;
-    const cube = new BoxGeometry(
-      settings.satellite.size,
-      settings.satellite.size,
-      settings.satellite.size
-    );
+    const cube = new BoxGeometry(settings.satellite.size, settings.satellite.size, settings.satellite.size);
     const instancedCube = new InstancedBufferGeometry().copy(cube);
     const material = new MeshBasicMaterial();
     let mesh = new InstancedMesh(instancedCube, material, instances);
@@ -99,11 +87,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     const color = new Color();
     let i3 = 0;
     for (let i = 0; i < instances; i++) {
-      dummy.position.set(
-        geometry.attributes.position.array[i3++],
-        geometry.attributes.position.array[i3++],
-        geometry.attributes.position.array[i3++]
-      );
+      dummy.position.set(geometry.attributes.position.array[i3++], geometry.attributes.position.array[i3++], geometry.attributes.position.array[i3++]);
       dummy.lookAt(0, 0, 0);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
@@ -119,17 +103,15 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
 
     if (satellites.instanceColor) {
       data.satellites.forEach((sat) => {
-        color.set(
-          newColors[MathUtils.randInt(0, newColors.length - 1)]
-        );
+        color.set(newColors[MathUtils.randInt(0, newColors.length - 1)]);
         sat.color = color.clone();
-        satellites.setColorAt(i++, sat.color)
-      })
+        satellites.setColorAt(i++, sat.color);
+      });
       satellites.instanceColor.needsUpdate = true;
     }
 
     if (changeEdgeColor) changeEdgeColor(data.satellites);
-  }
+  };
 
   const load = async () => {
     // create satellites
@@ -142,7 +124,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     scene.add(satellites);
 
     // create edges between satellites
-    const $edges = useEdges(scene, bloom, data.edges);
+    const $edges = useSatelliteEdges(scene, bloom, data.edges);
     changeEdgeColor = $edges.changeColor;
     loaded.value = true;
   };

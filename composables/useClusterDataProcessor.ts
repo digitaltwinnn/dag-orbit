@@ -1,4 +1,4 @@
-import clusterDataProcessor from "~/assets/workers/clusterDataProcessor?worker";
+import nodeDataProcessor from "~/assets/workers/processNodeData?worker";
 
 export const useClusterDataProcessor = (nodes :L0Node[], colors: string[]) => {
 
@@ -6,7 +6,7 @@ export const useClusterDataProcessor = (nodes :L0Node[], colors: string[]) => {
 
     // start a worker to prepare the data
     return new Promise((resolve, reject) => {
-      const worker = new clusterDataProcessor();
+      const worker = new nodeDataProcessor();
       worker.postMessage({ nodes: nodes, colors: colors });
       worker.addEventListener(
         "message",
@@ -22,20 +22,23 @@ export const useClusterDataProcessor = (nodes :L0Node[], colors: string[]) => {
   };
 
   const satellites: Satellite[] = [];
-  const edges: Edge[] = [];
+  const satelliteEdges: Edge[] = [];
+  const graphEdges: Edge[] = [];
 
   const loaded = ref(false);
   const load = async () => {
     const data: any = await clusterDataFromWorker(nodes);
     satellites.push(...data.satellites);
-    edges.push(...data.edges);
+    satelliteEdges.push(...data.satelliteEdges);
+    graphEdges.push(...data.graphEdges);
     loaded.value = true;
   };
   load();
 
   return {
     satellites,
-    edges,
+    satelliteEdges,
+    graphEdges,
     loaded,
   };
 };

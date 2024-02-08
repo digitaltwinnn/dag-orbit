@@ -36,7 +36,6 @@ const toGraph = (nodes: L0Node[]): Graph => {
 const toSatellites = (
     nodes: L0Node[],
     layout: Layout<Graph>,
-    settings: any
 ): Satellite[] => {
     const satellites: Satellite[] = [];
     const $globeUtils = useGlobeUtils();
@@ -77,7 +76,11 @@ const toSatellites = (
     return satellites;
 };
 
-const toEdges = (graph: Graph, satellites: Satellite[]): Edge[] => {
+const toGraphEdges = (graph: Graph, satellites: Satellite[]): Edge[] => {
+    return [];
+}
+
+const toSatelliteEdges = (graph: Graph, satellites: Satellite[]): Edge[] => {
     const edges: Edge[] = [];
 
     let sourceIp = 0;
@@ -101,13 +104,7 @@ const toEdges = (graph: Graph, satellites: Satellite[]): Edge[] => {
             });
             if (source && target) {
                 if (source.mode.globe.visible && target.mode.globe.visible) {
-                    // TODO: will only create globe edges (graph has many many more visible sats (all))
-                    edges.push({
-                        source: source,
-                        target: target,
-                        // TODO different for globe and graph, can't be captured here
-                        visible: (source.mode.globe.visible && target.mode.globe.visible),
-                    });
+                    edges.push({ source: source, target: target, visible: true });
                 }
             }
         }
@@ -150,13 +147,17 @@ self.addEventListener(
 
         // create data objects
         const satellites: Satellite[] = [];
-        const edges: Edge[] = [];
-        satellites.push(...toSatellites(nodes, layout, settings));
-        edges.push(...toEdges(graph, satellites));
+        const satelliteEdges: Edge[] = [];
+        const graphEdges: Edge[] = [];
+
+        satellites.push(...toSatellites(nodes, layout));
+        satelliteEdges.push(...toSatelliteEdges(graph, satellites));
+        graphEdges.push(...toGraphEdges(graph, satellites));
 
         self.postMessage({
             satellites: satellites,
-            edges: edges,
+            satelliteEdges: satelliteEdges,
+            graphEdges: graphEdges
         });
     },
     false

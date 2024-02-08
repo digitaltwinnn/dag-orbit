@@ -12,16 +12,18 @@ gsap.registerPlugin(ScrollTrigger);
 const colorMode = useColorMode();
 let changeDigtalGlobeColor: (newColors: string[]) => void;
 let changeSatelliteColor: (newColors: string[]) => void;
+let changeGraphColor: (newColors: string[]) => void;
 
 watch(colorMode, () => {
   const colors = [
     daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
     daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
     daisyuiColors["[data-theme=" + colorMode.value + "]"].accent,
-  ]
+  ];
   if (changeDigtalGlobeColor) changeDigtalGlobeColor(colors);
   if (changeSatelliteColor) changeSatelliteColor(colors);
-})
+  if (changeGraphColor) changeGraphColor(colors);
+});
 
 // get the latest cluster information from our db
 const nodesResponse: L0Node[] = await $fetch("/api/nodes");
@@ -32,7 +34,7 @@ onMounted(async () => {
     daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
     daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
     daisyuiColors["[data-theme=" + colorMode.value + "]"].accent,
-  ]
+  ];
 
   // load the threejs scene
   const canvas = document.getElementById("scene-container");
@@ -46,19 +48,16 @@ onMounted(async () => {
     const $processedData = useClusterDataProcessor(nodesResponse, colors);
     watch($processedData.loaded, async () => {
       const $sun = await useSun($scene.scene);
-      useNaturalGlobe(
-        $scene.scene,
-        $sun.light,
-        vAtmos,
-        fAtmos,
-        "#54a6ef",
-      );
+      useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos, "#54a6ef");
 
       const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
       changeDigtalGlobeColor = $digitalGlobe.changeColor;
 
-      const $satellites = useSatellites($scene.scene, $scene.bloom, $processedData);
+      const $satellites = useSatellites($scene.scene, $scene.bloom, { satellites: $processedData.satellites, edges: $processedData.satelliteEdges });
       changeSatelliteColor = $satellites.changeColor;
+
+      const $clusterGraph = useGraph($scene.scene, $scene.bloom, { satellites: $processedData.satellites, edges: $processedData.satelliteEdges }); // TODO: use graph-edges (many more edges)
+      changeGraphColor = $clusterGraph.changeColor;
     });
 
     // page scroll animations
