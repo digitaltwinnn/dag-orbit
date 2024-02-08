@@ -33,7 +33,6 @@ declare global {
   type Edge = {
     source: Satellite;
     target: Satellite;
-    visible: boolean;
   };
 
   type Dot = {

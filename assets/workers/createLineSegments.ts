@@ -55,12 +55,11 @@ const createColors = (linePoints: number, edgeData: Edge[], satelliteData: Satel
 
   let source, target, color;
   edgeData.forEach((edge) => {
-    // find the new colors of the edge
     source = satelliteData.find((sat) => {
-      return edge.source.node.ip == sat.node.ip && sat.mode.globe.visible;
+      return edge.source.node.ip == sat.node.ip;
     });
     target = satelliteData.find((sat) => {
-      return edge.target.node.ip == sat.node.ip && sat.mode.globe.visible;
+      return edge.target.node.ip == sat.node.ip;
     });
     if (source && target) {
       edge.source.color = source.color;
@@ -70,7 +69,6 @@ const createColors = (linePoints: number, edgeData: Edge[], satelliteData: Satel
       edge.target.color = errorColor;
     }
 
-    // create the color array
     for (let i = 0; i <= linePoints; i++) {
       color = gsap.utils.interpolate(edge.source.color, edge.target.color, i / linePoints);
       colors[colorPos++] = color.r;

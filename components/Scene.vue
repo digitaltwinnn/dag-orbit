@@ -56,7 +56,7 @@ onMounted(async () => {
       const $satellites = useSatellites($scene.scene, $scene.bloom, { satellites: $processedData.satellites, edges: $processedData.satelliteEdges });
       changeSatelliteColor = $satellites.changeColor;
 
-      const $clusterGraph = useGraph($scene.scene, $scene.bloom, { satellites: $processedData.satellites, edges: $processedData.satelliteEdges }); // TODO: use graph-edges (many more edges)
+      const $clusterGraph = useGraph($scene.scene, $scene.bloom, { satellites: $processedData.satellites, edges: $processedData.graphEdges });
       changeGraphColor = $clusterGraph.changeColor;
     });
 
