@@ -3,22 +3,25 @@ import vAtmos from "~/assets/shaders/atmosphere/vertex.glsl?raw";
 import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { Theme } from "daisyui";
 import daisyuiColors from "daisyui/src/theming/themes";
 import { useClusterDataProcessor } from "~/composables/useClusterDataProcessor";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// set the preferred theme and watch it (for threejs objects)
+// watch for theme changes for the threejs objects
 const colorMode = useColorMode();
 let changeDigtalGlobeColor: (newColors: string[]) => void;
 let changeSatelliteColor: (newColors: string[]) => void;
 let changeGraphColor: (newColors: string[]) => void;
 
 watch(colorMode, () => {
+  const tmpCanvas = document.createElement("canvas");
+  tmpCanvas.width = tmpCanvas.height = 1;
   const colors = [
-    daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
-    daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
-    daisyuiColors["[data-theme=" + colorMode.value + "]"].accent,
+    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].primary, tmpCanvas),
+    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].secondary, tmpCanvas),
+    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].accent, tmpCanvas),
   ];
   if (changeDigtalGlobeColor) changeDigtalGlobeColor(colors);
   if (changeSatelliteColor) changeSatelliteColor(colors);
@@ -29,11 +32,13 @@ watch(colorMode, () => {
 const nodesResponse: L0Node[] = await $fetch("/api/nodes");
 
 onMounted(async () => {
-  // get the current theme color on the page
+  // get the current theme on the page for the threejs objects
+  const tmpCanvas = document.createElement("canvas");
+  tmpCanvas.width = tmpCanvas.height = 1;
   const colors = [
-    daisyuiColors["[data-theme=" + colorMode.value + "]"].primary,
-    daisyuiColors["[data-theme=" + colorMode.value + "]"].secondary,
-    daisyuiColors["[data-theme=" + colorMode.value + "]"].accent,
+    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].primary, tmpCanvas),
+    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].secondary, tmpCanvas),
+    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].accent, tmpCanvas),
   ];
 
   // load the threejs scene

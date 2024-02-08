@@ -9,7 +9,7 @@
     "@heroicons/vue": "^2.0.17",
     "@theatre/core": "^0.6.1",
     "autoprefixer": "^10.0.2",
-    "daisyui": "^3.0.20",
+    "daisyui": "^4.6.2",
     "gsap": "^3.12.1",
     "mongoose": "^7.2.2",
     "ngraph.forcelayout": "^3.3.1",
