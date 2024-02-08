@@ -1,4 +1,5 @@
 export default defineNuxtConfig({
+  devtools: { enabled: true },
   vite: {
     define: { "process.env.TESS_ENV": process.env.ENV },
   },
