@@ -1,21 +1,20 @@
 import { types, type ISheet, type ISheetObject, createRafDriver, getProject } from "@theatre/core";
-
 import studio from "@theatre/studio";
 import { SelectiveBloomEffect } from "postprocessing";
 import { Camera, Color, Light, Object3D, Scene, Vector3 } from "three";
 
-type range = [min: number, max: number];
-type setting = {
+type Range = [min: number, max: number];
+type Setting = {
   range: {
-    position: range;
-    rotation: range;
-    intensity: range;
-    scale: range;
-    normalized: range;
+    position: Range;
+    rotation: Range;
+    intensity: Range;
+    scale: Range;
+    normalized: Range;
   };
 };
 
-const settings: setting = {
+const settings: Setting = {
   range: {
     position: [-500, 500],
     rotation: [-2, 2],
@@ -48,22 +47,15 @@ const init = async (camera: Camera, scene: Scene, bloom: SelectiveBloomEffect, l
 };
 
 const setVisibilityControls = (objectName: string, sheet: ISheet, obj: Object3D): ISheetObject<any> => {
-  const control = sheet.object(objectName + " / visibility", {
-    visible: types.boolean(true, {
-      // override the label given in the Details Panel and DopeSheet
-      label: "Visible",
-    }),
-  });
-
+  const control = sheet.object("visibility / " + objectName, { visible: types.boolean(true, { label: "Visible" }) });
   control.onValuesChange((v) => {
     obj.visible = v.visible;
   }, rafDriver);
-
   return control;
 };
 
 const setMovementControls = (objectName: string, sheet: ISheet, obj: Object3D): ISheetObject<any> => {
-  const control = sheet.object(objectName + " / movement", {
+  const control = sheet.object("movement / " + objectName, {
     rotation: types.compound({
       x: types.number(obj.rotation.x, { range: settings.range.rotation }),
       y: types.number(obj.rotation.y, { range: settings.range.rotation }),
@@ -141,7 +133,7 @@ const setLightControls = (objectName: string, sheet: ISheet, light: Light): IShe
 };
 
 const setCameraControls = (sheet: ISheet, cam: Camera): ISheetObject<any> => {
-  const control = sheet.object("camera / movement", {
+  const control = sheet.object("camera", {
     position: types.compound({
       x: types.number(cam.position.x, { range: settings.range.position }),
       y: types.number(cam.position.y, { range: settings.range.position }),
@@ -166,7 +158,7 @@ const setCameraControls = (sheet: ISheet, cam: Camera): ISheetObject<any> => {
 };
 
 const setSceneControls = (sheet: ISheet, scene: Scene, bloom: any): ISheetObject<any> => {
-  const control = sheet.object("scene / color", {
+  const control = sheet.object("scene", {
     background: types.rgba({
       r: sceneColor.r,
       g: sceneColor.g,
