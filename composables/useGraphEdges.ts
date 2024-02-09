@@ -1,10 +1,4 @@
-import {
-  BufferGeometry,
-  Float32BufferAttribute,
-  LineBasicMaterial,
-  LineSegments,
-  Object3D,
-} from "three";
+import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, Object3D } from "three";
 import lineSegmentsWorker from "~/assets/workers/createLineSegments?worker";
 import { SelectiveBloomEffect } from "postprocessing";
 
@@ -39,16 +33,16 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
         },
         false
       );
+      worker.addEventListener("error", (error) => {
+        reject(new Error("Worker error: " + error.message));
+      });
     });
   };
 
   const changeColor = async (satelliteData: Satellite[]) => {
     const colors = await getColors(satelliteData);
-    graph.geometry.setAttribute(
-      "color",
-      new Float32BufferAttribute(colors, 3)
-    );
-  }
+    graph.geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  };
 
   const getVertices = (): Promise<GeometryVertices> => {
     return new Promise((resolve, reject) => {
@@ -58,7 +52,7 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
         lineType: "line",
         arcRadius: 0,
         linePoints: settings.graph.points,
-        edges: edgeData
+        edges: edgeData,
       });
       worker.addEventListener(
         "message",
@@ -70,6 +64,9 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
         },
         false
       );
+      worker.addEventListener("error", (error) => {
+        reject(new Error("Worker error: " + error.message));
+      });
     });
   };
 
@@ -82,7 +79,7 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
 
   const load = async () => {
     const vertices = await getVertices();
-    graph.geometry = createGeometry(vertices);;
+    graph.geometry = createGeometry(vertices);
     graph.material = new LineBasicMaterial({
       vertexColors: true,
       opacity: settings.graph.opacity,

@@ -1,5 +1,5 @@
-import createGraph, { Graph } from "ngraph.graph";
-import createLayout, { Layout } from "ngraph.forcelayout";
+import createGraph, { type Graph } from "ngraph.graph";
+import createLayout, { type Layout } from "ngraph.forcelayout";
 import { Color, MathUtils, Vector3 } from "three";
 import { useGlobeUtils } from "~/composables/useGlobeUtils";
 
@@ -170,7 +170,7 @@ self.addEventListener(
       satellites: satellites,
       satelliteEdges: satelliteEdges,
       graphEdges: graphEdges,
-    });
+    } as NodeData);
   },
   false
 );

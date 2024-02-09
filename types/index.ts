@@ -21,13 +21,13 @@ declare global {
     mode: {
       graph: {
         visible: boolean;
-        vector: Vector3
-      },
+        vector: Vector3;
+      };
       globe: {
         visible: boolean;
-        vector: Vector3
-      },
-    }
+        vector: Vector3;
+      };
+    };
   };
 
   type Edge = {
@@ -39,6 +39,12 @@ declare global {
     x: number;
     y: number;
     z: number;
+  };
+
+  type NodeData = {
+    satellites: Satellite[];
+    satelliteEdges: Edge[];
+    graphEdges: Edge[];
   };
 
   type GeometryVertices = {

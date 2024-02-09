@@ -1,11 +1,4 @@
-import {
-  BufferGeometry,
-  Float32BufferAttribute,
-  LineBasicMaterial,
-  LineSegments,
-  Object3D,
-  Scene,
-} from "three";
+import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, Object3D, Scene } from "three";
 import { gsap } from "gsap";
 import lineSegmentsWorker from "~/assets/workers/createLineSegments?worker";
 import { SelectiveBloomEffect } from "postprocessing";
@@ -92,16 +85,16 @@ export const useSatelliteEdges = (parent: Object3D, bloom: SelectiveBloomEffect,
         },
         false
       );
+      worker.addEventListener("error", (error) => {
+        reject(new Error("Worker error: " + error.message));
+      });
     });
   };
 
   const changeColor = async (satelliteData: Satellite[]) => {
     const colors = await getColors(satelliteData);
-    edges.geometry.setAttribute(
-      "color",
-      new Float32BufferAttribute(colors, 3)
-    );
-  }
+    edges.geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  };
 
   const getVertices = (): Promise<GeometryVertices> => {
     return new Promise((resolve, reject) => {
@@ -135,7 +128,7 @@ export const useSatelliteEdges = (parent: Object3D, bloom: SelectiveBloomEffect,
 
   const load = async () => {
     const vertices = await getVertices();
-    edges.geometry = createGeometry(vertices);;
+    edges.geometry = createGeometry(vertices);
     edges.material = new LineBasicMaterial({
       vertexColors: true,
       opacity: settings.edge.opacity,
