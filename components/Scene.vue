@@ -5,7 +5,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { Theme } from "daisyui";
 import daisyuiColors from "daisyui/src/theming/themes";
-import { useClusterDataProcessor } from "~/composables/useClusterDataProcessor";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -53,7 +52,7 @@ onMounted(async () => {
     const $processedData = useClusterDataProcessor(nodesResponse, colors);
     watch($processedData.loaded, async () => {
       const $sun = await useSun($scene.scene);
-      useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos, "#54a6ef");
+      const $naturalGlobe = useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos, "#54a6ef");
 
       const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
       changeDigtalGlobeColor = $digitalGlobe.changeColor;
@@ -63,6 +62,12 @@ onMounted(async () => {
 
       const $clusterGraph = useGraph($scene.scene, $scene.bloom, { satellites: $processedData.satellites, edges: $processedData.graphEdges });
       changeGraphColor = $clusterGraph.changeColor;
+
+      const $theatre = useTheatre();
+      $theatre.init($scene.camera, $scene.scene, $scene.bloom, [$scene.light, $sun.light], [$naturalGlobe.globe, $digitalGlobe.mesh, $satellites.satellites]);
+      gsap.ticker.add((time, deltaTime, frame) => {
+        $theatre.rafDriver.tick(deltaTime);
+      });
     });
 
     // page scroll animations

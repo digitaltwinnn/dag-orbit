@@ -1,10 +1,5 @@
-import {
-  ISheet,
-  ISheetObject,
-  createRafDriver,
-  getProject,
-  types,
-} from "@theatre/core";
+import { types, type ISheet, type ISheetObject, createRafDriver, getProject } from "@theatre/core";
+
 import studio from "@theatre/studio";
 import { SelectiveBloomEffect } from "postprocessing";
 import { Camera, Color, Light, Object3D, Scene, Vector3 } from "three";
@@ -31,18 +26,13 @@ const settings: setting = {
 };
 
 const cameraSubject = new Vector3(0, 0, 0);
-const sceneColor = new Color("blue"); // useScene().scene.background;
+const sceneColor = new Color("black"); // useScene().scene.background;
 const rafDriver = createRafDriver({ name: "theatre.js" });
 const project = getProject("Orbit");
 const sheet = project.sheet("Intro");
 
-const init = async (
-  camera: Camera,
-  scene: Scene,
-  bloom: SelectiveBloomEffect,
-  lights: Light[],
-  objects: Object3D[]
-) => {
+const init = async (camera: Camera, scene: Scene, bloom: SelectiveBloomEffect, lights: Light[], objects: Object3D[]) => {
+  studio.initialize();
   setCameraControls(sheet, camera);
   setSceneControls(sheet, scene, bloom);
 
@@ -52,16 +42,27 @@ const init = async (
 
   objects.forEach((object) => {
     setMovementControls(object.name, sheet, object);
+    setVisibilityControls(object.name, sheet, object);
+    // setColorControls(object.name, sheet, object);
   });
-
-  studio.initialize();
 };
 
-const setMovementControls = (
-  objectName: string,
-  sheet: ISheet,
-  obj: Object3D
-): ISheetObject<any> => {
+const setVisibilityControls = (objectName: string, sheet: ISheet, obj: Object3D): ISheetObject<any> => {
+  const control = sheet.object(objectName + " / visibility", {
+    visible: types.boolean(true, {
+      // override the label given in the Details Panel and DopeSheet
+      label: "Visible",
+    }),
+  });
+
+  control.onValuesChange((v) => {
+    obj.visible = v.visible;
+  }, rafDriver);
+
+  return control;
+};
+
+const setMovementControls = (objectName: string, sheet: ISheet, obj: Object3D): ISheetObject<any> => {
   const control = sheet.object(objectName + " / movement", {
     rotation: types.compound({
       x: types.number(obj.rotation.x, { range: settings.range.rotation }),
@@ -89,12 +90,8 @@ const setMovementControls = (
   return control;
 };
 
-// TODO: fix mesh type
-const setColorControls = (
-  objectName: string,
-  sheet: ISheet,
-  mesh: any
-): ISheetObject<any> => {
+/*
+const setColorControls = (objectName: string, sheet: ISheet, mesh: any): ISheetObject<any> => {
   const control = sheet.object(objectName + " / color", {
     color: types.rgba({
       r: mesh.material.color.r,
@@ -114,12 +111,9 @@ const setColorControls = (
 
   return control;
 };
+*/
 
-const setLightControls = (
-  objectName: string,
-  sheet: ISheet,
-  light: Light
-): ISheetObject<any> => {
+const setLightControls = (objectName: string, sheet: ISheet, light: Light): ISheetObject<any> => {
   const control = sheet.object("light / " + objectName, {
     position: types.compound({
       x: types.number(light.position.x, { range: settings.range.position }),
@@ -171,11 +165,7 @@ const setCameraControls = (sheet: ISheet, cam: Camera): ISheetObject<any> => {
   return control;
 };
 
-const setSceneControls = (
-  sheet: ISheet,
-  scene: Scene,
-  bloom: any
-): ISheetObject<any> => {
+const setSceneControls = (sheet: ISheet, scene: Scene, bloom: any): ISheetObject<any> => {
   const control = sheet.object("scene / color", {
     background: types.rgba({
       r: sceneColor.r,

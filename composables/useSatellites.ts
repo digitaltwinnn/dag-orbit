@@ -82,6 +82,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     const instancedCube = new InstancedBufferGeometry().copy(cube);
     const material = new MeshBasicMaterial();
     let mesh = new InstancedMesh(instancedCube, material, instances);
+    mesh.name = "Satellites";
 
     const dummy = new Object3D();
     const color = new Color();

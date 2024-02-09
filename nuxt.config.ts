@@ -4,7 +4,7 @@ export default defineNuxtConfig({
     define: { "process.env.TESS_ENV": process.env.ENV },
   },
   build: {
-    transpile: ["three", "postprocessing", "gsap", "@theatre/core"],
+    transpile: ["three", "postprocessing", "gsap"],
   },
   modules: ["@nuxt/image", "@nuxtjs/tailwindcss", "@nuxtjs/color-mode"],
   colorMode: {
