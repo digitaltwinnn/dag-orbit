@@ -1,7 +1,10 @@
 import { SelectiveBloomEffect } from "postprocessing";
-import { Color, MathUtils, Scene } from "three";
+import { Color, Group, MathUtils, Scene } from "three";
 
 export const useGraph = (scene: Scene, bloom: SelectiveBloomEffect, data: { satellites: Satellite[]; edges: Edge[] }) => {
+
+  const graph = new Group();
+  graph.name = "Graph";
   const loaded = ref(false);
   let changeEdgeColor: (satellites: Satellite[]) => void;
 
@@ -16,11 +19,12 @@ export const useGraph = (scene: Scene, bloom: SelectiveBloomEffect, data: { sate
   };
 
   const load = async () => {
-    const $edges = useGraphEdges(scene, bloom, data.edges);
+    const $edges = useGraphEdges(graph, bloom, data.edges);
     changeEdgeColor = $edges.changeColor;
+    scene.add(graph);
     loaded.value = true;
   };
   load();
 
-  return { loaded, changeColor };
+  return { graph, loaded, changeColor };
 };

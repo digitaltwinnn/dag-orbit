@@ -3,13 +3,14 @@ import {
   Float32BufferAttribute,
   LineBasicMaterial,
   LineSegments,
+  Object3D,
   Scene,
 } from "three";
 import { gsap } from "gsap";
 import lineSegmentsWorker from "~/assets/workers/createLineSegments?worker";
 import { SelectiveBloomEffect } from "postprocessing";
 
-export const useSatelliteEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
+export const useSatelliteEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
   const settings = {
     globe: {
       radius: 120,
@@ -139,7 +140,7 @@ export const useSatelliteEdges = (scene: Scene, bloom: SelectiveBloomEffect, edg
       vertexColors: true,
       opacity: settings.edge.opacity,
     });
-    scene.add(edges);
+    parent.add(edges);
     bloom.selection.add(edges);
     animate();
     loaded.value = true;

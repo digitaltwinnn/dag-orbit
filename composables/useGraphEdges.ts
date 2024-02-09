@@ -1,8 +1,14 @@
-import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, Scene } from "three";
+import {
+  BufferGeometry,
+  Float32BufferAttribute,
+  LineBasicMaterial,
+  LineSegments,
+  Object3D,
+} from "three";
 import lineSegmentsWorker from "~/assets/workers/createLineSegments?worker";
 import { SelectiveBloomEffect } from "postprocessing";
 
-export const useGraphEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
+export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
   const settings = {
     graph: {
       points: 5,
@@ -38,8 +44,11 @@ export const useGraphEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeDat
 
   const changeColor = async (satelliteData: Satellite[]) => {
     const colors = await getColors(satelliteData);
-    graph.geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
-  };
+    graph.geometry.setAttribute(
+      "color",
+      new Float32BufferAttribute(colors, 3)
+    );
+  }
 
   const getVertices = (): Promise<GeometryVertices> => {
     return new Promise((resolve, reject) => {
@@ -49,7 +58,7 @@ export const useGraphEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeDat
         lineType: "line",
         arcRadius: 0,
         linePoints: settings.graph.points,
-        edges: edgeData,
+        edges: edgeData
       });
       worker.addEventListener(
         "message",
@@ -73,12 +82,12 @@ export const useGraphEdges = (scene: Scene, bloom: SelectiveBloomEffect, edgeDat
 
   const load = async () => {
     const vertices = await getVertices();
-    graph.geometry = createGeometry(vertices);
+    graph.geometry = createGeometry(vertices);;
     graph.material = new LineBasicMaterial({
       vertexColors: true,
       opacity: settings.graph.opacity,
     });
-    scene.add(graph);
+    parent.add(graph);
     bloom.selection.add(graph);
     loaded.value = true;
   };

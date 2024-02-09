@@ -125,7 +125,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     scene.add(satellites);
 
     // create edges between satellites
-    const $edges = useSatelliteEdges(scene, bloom, data.edges);
+    const $edges = useSatelliteEdges(satellites, bloom, data.edges);
     changeEdgeColor = $edges.changeColor;
     loaded.value = true;
   };
