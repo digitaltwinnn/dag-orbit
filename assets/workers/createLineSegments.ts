@@ -5,14 +5,14 @@ import { useGlobeUtils } from "~/composables/useGlobeUtils";
 const createGeometry = (lineType: string, arcRadius: number, linePoints: number, edgeData: Edge[]): GeometryVertices => {
   const points: Vector3[] = [];
   const indices: number[] = [];
-  const colors: number[] = [];
+  const colors = new Float32Array(3 * edgeData.length * (linePoints + 1));
   const $globeUtils = useGlobeUtils();
 
   let linePos = 0;
   let colorPos = 0;
   const point = new Vector3();
 
-  edgeData.map((edge) => {
+  edgeData.forEach((edge) => {
     // points
     if (lineType == "arc") {
       const arc = $globeUtils.createSphereArc(edge.source.node.host, edge.target.node.host, arcRadius);
@@ -41,6 +41,7 @@ const createGeometry = (lineType: string, arcRadius: number, linePoints: number,
       colors[colorPos++] = color.b;
     }
   });
+
   return {
     points: points,
     indices: indices,
@@ -48,9 +49,9 @@ const createGeometry = (lineType: string, arcRadius: number, linePoints: number,
   };
 };
 
-const createColors = (linePoints: number, edgeData: Edge[], satelliteData: Satellite[]): number[] => {
+const createColors = (linePoints: number, edgeData: Edge[], satelliteData: Satellite[]): Float32Array => {
   const errorColor = new Color("black");
-  const colors: number[] = [];
+  const colors = new Float32Array(3 * edgeData.length * (linePoints + 1));
   let colorPos = 0;
 
   let source, target, color;

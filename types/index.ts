@@ -50,6 +50,6 @@ declare global {
   type GeometryVertices = {
     points: Vector3[];
     indices: number[];
-    colors: number[];
+    colors: Float32Array;
   };
 }
