@@ -64,7 +64,13 @@ onMounted(async () => {
       changeGraphColor = $clusterGraph.changeColor;
 
       const $theatre = useTheatre();
-      $theatre.init($scene.camera, $scene.scene, $scene.bloom, [$scene.light, $sun.light], [$naturalGlobe.globe, $digitalGlobe.mesh, $satellites.satellites]);
+      $theatre.init(
+        $scene.camera,
+        $scene.scene,
+        $scene.bloom,
+        [$scene.light, $sun.light],
+        [$naturalGlobe.globe, $digitalGlobe.mesh, $satellites.satellites, $clusterGraph.graph]
+      );
       gsap.ticker.add((time, deltaTime, frame) => {
         $theatre.rafDriver.tick(deltaTime);
       });
