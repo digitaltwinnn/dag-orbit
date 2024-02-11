@@ -11,6 +11,7 @@ import {
   Object3D,
   Scene,
 } from "three";
+import { gsap } from "gsap";
 
 const settings = {
   satellite: {
@@ -114,6 +115,16 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     if (changeEdgeColor) changeEdgeColor(data.satellites);
   };
 
+  const animate = () => {
+    gsap.to(satellites.rotation, {
+      y: MathUtils.degToRad(360),
+      duration: 60,
+      repeat: -1,
+      ease: "linear",
+    });
+    satellites.matrixWorldNeedsUpdate = true;
+  };
+
   const load = async () => {
     // create satellites
     const globe = createGlobeGeometry();
@@ -127,6 +138,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     // create edges between satellites
     const $edges = useSatelliteEdges(satellites, bloom, data.edges);
     changeEdgeColor = $edges.changeColor;
+    animate();
     loaded.value = true;
   };
   load();

@@ -181,6 +181,12 @@ export const useDigitalGlobe = (scene: Scene, colors: string[]) => {
       }
     };
     gsap.set(animateColors, { delay: 1, onRepeat: animateColors, repeat: -1, repeatDelay: 0.1 });
+    gsap.to(globe.rotation, {
+      y: MathUtils.degToRad(360),
+      duration: 60,
+      repeat: -1,
+      ease: "linear",
+    });
   };
 
   const load = async () => {
