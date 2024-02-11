@@ -1,7 +1,7 @@
 import { types, type ISheet, type ISheetObject, createRafDriver, getProject } from "@theatre/core";
 import studio from "@theatre/studio";
 import { SelectiveBloomEffect } from "postprocessing";
-import { Camera, Color, Light, Object3D, Scene, Vector3 } from "three";
+import { Camera, Light, Object3D, Scene, Vector3 } from "three";
 
 type Range = [min: number, max: number];
 type Setting = {
@@ -23,27 +23,28 @@ const settings: Setting = {
     normalized: [0, 1],
   },
 };
-
-const cameraSubject = new Vector3(0, 0, 0);
-const sceneColor = new Color("black"); // useScene().scene.background;
 const rafDriver = createRafDriver({ name: "theatre.js" });
-const project = getProject("Orbit");
-const sheet = project.sheet("Intro");
 
 const init = async (camera: Camera, scene: Scene, bloom: SelectiveBloomEffect, lights: Light[], objects: Object3D[]) => {
-  studio.initialize();
-  setCameraControls(sheet, camera);
-  setSceneControls(sheet, scene, bloom);
+  if (import.meta.env.PROD) {
+    //const project = getProject("Orbit", { state: projectState });
+    //const sheet = project.sheet("Intro");
+  } else {
+    studio.initialize();
+    const project = getProject("Orbit");
+    const sheet = project.sheet("Intro");
 
-  lights.forEach((light) => {
-    setLightControls(light.name, sheet, light);
-  });
-
-  objects.forEach((object) => {
-    setMovementControls(object.name, sheet, object);
-    setVisibilityControls(object.name, sheet, object);
-    // setColorControls(object.name, sheet, object);
-  });
+    setCameraControls(sheet, camera);
+    setSceneControls(sheet, scene, bloom);
+    lights.forEach((light) => {
+      setLightControls(light.name, sheet, light);
+    });
+    objects.forEach((object) => {
+      setMovementControls(object.name, sheet, object);
+      setVisibilityControls(object.name, sheet, object);
+      // setColorControls(object.name, sheet, object);
+    });
+  }
 };
 
 const setVisibilityControls = (objectName: string, sheet: ISheet, obj: Object3D): ISheetObject<any> => {
@@ -133,6 +134,7 @@ const setLightControls = (objectName: string, sheet: ISheet, light: Light): IShe
 };
 
 const setCameraControls = (sheet: ISheet, cam: Camera): ISheetObject<any> => {
+  const cameraSubject = new Vector3(0, 0, 0);
   const control = sheet.object("camera", {
     position: types.compound({
       x: types.number(cam.position.x, { range: settings.range.position }),
@@ -147,9 +149,7 @@ const setCameraControls = (sheet: ISheet, cam: Camera): ISheetObject<any> => {
   });
 
   control.onValuesChange((v) => {
-    // position
     cam.position.set(v.position.x, v.position.y, v.position.z);
-    // lookat
     cameraSubject.set(v.lookat.x, v.lookat.y, v.lookat.z);
     cam.lookAt(cameraSubject);
   }, rafDriver);
@@ -159,12 +159,6 @@ const setCameraControls = (sheet: ISheet, cam: Camera): ISheetObject<any> => {
 
 const setSceneControls = (sheet: ISheet, scene: Scene, bloom: any): ISheetObject<any> => {
   const control = sheet.object("scene", {
-    background: types.rgba({
-      r: sceneColor.r,
-      g: sceneColor.g,
-      b: sceneColor.b,
-      a: 1,
-    }),
     bloom: types.compound({
       intensity: types.number(bloom.intensity, {
         range: settings.range.intensity,
@@ -189,9 +183,6 @@ const setSceneControls = (sheet: ISheet, scene: Scene, bloom: any): ISheetObject
   });
 
   control.onValuesChange((v) => {
-    // background
-    sceneColor.setRGB(v.background.r, v.background.g, v.background.b);
-    scene.background = sceneColor;
     // bloom
     bloom.intensity = v.bloom.intensity;
     bloom.mipmapBlurPass.radius = v.bloom.radius;
