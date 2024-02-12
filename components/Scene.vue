@@ -74,6 +74,9 @@ onMounted(async () => {
       gsap.ticker.add((time, deltaTime, frame) => {
         $theatre.rafDriver.tick(deltaTime);
       });
+      $theatre.project.ready.then(() => {
+        $theatre.intro.sequence.play({ iterationCount: Infinity, direction: "alternate" });
+      });
     });
 
     // page scroll animations
