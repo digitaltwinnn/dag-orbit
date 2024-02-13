@@ -41,23 +41,26 @@ onMounted(async () => {
   ];
 
   // load the threejs scene
-  const canvas = document.getElementById("scene-container");
-  if (canvas != null) {
-    let $scene = useScene(canvas);
+  const webglContainer = document.getElementById("webgl-container");
+  const css3dContainer = document.getElementById("css3d-container");
+  if (webglContainer != null && css3dContainer != null) {
+    const $scene = useScene(webglContainer, css3dContainer);
     gsap.ticker.add((time, deltaTime, frame) => {
       $scene.tick(deltaTime);
     });
 
+    // threejs visualistions
+    const $sun = await useSun($scene.scene);
+    const $naturalGlobe = useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos, "#54a6ef");
+
+    const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
+    changeDigtalGlobeColor = $digitalGlobe.changeColor;
+
+    use3dChart($scene.scene);
+
     // create data objects for threejs visualisations
     const $processedData = useClusterDataProcessor(nodesResponse, colors);
     watch($processedData.loaded, async () => {
-      // threejs visualistions
-      const $sun = await useSun($scene.scene);
-      const $naturalGlobe = useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos, "#54a6ef");
-
-      const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
-      changeDigtalGlobeColor = $digitalGlobe.changeColor;
-
       const $satellites = useSatellites($scene.scene, $scene.bloom, {
         satellites: $processedData.satellites,
         edges: $processedData.satelliteEdges,
@@ -98,8 +101,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full h-full">
-    <div id="stats" class="absolute top-20 left-4" />
-    <canvas id="scene-container" class="w-full h-full block"></canvas>
+  <div class="w-full h-full relative">
+    <div id="stats" class="top-20 left-4 absolute" />
+    <div id="css3d-container" class="w-full h-full block absolute"></div>
+    <canvas id="webgl-container" class="w-full h-full block absolute"></canvas>
   </div>
 </template>

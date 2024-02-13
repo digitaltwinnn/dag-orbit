@@ -1,20 +1,10 @@
-import {
-  EffectComposer,
-  EffectPass,
-  RenderPass,
-  SelectiveBloomEffect,
-} from "postprocessing";
-import {
-  AmbientLight,
-  PerspectiveCamera,
-  Scene,
-  Vector3,
-  WebGLRenderer,
-} from "three";
+import { EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect } from "postprocessing";
+import { AmbientLight, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
+import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 
-export const useScene = (canvas: HTMLElement) => {
+export const useScene = (webglContainer: HTMLElement, css3dContainer: HTMLElement) => {
   const settings = {
     renderer: {
       powerPreference: "high-performance",
@@ -38,8 +28,8 @@ export const useScene = (canvas: HTMLElement) => {
     },
   };
 
-  function resizeRendererToDisplaySize(renderer: WebGLRenderer) {
-    const canvas = renderer.domElement;
+  function resizeRendererToDisplaySize(webgl: WebGLRenderer, css3d: CSS3DRenderer) {
+    const canvas = webgl.domElement;
     const pixelRatio = window.devicePixelRatio;
     // const width  = canvas.clientWidth  * pixelRatio | 0;
     // const height = canvas.clientHeight * pixelRatio | 0;
@@ -47,27 +37,34 @@ export const useScene = (canvas: HTMLElement) => {
     const height = canvas.clientHeight | 0;
     const needResize = canvas.width !== width || canvas.height !== height;
     if (needResize) {
-      renderer.setSize(width, height, false);
+      webgl.setSize(width, height, false);
+      css3d.setSize(width, height);
     }
     return needResize;
   }
 
-  /* renderer */
-  const renderer = new WebGLRenderer({
+  // CSS3D
+  const css3dRenderer = new CSS3DRenderer();
+  css3dRenderer.setSize(css3dContainer.clientWidth, css3dContainer.clientHeight);
+  css3dContainer.appendChild(css3dRenderer.domElement);
+  css3dRenderer.setSize(css3dContainer.offsetWidth, css3dContainer.offsetHeight);
+
+  // WebGL
+  const webglRenderer = new WebGLRenderer({
     powerPreference: settings.renderer.powerPreference,
     antialias: false,
     stencil: false,
     depth: false,
     alpha: true,
-    canvas: canvas,
+    canvas: webglContainer,
   });
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
-  renderer.setPixelRatio(window.devicePixelRatio);
+  webglRenderer.setSize(webglContainer.clientWidth, webglContainer.clientHeight, false);
+  webglRenderer.setPixelRatio(window.devicePixelRatio);
 
-  /* camera */
+  // Camera
   const camera = new PerspectiveCamera(
     50,
-    canvas.clientWidth / canvas.clientHeight
+    webglContainer.clientWidth / webglContainer.clientHeight
   );
   camera.position.set(
     settings.camera.position.x,
@@ -76,13 +73,13 @@ export const useScene = (canvas: HTMLElement) => {
   );
   camera.up.set(0, 1, 0);
 
-  const controls = new OrbitControls(camera, renderer.domElement);
+  const controls = new OrbitControls(camera, webglRenderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
   controls.minDistance = settings.camera.controls.minDistance;
   controls.maxDistance = settings.camera.controls.maxDistance;
 
-  /* scene */
+  // Scene
   const scene = new Scene();
   scene.name = "Scene";
   const light = new AmbientLight(0xffffff);
@@ -90,19 +87,19 @@ export const useScene = (canvas: HTMLElement) => {
   light.intensity = settings.scene.light.intensity;
   scene.add(light);
 
-  /* bloom */
+  // Bloom
   const bloom = new SelectiveBloomEffect(scene, camera, {
     luminanceThreshold: settings.bloom.luminanceThreshold,
     luminanceSmoothing: settings.bloom.luminanceSmoothing,
     intensity: settings.bloom.intensity,
   });
-  const renderPass = new RenderPass(scene, camera);
-  const bloomPass = new EffectPass(camera, bloom);
-  const composer = new EffectComposer(renderer);
-  composer.addPass(renderPass);
-  composer.addPass(bloomPass);
+  const webglRenderPass = new RenderPass(scene, camera);
+  const webglBloomPass = new EffectPass(camera, bloom);
+  const webglComposer = new EffectComposer(webglRenderer);
+  webglComposer.addPass(webglRenderPass);
+  webglComposer.addPass(webglBloomPass);
 
-  /* stats */
+  // Stats
   const stats = Stats();
   const container = document.getElementById("stats");
   if (container) {
@@ -116,13 +113,13 @@ export const useScene = (canvas: HTMLElement) => {
     if (controls.enabled) {
       controls.update();
     }
-    if (resizeRendererToDisplaySize(renderer)) {
-      const canvas = renderer.domElement;
+    if (resizeRendererToDisplaySize(webglRenderer, css3dRenderer)) {
+      const canvas = webglRenderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
-    composer.render();
-    //theatreDriver.tick(deltaTime);
+    webglComposer.render();
+    css3dRenderer.render(scene, camera);
     stats.end();
   };
 
