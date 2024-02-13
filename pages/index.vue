@@ -36,6 +36,7 @@ onMounted(() => {
       </div>
       <div id="panel-2" class="bg-neutral h-screen z-10">
         <div class="text-neutral-content text-9xl text-right">#2</div>
+        <ChartsWall />
         <div class="flex flex-row m-8 h-full text-9xl text-center">
           <div class="bg-primary text-primary-content flex-grow">A</div>
           <div class="bg-secondary text-secondary-content flex-grow">B</div>
