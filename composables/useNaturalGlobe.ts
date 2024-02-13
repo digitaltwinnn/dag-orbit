@@ -49,6 +49,7 @@ export const useNaturalGlobe = (
       specularMap: loader.load(specularImgUrl),
       bumpMap: loader.load(bumpImgUrl),
       bumpScale: 1,
+      transparent: true,
     });
 
     globe.geometry = geometry;

@@ -1,16 +1,25 @@
-import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, Object3D, Scene } from "three";
+import {
+  BufferGeometry,
+  Float32BufferAttribute,
+  LineBasicMaterial,
+  LineSegments,
+  Object3D,
+} from "three";
 import { gsap } from "gsap";
 import lineSegmentsWorker from "~/assets/workers/createLineSegments?worker";
 import { SelectiveBloomEffect } from "postprocessing";
 
-export const useSatelliteEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
+export const useSatelliteEdges = (
+  parent: Object3D,
+  bloom: SelectiveBloomEffect,
+  edgeData: Edge[]
+) => {
   const settings = {
     globe: {
       radius: 120,
     },
     edge: {
       points: 30,
-      opacity: 0.4,
       animation: {
         points: 4,
         duriation: 2,
@@ -21,6 +30,7 @@ export const useSatelliteEdges = (parent: Object3D, bloom: SelectiveBloomEffect,
 
   const edges = new LineSegments(undefined, undefined);
   edges.name = "SatelliteEdges";
+  parent.add(edges);
   const loaded = ref(false);
 
   const animate = () => {
@@ -129,11 +139,7 @@ export const useSatelliteEdges = (parent: Object3D, bloom: SelectiveBloomEffect,
   const load = async () => {
     const vertices = await getVertices();
     edges.geometry = createGeometry(vertices);
-    edges.material = new LineBasicMaterial({
-      vertexColors: true,
-      opacity: settings.edge.opacity,
-    });
-    parent.add(edges);
+    edges.material = new LineBasicMaterial({ vertexColors: true, transparent: true });
     bloom.selection.add(edges);
     animate();
     loaded.value = true;

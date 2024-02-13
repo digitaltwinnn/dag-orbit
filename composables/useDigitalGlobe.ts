@@ -54,7 +54,11 @@ export const useDigitalGlobe = (scene: Scene, colors: string[]) => {
     const dummy = new Object3D();
 
     for (let i = 0; i < rotation.length; i += 3) {
-      dummy.position.set(geom.attributes.position.array[i], geom.attributes.position.array[i + 1], geom.attributes.position.array[i + 2]);
+      dummy.position.set(
+        geom.attributes.position.array[i],
+        geom.attributes.position.array[i + 1],
+        geom.attributes.position.array[i + 2]
+      );
       dummy.lookAt(0, 0, 0);
 
       rotation[i] = dummy.rotation.x;
@@ -81,7 +85,7 @@ export const useDigitalGlobe = (scene: Scene, colors: string[]) => {
     const instances = geometry.attributes.position.array.length / 3;
     const circle = new CircleGeometry(0.7, 6);
     const instancedCircle = new InstancedBufferGeometry().copy(circle);
-    const material = new MeshPhongMaterial({ side: DoubleSide });
+    const material = new MeshPhongMaterial({ side: DoubleSide, transparent: true });
 
     const mesh = new InstancedMesh(instancedCircle, material, instances);
     mesh.name = "DigitalGlobe";
@@ -89,8 +93,16 @@ export const useDigitalGlobe = (scene: Scene, colors: string[]) => {
     const color = new Color();
     let i3 = 0;
     for (let i = 0; i < instances; i++) {
-      dummy.position.set(geometry.attributes.position.array[i3], geometry.attributes.position.array[i3 + 1], geometry.attributes.position.array[i3 + 2]);
-      dummy.rotation.set(geometry.attributes.rotation.array[i3], geometry.attributes.rotation.array[i3 + 1], geometry.attributes.rotation.array[i3 + 2]);
+      dummy.position.set(
+        geometry.attributes.position.array[i3],
+        geometry.attributes.position.array[i3 + 1],
+        geometry.attributes.position.array[i3 + 2]
+      );
+      dummy.rotation.set(
+        geometry.attributes.rotation.array[i3],
+        geometry.attributes.rotation.array[i3 + 1],
+        geometry.attributes.rotation.array[i3 + 2]
+      );
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
 
@@ -106,8 +118,14 @@ export const useDigitalGlobe = (scene: Scene, colors: string[]) => {
     let subject: number[] = [];
     let end: number[] = [];
 
-    subject = concatBufferAttributes(mapOrientation.attributes.position.array, mapOrientation.attributes.rotation.array);
-    end = concatBufferAttributes(globeOrientation.attributes.position.array, globeOrientation.attributes.rotation.array);
+    subject = concatBufferAttributes(
+      mapOrientation.attributes.position.array,
+      mapOrientation.attributes.rotation.array
+    );
+    end = concatBufferAttributes(
+      globeOrientation.attributes.position.array,
+      globeOrientation.attributes.rotation.array
+    );
 
     animateTransformation(subject, end);
   };
@@ -116,8 +134,14 @@ export const useDigitalGlobe = (scene: Scene, colors: string[]) => {
     let subject: number[] = [];
     let end: number[] = [];
 
-    subject = concatBufferAttributes(globeOrientation.attributes.position.array, globeOrientation.attributes.rotation.array);
-    end = concatBufferAttributes(mapOrientation.attributes.position.array, mapOrientation.attributes.rotation.array);
+    subject = concatBufferAttributes(
+      globeOrientation.attributes.position.array,
+      globeOrientation.attributes.rotation.array
+    );
+    end = concatBufferAttributes(
+      mapOrientation.attributes.position.array,
+      mapOrientation.attributes.rotation.array
+    );
 
     animateTransformation(subject, end);
   };

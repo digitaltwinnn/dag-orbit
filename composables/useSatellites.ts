@@ -19,13 +19,15 @@ const settings = {
   },
 };
 
-export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: { satellites: Satellite[]; edges: Edge[] }) => {
+export const useSatellites = (
+  scene: Scene,
+  bloom: SelectiveBloomEffect,
+  data: { satellites: Satellite[]; edges: Edge[] }
+) => {
   const loaded = ref(false);
   let changeEdgeColor: (satellites: Satellite[]) => void;
   let satellites = new InstancedMesh(undefined, undefined, 0);
-  satellites.name = "Satellites";
 
-  // geometry for InstancedMesh that holds globe positions (hide soverlapping satellites)
   const createGlobeGeometry = (): BufferGeometry => {
     const geometry = new BufferGeometry();
     const positions = new Float32Array(data.satellites.length * 3);
@@ -53,7 +55,6 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     return geometry;
   };
 
-  // geometry for InstancedMesh that holds graph positions
   const createGraphGeometry = () => {
     const geometry = new BufferGeometry();
     const positions = new Float32Array(data.satellites.length * 3);
@@ -67,7 +68,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     }).length;
 
     let i3 = 0;
-    data.satellites.map((sat) => {
+    data.satellites.forEach((sat) => {
       positions[i3++] = sat.mode.graph.vector.x;
       positions[i3++] = sat.mode.graph.vector.y;
       positions[i3++] = sat.mode.graph.vector.z;
@@ -79,9 +80,13 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
 
   const instancedMeshFromGeometry = (geometry: BufferGeometry): InstancedMesh => {
     const instances = geometry.attributes.position.array.length / 3;
-    const cube = new BoxGeometry(settings.satellite.size, settings.satellite.size, settings.satellite.size);
+    const cube = new BoxGeometry(
+      settings.satellite.size,
+      settings.satellite.size,
+      settings.satellite.size
+    );
     const instancedCube = new InstancedBufferGeometry().copy(cube);
-    const material = new MeshBasicMaterial();
+    const material = new MeshBasicMaterial({ transparent: true });
     let mesh = new InstancedMesh(instancedCube, material, instances);
     mesh.name = "Satellites";
 
@@ -89,7 +94,11 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
     const color = new Color();
     let i3 = 0;
     for (let i = 0; i < instances; i++) {
-      dummy.position.set(geometry.attributes.position.array[i3++], geometry.attributes.position.array[i3++], geometry.attributes.position.array[i3++]);
+      dummy.position.set(
+        geometry.attributes.position.array[i3++],
+        geometry.attributes.position.array[i3++],
+        geometry.attributes.position.array[i3++]
+      );
       dummy.lookAt(0, 0, 0);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
@@ -127,10 +136,7 @@ export const useSatellites = (scene: Scene, bloom: SelectiveBloomEffect, data: {
 
   const load = async () => {
     // create satellites
-    const globe = createGlobeGeometry();
-    const graph = createGraphGeometry();
-
-    const orientation = globe;
+    const orientation = createGlobeGeometry();
     satellites = instancedMeshFromGeometry(orientation);
     satellites.count = orientation.userData.visibleSatellites;
     scene.add(satellites);

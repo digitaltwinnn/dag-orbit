@@ -1,4 +1,4 @@
-import { types, type ISheet, type ISheetObject, createRafDriver, getProject } from "@theatre/core";
+import { types, type ISheet, createRafDriver, getProject } from "@theatre/core";
 import studio from "@theatre/studio";
 import { SelectiveBloomEffect } from "postprocessing";
 import { Camera, Light, Object3D, Scene, Vector3 } from "three";
@@ -33,15 +33,20 @@ export const useTheatre = () => {
     },
   };
 
-  const initVisibility = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
-    const control = sheet.object("visibility / " + obj.name, { visible: types.boolean(true, { label: "Visible" }) });
+  const initVisibility = (sheet: ISheet, obj: Object3D) => {
+    const control = sheet.object("visibility / " + obj.name, {
+      visible: types.boolean(true, { label: "Visible" }),
+      opacity: types.number(obj.material.opacity, {
+        range: settings.range.normalized,
+      }),
+    });
     control.onValuesChange((v) => {
       obj.visible = v.visible;
+      obj.material.opacity = v.opacity;
     }, rafDriver);
-    return control;
   };
 
-  const initMovement = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
+  const initMovement = (sheet: ISheet, obj: Object3D) => {
     const control = sheet.object("movement / " + obj.name, {
       rotation: types.compound({
         x: types.number(obj.rotation.x, { range: settings.range.rotation }),
@@ -65,8 +70,6 @@ export const useTheatre = () => {
       obj.position.set(v.position.x, v.position.y, v.position.z);
       obj.scale.set(v.scale.x, v.scale.y, v.scale.z);
     }, rafDriver);
-
-    return control;
   };
 
   /*
@@ -92,7 +95,7 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
 };
 */
 
-  const initLight = (sheet: ISheet, light: Light): ISheetObject<any> => {
+  const initLight = (sheet: ISheet, light: Light) => {
     const control = sheet.object("light / " + light.name, {
       position: types.compound({
         x: types.number(light.position.x, { range: settings.range.position }),
@@ -115,11 +118,9 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
       light.color.setRGB(v.color.r, v.color.g, v.color.b);
       light.intensity = v.intensity;
     }, rafDriver);
-
-    return control;
   };
 
-  const initCamera = (sheet: ISheet, cam: Camera): ISheetObject<any> => {
+  const initCamera = (sheet: ISheet, cam: Camera) => {
     const cameraSubject = new Vector3(0, 0, 0);
     const control = sheet.object("camera", {
       position: types.compound({
@@ -139,11 +140,9 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
       cameraSubject.set(v.lookat.x, v.lookat.y, v.lookat.z);
       cam.lookAt(cameraSubject);
     }, rafDriver);
-
-    return control;
   };
 
-  const initScene = (sheet: ISheet, scene: Scene, bloom: any): ISheetObject<any> => {
+  const initScene = (sheet: ISheet, scene: Scene, bloom: any) => {
     const control = sheet.object("scene", {
       bloom: types.compound({
         intensity: types.number(bloom.intensity, {
@@ -176,21 +175,35 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
       //  bloom.blendMode.setBlendFunction(v.bloom.blend.mode);
       bloom.blendMode.opacity.value = v.bloom.blend.opacity;
     }, rafDriver);
-
-    return control;
   };
 
-  const init = async (camera: Camera, scene: Scene, bloom: SelectiveBloomEffect, lights: Light[], objects: Object3D[]) => {
-    initCamera(intro, camera);
-    initScene(intro, scene, bloom);
-    lights.forEach((light) => {
-      initLight(intro, light);
-    });
-    objects.forEach((object) => {
-      initMovement(intro, object);
-      initVisibility(intro, object);
-      // initColor(sheet, object);
-    });
+  const init = async (
+    camera: Camera,
+    scene: Scene,
+    bloom: SelectiveBloomEffect,
+    lights: Light[],
+    objects: Object3D[]
+  ) => {
+    try {
+      initCamera(intro, camera);
+      initScene(intro, scene, bloom);
+      lights.forEach((light) => {
+        initLight(intro, light);
+      });
+      objects.forEach((object) => {
+        initMovement(intro, object);
+        initVisibility(intro, object);
+        // initColor(sheet, object);
+        object.children.forEach((child) => {
+          if (child instanceof Object3D) {
+            initMovement(intro, child);
+            initVisibility(intro, child);
+          }
+        });
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return {

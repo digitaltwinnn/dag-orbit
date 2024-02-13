@@ -1,12 +1,18 @@
 import { SelectiveBloomEffect } from "postprocessing";
-import { Color, Group, MathUtils, Scene } from "three";
+import { BoxGeometry, Color, MathUtils, Mesh, MeshBasicMaterial, Scene } from "three";
 
-export const useGraph = (scene: Scene, bloom: SelectiveBloomEffect, data: { satellites: Satellite[]; edges: Edge[] }) => {
-
-  const graph = new Group();
-  graph.name = "Graph";
+export const useGraph = (
+  scene: Scene,
+  bloom: SelectiveBloomEffect,
+  data: { satellites: Satellite[]; edges: Edge[] }
+) => {
   const loaded = ref(false);
   let changeEdgeColor: (satellites: Satellite[]) => void;
+
+  const geometry = new BoxGeometry(200, 200, 200);
+  const material = new MeshBasicMaterial({ transparent: true, wireframe: true });
+  const graph = new Mesh(geometry, material);
+  graph.name = "Graph";
 
   const changeColor = (newColors: string[]) => {
     const color = new Color();

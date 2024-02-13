@@ -57,10 +57,16 @@ onMounted(async () => {
       const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
       changeDigtalGlobeColor = $digitalGlobe.changeColor;
 
-      const $satellites = useSatellites($scene.scene, $scene.bloom, { satellites: $processedData.satellites, edges: $processedData.satelliteEdges });
+      const $satellites = useSatellites($scene.scene, $scene.bloom, {
+        satellites: $processedData.satellites,
+        edges: $processedData.satelliteEdges,
+      });
       changeSatelliteColor = $satellites.changeColor;
 
-      const $clusterGraph = useGraph($scene.scene, $scene.bloom, { satellites: $processedData.satellites, edges: $processedData.graphEdges });
+      const $clusterGraph = useGraph($scene.scene, $scene.bloom, {
+        satellites: $processedData.satellites,
+        edges: $processedData.graphEdges,
+      });
       changeGraphColor = $clusterGraph.changeColor;
 
       const $theatre = useTheatre();

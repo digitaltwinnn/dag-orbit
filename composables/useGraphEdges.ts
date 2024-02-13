@@ -1,17 +1,19 @@
-import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, Object3D } from "three";
+import {
+  BufferGeometry,
+  Float32BufferAttribute,
+  LineBasicMaterial,
+  LineSegments,
+  Object3D,
+} from "three";
 import lineSegmentsWorker from "~/assets/workers/createLineSegments?worker";
 import { SelectiveBloomEffect } from "postprocessing";
 
 export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edgeData: Edge[]) => {
-  const settings = {
-    graph: {
-      points: 5,
-      opacity: 0.4,
-    },
-  };
+  const settings = { graph: { points: 5 } };
 
-  const graph = new LineSegments(undefined, undefined);
-  graph.name = "ClusterGraph";
+  const edges = new LineSegments(undefined, undefined);
+  edges.name = "GraphEdges";
+  parent.add(edges);
   const loaded = ref(false);
 
   const getColors = (satelliteData: Satellite[]): Promise<number[]> => {
@@ -41,7 +43,7 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
 
   const changeColor = async (satelliteData: Satellite[]) => {
     const colors = await getColors(satelliteData);
-    graph.geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+    edges.geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
   };
 
   const getVertices = (): Promise<GeometryVertices> => {
@@ -79,16 +81,12 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
 
   const load = async () => {
     const vertices = await getVertices();
-    graph.geometry = createGeometry(vertices);
-    graph.material = new LineBasicMaterial({
-      vertexColors: true,
-      opacity: settings.graph.opacity,
-    });
-    parent.add(graph);
-    bloom.selection.add(graph);
+    edges.geometry = createGeometry(vertices);
+    edges.material = new LineBasicMaterial({ vertexColors: true, transparent: true });
+    bloom.selection.add(edges);
     loaded.value = true;
   };
   load();
 
-  return { edges: graph, loaded, changeColor };
+  return { edges, loaded, changeColor };
 };
