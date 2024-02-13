@@ -51,6 +51,7 @@ onMounted(async () => {
     // create data objects for threejs visualisations
     const $processedData = useClusterDataProcessor(nodesResponse, colors);
     watch($processedData.loaded, async () => {
+      // threejs visualistions
       const $sun = await useSun($scene.scene);
       const $naturalGlobe = useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos, "#54a6ef");
 
@@ -69,6 +70,7 @@ onMounted(async () => {
       });
       changeGraphColor = $clusterGraph.changeColor;
 
+      // threejs animations
       const $theatre = useTheatre();
       $theatre.init(
         $scene.camera,
@@ -81,23 +83,16 @@ onMounted(async () => {
         $theatre.rafDriver.tick(deltaTime);
       });
       $theatre.project.ready.then(() => {
-        $theatre.intro.sequence.play({ iterationCount: Infinity, direction: "alternate" });
+        gsap.to($theatre.intro.sequence, {
+          position: 5,
+          scrollTrigger: {
+            trigger: "#panel-2",
+            scrub: 0.6,
+            markers: true,
+          },
+        });
       });
     });
-
-    // page scroll animations
-    /*
-    gsap.to($satellites.object.scale, {
-      x: 2,
-      y: 2,
-      z: 2,
-      scrollTrigger: {
-        trigger: "#panel-1",
-        scrub: 0.6,
-        markers: true,
-      },
-    })
-    */
   }
 });
 </script>
