@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Chart, type ChartItem } from "chart.js/auto";
+import { gsap } from "gsap";
 
 const props = defineProps({
   id: {
@@ -7,19 +8,19 @@ const props = defineProps({
     required: true,
   },
 });
-const dataset = [12, 19, 3, 5, 2, 30];
+const data = [12, 19, 3, 5, 2, 30];
 
 onMounted(() => {
   const ctx = document.getElementById(props.id);
   if (ctx) {
-    new Chart(ctx as ChartItem, {
+    const exampleChart = new Chart(ctx as ChartItem, {
       type: "bar",
       data: {
         labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
         datasets: [
           {
             label: "# of Votes",
-            data: dataset,
+            data: data,
             borderWidth: 1,
           },
         ],
@@ -31,6 +32,25 @@ onMounted(() => {
           },
         },
       },
+    });
+
+    // dummy data
+    const updateData = () => {
+      exampleChart.data.datasets.forEach((dataset, index) => {
+        dataset.data = data.map(() => Math.floor(Math.random() * 51));
+      });
+
+      exampleChart.update();
+    };
+
+    let dummy = { value: 0 };
+    gsap.to(dummy, {
+      value: 1,
+      duration: 1,
+      repeat: -1,
+      repeatDelay: 0,
+      onRepeat: updateData,
+      ease: "none",
     });
   }
 });
