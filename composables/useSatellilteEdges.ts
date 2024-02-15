@@ -76,7 +76,7 @@ export const useSatelliteEdges = (
     });
   };
 
-  const getColors = (satelliteData: Satellite[]): Promise<number[]> => {
+  const getColors = (satelliteData: Satellite[]): Promise<ArrayBuffer> => {
     return new Promise((resolve, reject) => {
       const worker = new lineSegmentsWorker();
       worker.postMessage({
@@ -87,7 +87,7 @@ export const useSatelliteEdges = (
       });
       worker.addEventListener(
         "message",
-        (e: { data: number[] }) => {
+        (e: { data: Float32Array }) => {
           if (e.data) {
             resolve(e.data);
             worker.terminate();

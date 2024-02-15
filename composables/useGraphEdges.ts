@@ -16,7 +16,7 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
   parent.add(edges);
   const loaded = ref(false);
 
-  const getColors = (satelliteData: Satellite[]): Promise<number[]> => {
+  const getColors = (satelliteData: Satellite[]): Promise<ArrayBuffer> => {
     return new Promise((resolve, reject) => {
       const worker = new lineSegmentsWorker();
       worker.postMessage({
@@ -27,7 +27,7 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
       });
       worker.addEventListener(
         "message",
-        (e: { data: number[] }) => {
+        (e: { data: ArrayBuffer }) => {
           if (e.data) {
             resolve(e.data);
             worker.terminate();

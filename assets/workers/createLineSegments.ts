@@ -2,7 +2,12 @@ import { Color, Line3, Vector3 } from "three";
 import { gsap } from "gsap";
 import { useGlobeUtils } from "~/composables/useGlobeUtils";
 
-const createGeometry = (lineType: string, arcRadius: number, linePoints: number, edgeData: Edge[]): GeometryVertices => {
+const createGeometry = (
+  lineType: string,
+  arcRadius: number,
+  linePoints: number,
+  edgeData: Edge[]
+): GeometryVertices => {
   const points: Vector3[] = [];
   const indices: number[] = [];
   const colors = new Float32Array(3 * edgeData.length * (linePoints + 1));
@@ -15,7 +20,11 @@ const createGeometry = (lineType: string, arcRadius: number, linePoints: number,
   edgeData.forEach((edge) => {
     // points
     if (lineType == "arc") {
-      const arc = $globeUtils.createSphereArc(edge.source.node.host, edge.target.node.host, arcRadius);
+      const arc = $globeUtils.createSphereArc(
+        edge.source.node.host,
+        edge.target.node.host,
+        arcRadius
+      );
       points.push(...arc.getPoints(linePoints));
     } else if (lineType == "line") {
       const line = new Line3(edge.source.mode.graph.vector, edge.target.mode.graph.vector);
@@ -49,7 +58,11 @@ const createGeometry = (lineType: string, arcRadius: number, linePoints: number,
   };
 };
 
-const createColors = (linePoints: number, edgeData: Edge[], satelliteData: Satellite[]): Float32Array => {
+const createColors = (
+  linePoints: number,
+  edgeData: Edge[],
+  satelliteData: Satellite[]
+): Float32Array => {
   const errorColor = new Color("black");
   const colors = new Float32Array(3 * edgeData.length * (linePoints + 1));
   let colorPos = 0;
@@ -85,12 +98,17 @@ self.addEventListener(
   function (e) {
     switch (e.data.cmd) {
       case "createGeometry":
-        const vertices = createGeometry(e.data.lineType, e.data.arcRadius, e.data.linePoints, e.data.edges);
-        self.postMessage(vertices);
+        const { points, indices, colors } = createGeometry(
+          e.data.lineType,
+          e.data.arcRadius,
+          e.data.linePoints,
+          e.data.edges
+        );
+        self.postMessage({ points, indices, colors }, [colors.buffer]);
         break;
       case "createColors":
-        const colors = createColors(e.data.linePoints, e.data.edges, e.data.satellites);
-        self.postMessage(colors);
+        const newColors = createColors(e.data.linePoints, e.data.edges, e.data.satellites);
+        self.postMessage(newColors, [newColors.buffer]);
         break;
       default:
         self.postMessage("Unknown command");
