@@ -8,53 +8,59 @@ const createGeometry = (
   linePoints: number,
   edgeData: Edge[]
 ): GeometryVertices => {
-  const points: Vector3[] = [];
-  const indices: number[] = [];
+  const points = new Float32Array(3 * edgeData.length * (linePoints + 1));
   const colors = new Float32Array(3 * edgeData.length * (linePoints + 1));
+  const indices: number[] = [];
   const $globeUtils = useGlobeUtils();
 
-  let linePos = 0;
-  let colorPos = 0;
+  let pointIndex = 0;
+  let colorIndex = 0;
+  let indiceIndex = 0;
+
   const point = new Vector3();
+  const line = new Line3();
+  let pointPositions = new Array<Vector3>(linePoints + 1);
 
   edgeData.forEach((edge) => {
     // points
     if (lineType == "arc") {
-      const arc = $globeUtils.createSphereArc(
-        edge.source.node.host,
-        edge.target.node.host,
-        arcRadius
-      );
-      points.push(...arc.getPoints(linePoints));
+      pointPositions = $globeUtils
+        .createSphereArc(edge.source.node.host, edge.target.node.host, arcRadius)
+        .getPoints(linePoints);
     } else if (lineType == "line") {
-      const line = new Line3(edge.source.mode.graph.vector, edge.target.mode.graph.vector);
+      line.set(edge.source.mode.graph.vector, edge.target.mode.graph.vector);
       for (let i = 0; i <= linePoints; i++) {
         line.at(i / linePoints, point);
-        points.push(point.clone());
+        pointPositions[i] = point.clone();
       }
     }
-
-    // indices
-    for (let i = 0; i < linePoints; i++) {
-      const indice = [linePos + i, linePos + i + 1];
-      indices.push(...indice);
-    }
-    linePos += linePoints + 1;
+    pointPositions.forEach((p) => {
+      points[pointIndex++] = p.x;
+      points[pointIndex++] = p.y;
+      points[pointIndex++] = p.z;
+    });
 
     // colors
     let color;
     for (let i = 0; i <= linePoints; i++) {
       color = gsap.utils.interpolate(edge.source.color, edge.target.color, i / linePoints);
-      colors[colorPos++] = color.r;
-      colors[colorPos++] = color.g;
-      colors[colorPos++] = color.b;
+      colors[colorIndex++] = color.r;
+      colors[colorIndex++] = color.g;
+      colors[colorIndex++] = color.b;
     }
+
+    // indices
+    for (let i = 0; i < linePoints; i++) {
+      const indice = [indiceIndex + i, indiceIndex + i + 1];
+      indices.push(...indice);
+    }
+    indiceIndex += linePoints + 1;
   });
 
   return {
     points: points,
-    indices: indices,
     colors: colors,
+    indices: indices,
   };
 };
 
@@ -104,7 +110,7 @@ self.addEventListener(
           e.data.linePoints,
           e.data.edges
         );
-        self.postMessage({ points, indices, colors }, [colors.buffer]);
+        self.postMessage({ points, indices, colors }, [points.buffer, colors.buffer]);
         break;
       case "createColors":
         const newColors = createColors(e.data.linePoints, e.data.edges, e.data.satellites);

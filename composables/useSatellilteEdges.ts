@@ -130,9 +130,10 @@ export const useSatelliteEdges = (
   };
 
   const createGeometry = (vertices: GeometryVertices): BufferGeometry => {
-    const geometry = new BufferGeometry().setFromPoints(vertices.points);
-    geometry.setIndex(vertices.indices);
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new Float32BufferAttribute(vertices.points, 3));
     geometry.setAttribute("color", new Float32BufferAttribute(vertices.colors, 3));
+    geometry.setIndex(vertices.indices);
     return geometry;
   };
 

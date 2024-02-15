@@ -48,8 +48,8 @@ declare global {
   };
 
   type GeometryVertices = {
-    points: Vector3[];
-    indices: number[];
+    points: ArrayBuffer;
     colors: ArrayBuffer;
+    indices: number[];
   };
 }
