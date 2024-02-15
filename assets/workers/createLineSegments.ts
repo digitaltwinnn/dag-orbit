@@ -10,12 +10,13 @@ const createGeometry = (
 ): GeometryVertices => {
   const points = new Float32Array(3 * edgeData.length * (linePoints + 1));
   const colors = new Float32Array(3 * edgeData.length * (linePoints + 1));
-  const indices: number[] = [];
+  const indices = new Uint16Array(2 * edgeData.length * (linePoints + 1));
   const $globeUtils = useGlobeUtils();
 
   let pointIndex = 0;
   let colorIndex = 0;
   let indiceIndex = 0;
+  let indicePointIndex = 0;
 
   const point = new Vector3();
   const line = new Line3();
@@ -51,10 +52,11 @@ const createGeometry = (
 
     // indices
     for (let i = 0; i < linePoints; i++) {
-      const indice = [indiceIndex + i, indiceIndex + i + 1];
-      indices.push(...indice);
+      indices[indiceIndex++] = indicePointIndex + i;
+      indices[indiceIndex++] = indicePointIndex + i + 1;
+      //  indices.push(...indice);
     }
-    indiceIndex += linePoints + 1;
+    indicePointIndex += linePoints + 1;
   });
 
   return {
@@ -110,7 +112,11 @@ self.addEventListener(
           e.data.linePoints,
           e.data.edges
         );
-        self.postMessage({ points, indices, colors }, [points.buffer, colors.buffer]);
+        self.postMessage({ points, indices, colors }, [
+          points.buffer,
+          indices.buffer,
+          colors.buffer,
+        ]);
         break;
       case "createColors":
         const newColors = createColors(e.data.linePoints, e.data.edges, e.data.satellites);

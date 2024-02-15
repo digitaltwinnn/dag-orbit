@@ -4,6 +4,7 @@ import {
   LineBasicMaterial,
   LineSegments,
   Object3D,
+  Uint16BufferAttribute,
 } from "three";
 import lineSegmentsWorker from "~/assets/workers/createLineSegments?worker";
 import { SelectiveBloomEffect } from "postprocessing";
@@ -76,7 +77,7 @@ export const useGraphEdges = (parent: Object3D, bloom: SelectiveBloomEffect, edg
     const geometry = new BufferGeometry();
     geometry.setAttribute("position", new Float32BufferAttribute(vertices.points, 3));
     geometry.setAttribute("color", new Float32BufferAttribute(vertices.colors, 3));
-    geometry.setIndex(vertices.indices);
+    geometry.setIndex(new Uint16BufferAttribute(vertices.indices, 1));
     return geometry;
   };
 

@@ -50,6 +50,6 @@ declare global {
   type GeometryVertices = {
     points: ArrayBuffer;
     colors: ArrayBuffer;
-    indices: number[];
+    indices: Uint16Array;
   };
 }
