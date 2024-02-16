@@ -13,6 +13,7 @@ const colorMode = useColorMode();
 let changeDigtalGlobeColor: (newColors: string[]) => void;
 let changeSatelliteColor: (newColors: string[]) => void;
 let changeGraphColor: (newColors: string[]) => void;
+let changeRoomColor: (newColors: string[]) => void;
 
 watch(colorMode, () => {
   const tmpCanvas = document.createElement("canvas");
@@ -25,6 +26,7 @@ watch(colorMode, () => {
   if (changeDigtalGlobeColor) changeDigtalGlobeColor(colors);
   if (changeSatelliteColor) changeSatelliteColor(colors);
   if (changeGraphColor) changeGraphColor(colors);
+  if (changeRoomColor) changeRoomColor(colors);
 });
 
 // get the latest cluster information from our db
@@ -56,7 +58,8 @@ onMounted(async () => {
     const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
     changeDigtalGlobeColor = $digitalGlobe.changeColor;
 
-    use3dChart($scene.scene);
+    const $chartRoom = use3dChartRoom($scene.scene, colors);
+    changeRoomColor = $chartRoom.changeColor;
 
     // create data objects for threejs visualisations
     const $processedData = useClusterDataProcessor(nodesResponse, colors);
@@ -80,7 +83,13 @@ onMounted(async () => {
         $scene.scene,
         $scene.bloom,
         [$scene.light, $sun.light],
-        [$naturalGlobe.globe, $digitalGlobe.globe, $satellites.satellites, $clusterGraph.graph]
+        [
+          $naturalGlobe.globe,
+          $digitalGlobe.globe,
+          $satellites.satellites,
+          $clusterGraph.graph,
+          $chartRoom.room,
+        ]
       );
       gsap.ticker.add((time, deltaTime, frame) => {
         $theatre.rafDriver.tick(deltaTime);
@@ -103,10 +112,10 @@ onMounted(async () => {
 <template>
   <div class="w-full h-full relative">
     <div id="stats" class="top-20 left-4 absolute" />
-    <!-- html panels for css3 renderer -->
-    <Panel3d class="absolute z-0 w-full h-full" />
-    <div id="css3d-container" class="w-full h-full block absolute"></div>
     <!-- canvas for the webgl renderer -->
-    <canvas id="webgl-container" class="w-full h-full block absolute"></canvas>
+    <canvas id="webgl-container" class="w-full h-full block absolute z-10"></canvas>
+    <!-- html panels for css3 renderer -->
+    <ChartsPanel class="absolute z-0 w-full h-full pointer-events-none" />
+    <div id="css3d-container" class="w-full h-full block absolute pointer-events-none"></div>
   </div>
 </template>

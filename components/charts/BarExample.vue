@@ -73,6 +73,6 @@ onMounted(() => {
 
 <template>
   <div>
-    <canvas :id="id"></canvas>
+    <canvas :id="id" class="pointer-events-auto"></canvas>
   </div>
 </template>

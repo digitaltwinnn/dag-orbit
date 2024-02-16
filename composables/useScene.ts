@@ -10,10 +10,10 @@ export const useScene = (webglContainer: HTMLElement, css3dContainer: HTMLElemen
       powerPreference: "high-performance",
     },
     camera: {
-      position: new Vector3(0, 0, 400),
+      position: new Vector3(0, 0, 1000),
       controls: {
         minDistance: 0,
-        maxDistance: 2000,
+        maxDistance: 5000,
       },
     },
     scene: {

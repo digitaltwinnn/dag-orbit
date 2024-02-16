@@ -28,7 +28,7 @@ onMounted(() => {
 <template>
   <div class="flex flex-row">
     <div
-      class="w-1/2 h-1/2 flex flex-row justify-center items-center shadow bg-neutral border-2 border-primary rounded-box"
+      class="w-1/2 h-1/2 flex flex-row justify-center items-center bg-primary border-4 border-secondary rounded-box"
       id="left-wall"
     >
       <div class="flex flex-col">
@@ -41,16 +41,16 @@ onMounted(() => {
       </div>
     </div>
     <div
-      class="w-1/2 h-1/2 flex flex-row justify-center items-center shadow bg-neutral border-2 border-primary rounded-box"
+      class="w-1/2 h-1/2 flex flex-row justify-center items-center bg-secondary border-4 border-primary rounded-box"
       id="right-wall"
     >
       <div class="flex flex-col">
-        <div><ChartsBarExample id="bar5" :colors="colors" /></div>
-        <div><ChartsBarExample id="bar6" :colors="colors" /></div>
+        <div><ChartsBarExample id="bar5" :colors="[colors[2], colors[1], colors[0]]" /></div>
+        <div><ChartsBarExample id="bar6" :colors="[colors[2], colors[1], colors[0]]" /></div>
       </div>
       <div class="flex flex-col">
-        <div><ChartsBarExample id="bar7" :colors="colors" /></div>
-        <div><ChartsBarExample id="bar8" :colors="colors" /></div>
+        <div><ChartsBarExample id="bar7" :colors="[colors[2], colors[1], colors[0]]" /></div>
+        <div><ChartsBarExample id="bar8" :colors="[colors[2], colors[1], colors[0]]" /></div>
       </div>
     </div>
   </div>
