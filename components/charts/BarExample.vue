@@ -7,13 +7,26 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  colors: {
+    type: Array<string>,
+    required: true,
+  },
 });
 const data = [12, 19, 3, 5, 2, 30];
+let chart: Chart;
+
+watch(
+  () => props.colors,
+  () => {
+    chart.data.datasets[0].backgroundColor = props.colors[2];
+    chart.data.datasets[0].borderColor = props.colors[1];
+  }
+);
 
 onMounted(() => {
   const ctx = document.getElementById(props.id);
   if (ctx) {
-    const exampleChart = new Chart(ctx as ChartItem, {
+    chart = new Chart(ctx as ChartItem, {
       type: "bar",
       data: {
         labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
@@ -22,6 +35,8 @@ onMounted(() => {
             label: "# of Votes",
             data: data,
             borderWidth: 1,
+            backgroundColor: props.colors[0],
+            borderColor: props.colors[1],
           },
         ],
       },
@@ -36,11 +51,11 @@ onMounted(() => {
 
     // dummy data
     const updateData = () => {
-      exampleChart.data.datasets.forEach((dataset, index) => {
+      chart.data.datasets.forEach((dataset, index) => {
         dataset.data = data.map(() => Math.floor(Math.random() * 51));
       });
 
-      exampleChart.update();
+      chart.update();
     };
 
     let dummy = { value: 0 };
