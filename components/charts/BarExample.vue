@@ -20,6 +20,7 @@ watch(
   () => {
     chart.data.datasets[0].backgroundColor = props.colors[2];
     chart.data.datasets[0].borderColor = props.colors[1];
+    chart.update();
   }
 );
 
@@ -61,7 +62,7 @@ onMounted(() => {
     let dummy = { value: 0 };
     gsap.to(dummy, {
       value: 1,
-      duration: 1,
+      duration: 30,
       repeat: -1,
       repeatDelay: 0,
       onRepeat: updateData,
