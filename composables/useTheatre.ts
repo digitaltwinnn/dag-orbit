@@ -15,6 +15,10 @@ type Setting = {
   };
 };
 
+/**
+ * A custom hook for managing theatre-related functionality.
+ * @returns An object containing various properties and methods related to theatre.
+ */
 export const useTheatre = () => {
   if (!import.meta.env.PROD) {
     studio.initialize();
@@ -33,19 +37,31 @@ export const useTheatre = () => {
     },
   };
 
+  /**
+   * Initializes the visibility control for an object in a sheet.
+   * @param sheet The sheet containing the visibility control.
+   * @param obj The object to control the visibility of.
+   */
   const initVisibility = (sheet: ISheet, obj: Object3D) => {
     const control = sheet.object("visibility / " + obj.name, {
       visible: types.boolean(true, { label: "Visible" }),
+      /*
       opacity: types.number(obj.material.opacity, {
         range: settings.range.normalized,
       }),
+      */
     });
     control.onValuesChange((v) => {
       obj.visible = v.visible;
-      obj.material.opacity = v.opacity;
+      //  obj.material.opacity = v.opacity;
     }, rafDriver);
   };
 
+  /**
+   * Initializes the movement control for an object.
+   * @param sheet - The sheet object.
+   * @param obj - The object to control the movement of.
+   */
   const initMovement = (sheet: ISheet, obj: Object3D) => {
     const control = sheet.object("movement / " + obj.name, {
       rotation: types.compound({
@@ -95,6 +111,11 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
 };
 */
 
+  /**
+   * Initializes a light control using the provided sheet and light object.
+   * @param sheet The sheet object used for creating the light control.
+   * @param light The light object containing the initial values for the control.
+   */
   const initLight = (sheet: ISheet, light: Light) => {
     const control = sheet.object("light / " + light.name, {
       position: types.compound({
@@ -120,6 +141,11 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
     }, rafDriver);
   };
 
+  /**
+   * Initializes the camera with the provided sheet and camera object.
+   * @param sheet - The sheet object.
+   * @param cam - The camera object.
+   */
   const initCamera = (sheet: ISheet, cam: Camera) => {
     const cameraSubject = new Vector3(0, 0, 0);
     const control = sheet.object("camera", {
@@ -142,6 +168,12 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
     }, rafDriver);
   };
 
+  /**
+   * Initializes a scene control using the provided sheet and scene objects.
+   * @param sheet - The sheet object.
+   * @param scene - The scene object.
+   * @param bloom - The bloom settings.
+   */
   const initScene = (sheet: ISheet, scene: Scene, bloom: any) => {
     const control = sheet.object("scene", {
       bloom: types.compound({
@@ -177,6 +209,14 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
     }, rafDriver);
   };
 
+  /**
+   * Initializes the theatre with the given camera, scene, bloom effect, lights, and objects.
+   * @param camera - The camera used in the theatre.
+   * @param scene - The scene used in the theatre.
+   * @param bloom - The bloom effect used in the theatre.
+   * @param lights - The lights used in the theatre.
+   * @param objects - The objects used in the theatre.
+   */
   const init = async (
     camera: Camera,
     scene: Scene,

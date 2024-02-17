@@ -64,7 +64,7 @@ onMounted(async () => {
     // create data objects for threejs visualisations
     const $processedData = useClusterDataProcessor(nodesResponse, colors);
     watch($processedData.loaded, async () => {
-      const $satellites = useSatellites($scene.scene, $scene.bloom, {
+      const $satellites = useSatellites($scene.scene, $scene.camera, $scene.bloom, {
         satellites: $processedData.satellites,
         edges: $processedData.satelliteEdges,
       });
@@ -116,6 +116,7 @@ onMounted(async () => {
     <canvas id="webgl-container" class="w-full h-full block absolute z-10"></canvas>
     <!-- html panels visualised and controlled by the css3d renderer -->
     <ChartsPanel />
+    <SatelliteAnnotation />
     <div id="css3d-container" class="w-full h-full block absolute pointer-events-none"></div>
   </div>
 </template>
