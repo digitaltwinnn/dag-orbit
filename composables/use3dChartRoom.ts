@@ -19,19 +19,20 @@ export const use3dChartRoom = (scene: Scene, colors: string[]) => {
   room.rotation.y = MathUtils.degToRad(45);
   room.scale.set(1.2, 1.2, 1.2);
   room.position.y = -150;
-  room.name = "room";
+  room.name = "Room";
   scene.add(room);
 
   // Floor
   const floorGeometry = new PlaneGeometry(500, 500);
   const floorMaterial = new MeshStandardMaterial({
-    color: "0xbcc6cc",
+    color: "#bcc6cc",
     metalness: 0.8,
     roughness: 0.2,
     side: DoubleSide,
   });
   const floor = new Mesh(floorGeometry, floorMaterial);
   floor.rotation.x = -Math.PI / 2;
+  floor.name = "Floor";
   room.add(floor);
 
   const wallMaterial = new MeshStandardMaterial({
@@ -48,12 +49,14 @@ export const use3dChartRoom = (scene: Scene, colors: string[]) => {
   const leftWall = new Mesh(leftWallGeometry, wallMaterial);
   leftWall.position.z = -250;
   leftWall.position.y = 175;
+  leftWall.name = "LeftWall";
   room.add(leftWall);
 
   const leftLight = new RectAreaLight(colors[0], 1, 500, 350);
   leftLight.position.z = -251;
   leftLight.position.y = 176;
   leftLight.rotation.y = -Math.PI;
+  leftLight.name = "LeftLight";
   room.add(leftLight);
 
   const leftChart = document.getElementById("left-wall");
@@ -62,6 +65,7 @@ export const use3dChartRoom = (scene: Scene, colors: string[]) => {
     chart.position.z = -230;
     chart.position.y = 160;
     chart.scale.set(0.4, 0.4, 0.4);
+    chart.name = "LeftChart";
     room.add(chart);
   }
 
@@ -71,12 +75,14 @@ export const use3dChartRoom = (scene: Scene, colors: string[]) => {
   rightWall.position.x = 250;
   rightWall.position.y = 175;
   rightWall.rotation.y = -Math.PI / 2;
+  rightWall.name = "RightWall";
   room.add(rightWall);
 
   const rightLight = new RectAreaLight(colors[1], 1, 500, 350);
   rightLight.position.x = 251;
   rightLight.position.y = 176;
   rightLight.rotation.y = Math.PI / 2;
+  rightLight.name = "RightLight";
   room.add(rightLight);
 
   const rightChart = document.getElementById("right-wall");
@@ -86,6 +92,7 @@ export const use3dChartRoom = (scene: Scene, colors: string[]) => {
     chart.position.y = 160;
     chart.rotation.y = Math.PI / 2;
     chart.scale.set(0.4, 0.4, 0.4);
+    chart.name = "RightChart";
     room.add(chart);
   }
 
