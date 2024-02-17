@@ -25,10 +25,10 @@ onMounted(() => {
 });
 </script>
 
-<template>
+<template class="absolute z-0 w-[1000px] h-[600px] pointer-events-none">
   <div class="flex flex-row">
     <div
-      class="w-1/2 h-1/2 flex flex-row justify-center items-center bg-primary border-4 border-secondary rounded-box"
+      class="w-[1000px] h-[600px] flex flex-row justify-center items-center bg-primary border-4 border-secondary rounded-box"
       id="left-wall"
     >
       <div class="flex flex-col">
@@ -41,7 +41,7 @@ onMounted(() => {
       </div>
     </div>
     <div
-      class="w-1/2 h-1/2 flex flex-row justify-center items-center bg-secondary border-4 border-primary rounded-box"
+      class="w-[1000px] h-[600px] flex flex-row justify-center items-center bg-secondary border-4 border-primary rounded-box"
       id="right-wall"
     >
       <div class="flex flex-col">

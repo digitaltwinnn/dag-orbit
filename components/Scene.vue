@@ -112,10 +112,10 @@ onMounted(async () => {
 <template>
   <div class="w-full h-full relative">
     <div id="stats" class="top-20 left-4 absolute" />
-    <!-- canvas for the webgl renderer -->
+    <!-- canvas that is used by the webgl renderer to draw 3d objects -->
     <canvas id="webgl-container" class="w-full h-full block absolute z-10"></canvas>
-    <!-- html panels for css3 renderer -->
-    <ChartsPanel class="absolute z-0 w-full h-full pointer-events-none" />
+    <!-- html panels visualised and controlled by the css3d renderer -->
+    <ChartsPanel />
     <div id="css3d-container" class="w-full h-full block absolute pointer-events-none"></div>
   </div>
 </template>
