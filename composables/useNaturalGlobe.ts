@@ -1,7 +1,6 @@
 import { gsap } from "gsap";
 import {
   Color,
-  Light,
   MathUtils,
   Mesh,
   MeshPhongMaterial,
@@ -12,7 +11,6 @@ import {
 
 export const useNaturalGlobe = (
   scene: Scene,
-  light: Light,
   vAtmosphere: string,
   fAtmosphere: string,
   atmosphereColor: string
@@ -56,8 +54,13 @@ export const useNaturalGlobe = (
     globe.material = material;
     scene.add(globe);
 
+    // Sun
+    const $sun = await useSun(globe);
+
+    // Atmosphere
     const color = new Color(atmosphereColor);
-    useAtmosphere(globe, light, vAtmosphere, fAtmosphere, color);
+    useAtmosphere(globe, $sun.light, vAtmosphere, fAtmosphere, color);
+
     animate();
     loaded.value = true;
   };

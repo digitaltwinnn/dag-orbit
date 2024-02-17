@@ -52,8 +52,7 @@ onMounted(async () => {
     });
 
     // threejs visualistions
-    const $sun = await useSun($scene.scene);
-    const $naturalGlobe = useNaturalGlobe($scene.scene, $sun.light, vAtmos, fAtmos, "#54a6ef");
+    const $naturalGlobe = useNaturalGlobe($scene.scene, vAtmos, fAtmos, "#54a6ef");
 
     const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
     changeDigtalGlobeColor = $digitalGlobe.changeColor;
@@ -82,7 +81,7 @@ onMounted(async () => {
         $scene.camera,
         $scene.scene,
         $scene.bloom,
-        [$scene.light, $sun.light],
+        [$scene.light],
         [
           $naturalGlobe.globe,
           $digitalGlobe.globe,

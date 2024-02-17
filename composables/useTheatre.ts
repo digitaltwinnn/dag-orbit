@@ -239,6 +239,9 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
             initMovement(intro, child);
             initVisibility(intro, child);
           }
+          if (child instanceof Light) {
+            initLight(intro, child);
+          }
         });
       });
     } catch (e) {
