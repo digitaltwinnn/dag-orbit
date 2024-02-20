@@ -1,21 +1,5 @@
 <script setup lang="ts">
-import daisyuiColors from "daisyui/src/theming/themes";
-import type { Theme } from "daisyui";
-
-const colorMode = useColorMode();
-let colors = ref<string[]>([]);
-
-onMounted(() => {
-  watch(colorMode, () => {
-    colors.value = [];
-    const tmpCanvas = document.createElement("canvas");
-    tmpCanvas.width = tmpCanvas.height = 1;
-    colors.value.push(
-      cssColorToHEX(daisyuiColors[<Theme>colorMode.value].secondary, tmpCanvas),
-      cssColorToHEX(daisyuiColors[<Theme>colorMode.value].primary, tmpCanvas)
-    );
-  });
-});
+let colors = inject(colorKey, ref([""]));
 </script>
 
 <template>

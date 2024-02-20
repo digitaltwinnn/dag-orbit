@@ -1,11 +1,16 @@
 import nodeDataProcessor from "~/assets/workers/processNodeData?worker";
 
+/**
+ * Creates a web worker to processes cluster data in the background.
+ * @param nodes - The array of L0Node objects.
+ * @param colors - The array of colors.
+ * @returns An object containing the processed cluster data.
+ */
 export const useClusterDataProcessor = (nodes: L0Node[], colors: string[]) => {
   const clusterDataFromWorker = async (nodes: L0Node[]): Promise<NodeData> => {
-    // start a worker to prepare the data
     return new Promise((resolve, reject) => {
       const worker = new nodeDataProcessor();
-      worker.postMessage({ nodes: nodes, colors: colors });
+      worker.postMessage({ nodes: toRaw(nodes), colors: toRaw(colors) });
       worker.addEventListener(
         "message",
         (e: { data: NodeData }) => {

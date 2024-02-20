@@ -8,39 +8,39 @@ import daisyuiColors from "daisyui/src/theming/themes";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// watch for theme changes for the threejs objects
+// watch for theme changes and update the (reactive) colors array
 const colorMode = useColorMode();
+let colors = ref<string[]>([]);
+provide(colorKey, colors);
+
+// (currently) this is used to change color in threejs objects when theme changes
 let changeDigtalGlobeColor: (newColors: string[]) => void;
 let changeSatelliteColor: (newColors: string[]) => void;
 let changeGraphColor: (newColors: string[]) => void;
 let changeRoomColor: (newColors: string[]) => void;
 
-watch(colorMode, () => {
-  const tmpCanvas = document.createElement("canvas");
-  tmpCanvas.width = tmpCanvas.height = 1;
-  const colors = [
-    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].primary, tmpCanvas),
-    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].secondary, tmpCanvas),
-    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].accent, tmpCanvas),
-  ];
-  if (changeDigtalGlobeColor) changeDigtalGlobeColor(colors);
-  if (changeSatelliteColor) changeSatelliteColor(colors);
-  if (changeGraphColor) changeGraphColor(colors);
-  if (changeRoomColor) changeRoomColor(colors);
-});
-
 // get the latest cluster information from our db
 const nodesResponse: L0Node[] = await $fetch("/api/nodes");
 
 onMounted(async () => {
-  // get the current theme on the page for the threejs objects
-  const tmpCanvas = document.createElement("canvas");
-  tmpCanvas.width = tmpCanvas.height = 1;
-  const colors = [
-    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].primary, tmpCanvas),
-    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].secondary, tmpCanvas),
-    cssColorToHEX(daisyuiColors[<Theme>colorMode.value].accent, tmpCanvas),
-  ];
+  watch(
+    colorMode,
+    () => {
+      const tmp = document.createElement("canvas");
+      tmp.width = tmp.height = 1;
+      colors.value = [];
+      colors.value.push(
+        cssColorToHEX(daisyuiColors[<Theme>colorMode.value].primary, tmp),
+        cssColorToHEX(daisyuiColors[<Theme>colorMode.value].secondary, tmp),
+        cssColorToHEX(daisyuiColors[<Theme>colorMode.value].accent, tmp)
+      );
+      if (changeDigtalGlobeColor) changeDigtalGlobeColor(colors.value);
+      if (changeSatelliteColor) changeSatelliteColor(colors.value);
+      if (changeGraphColor) changeGraphColor(colors.value);
+      if (changeRoomColor) changeRoomColor(colors.value);
+    },
+    { immediate: true }
+  );
 
   // load the threejs scene
   const webglContainer = document.getElementById("webgl-container");
@@ -54,14 +54,14 @@ onMounted(async () => {
     // threejs visualistions
     const $naturalGlobe = useNaturalGlobe($scene.scene, vAtmos, fAtmos, "#54a6ef");
 
-    const $digitalGlobe = useDigitalGlobe($scene.scene, colors);
+    const $digitalGlobe = useDigitalGlobe($scene.scene, colors.value);
     changeDigtalGlobeColor = $digitalGlobe.changeColor;
 
-    const $chartRoom = use3dChartRoom($scene.scene, colors);
+    const $chartRoom = use3dChartRoom($scene.scene, colors.value);
     changeRoomColor = $chartRoom.changeColor;
 
     // create data objects for threejs visualisations
-    const $processedData = useClusterDataProcessor(nodesResponse, colors);
+    const $processedData = useClusterDataProcessor(nodesResponse, colors.value);
     watch($processedData.loaded, async () => {
       const $satellites = useSatellites($scene.scene, $scene.camera, $scene.bloom, {
         satellites: $processedData.satellites,
