@@ -76,8 +76,7 @@ onMounted(async () => {
       changeGraphColor = $clusterGraph.changeColor;
 
       // threejs animations
-      const $theatre = useTheatre();
-      $theatre.init(
+      const $theatre = useTheatre(
         $scene.camera,
         $scene.scene,
         $scene.bloom,

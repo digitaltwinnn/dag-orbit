@@ -16,16 +16,31 @@ type Setting = {
 };
 
 /**
- * A custom hook for managing theatre-related functionality.
- * @returns An object containing various properties and methods related to theatre.
+ * Initializes a theatre for controlling and animating 3D objects in a scene.
+ * @param camera - The camera object.
+ * @param scene - The scene object.
+ * @param bloom - The bloom effect object.
+ * @param lights - An array of light objects.
+ * @param objects - An array of 3D objects.
+ * @returns An object containing sheets that control the prepared animations.
  */
-export const useTheatre = () => {
+export const useTheatre = (
+  camera: Camera,
+  scene: Scene,
+  bloom: SelectiveBloomEffect,
+  lights: Light[],
+  objects: Object3D[]
+) => {
   if (!import.meta.env.PROD) {
     studio.initialize();
   }
   const rafDriver = createRafDriver({ name: "Theatre.js" });
   const project = getProject("Orbit", { state: projectState });
   const intro = project.sheet("Intro");
+  const natural = project.sheet("Natural");
+  const digital = project.sheet("Digital");
+  const network = project.sheet("Network");
+  const transactions = project.sheet("Transactions");
 
   const settings: Setting = {
     range: {
@@ -38,9 +53,9 @@ export const useTheatre = () => {
   };
 
   /**
-   * Initializes the visibility control for an object in a sheet.
-   * @param sheet The sheet containing the visibility control.
-   * @param obj The object to control the visibility of.
+   * Initializes a visibility control for an object in the sheet.
+   * @param sheet The sheet to add the control to
+   * @param obj The object to control the visibility of
    */
   const initVisibility = (sheet: ISheet, obj: Object3D) => {
     const control = sheet.object("visibility / " + obj.name, {
@@ -58,8 +73,8 @@ export const useTheatre = () => {
   };
 
   /**
-   * Initializes the movement control for an object.
-   * @param sheet - The sheet object.
+   * Initializes a movement control for an object in the sheet.
+   * @param sheet - The sheet to add the control to
    * @param obj - The object to control the movement of.
    */
   const initMovement = (sheet: ISheet, obj: Object3D) => {
@@ -112,9 +127,9 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
 */
 
   /**
-   * Initializes a light control using the provided sheet and light object.
-   * @param sheet The sheet object used for creating the light control.
-   * @param light The light object containing the initial values for the control.
+   * Initializes a light control for a light object in the sheet.
+   * @param sheet The sheet to add the control to
+   * @param light The object to control the light of.
    */
   const initLight = (sheet: ISheet, light: Light) => {
     const control = sheet.object("light / " + light.name, {
@@ -142,7 +157,7 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
   };
 
   /**
-   * Initializes the camera with the provided sheet and camera object.
+   * Initializes a camera control for a camera object in the sheet.
    * @param sheet - The sheet object.
    * @param cam - The camera object.
    */
@@ -169,7 +184,7 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
   };
 
   /**
-   * Initializes a scene control using the provided sheet and scene objects.
+   * Initializes a scene control for the scene in the sheet.
    * @param sheet - The sheet object.
    * @param scene - The scene object.
    * @param bloom - The bloom settings.
@@ -210,49 +225,60 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
   };
 
   /**
-   * Initializes the theatre with the given camera, scene, bloom effect, lights, and objects.
-   * @param camera - The camera used in the theatre.
-   * @param scene - The scene used in the theatre.
-   * @param bloom - The bloom effect used in the theatre.
-   * @param lights - The lights used in the theatre.
-   * @param objects - The objects used in the theatre.
+   * Initializes a sheet with all 3d objects it can control and animate.
+   * @param sheet - The sheet to initialize.
+   * @param camera - The camera to initialize.
+   * @param scene - The scene to initialize.
+   * @param bloom - The bloom effect to initialize.
+   * @param lights - The lights to initialize.
+   * @param objects - The objects to initialize.
    */
-  const init = async (
+  const initSheet = async (
+    sheet: ISheet,
     camera: Camera,
     scene: Scene,
     bloom: SelectiveBloomEffect,
     lights: Light[],
     objects: Object3D[]
   ) => {
-    try {
-      initCamera(intro, camera);
-      initScene(intro, scene, bloom);
-      lights.forEach((light) => {
-        initLight(intro, light);
+    initCamera(sheet, camera);
+    initScene(sheet, scene, bloom);
+    lights.forEach((light) => {
+      initLight(sheet, light);
+    });
+    objects.forEach((object) => {
+      initMovement(sheet, object);
+      initVisibility(sheet, object);
+      // initColor(sheet, object);
+      object.children.forEach((child) => {
+        if (child instanceof Object3D) {
+          initMovement(sheet, child);
+          initVisibility(sheet, child);
+        }
+        if (child instanceof Light) {
+          initLight(sheet, child);
+        }
       });
-      objects.forEach((object) => {
-        initMovement(intro, object);
-        initVisibility(intro, object);
-        // initColor(sheet, object);
-        object.children.forEach((child) => {
-          if (child instanceof Object3D) {
-            initMovement(intro, child);
-            initVisibility(intro, child);
-          }
-          if (child instanceof Light) {
-            initLight(intro, child);
-          }
-        });
-      });
-    } catch (e) {
-      console.log(e);
-    }
+    });
   };
+
+  try {
+    initSheet(intro, camera, scene, bloom, lights, objects);
+    initSheet(natural, camera, scene, bloom, lights, objects);
+    initSheet(digital, camera, scene, bloom, lights, objects);
+    initSheet(network, camera, scene, bloom, lights, objects);
+    initSheet(transactions, camera, scene, bloom, lights, objects);
+  } catch (e) {
+    console.log(e);
+  }
 
   return {
     rafDriver,
-    init,
     project,
     intro,
+    natural,
+    digital,
+    network,
+    transactions,
   };
 };
