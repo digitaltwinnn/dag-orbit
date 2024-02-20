@@ -13,6 +13,12 @@ import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLigh
 
 RectAreaLightUniformsLib.init();
 
+/**
+ * Creates a 3D chart room in the given scene with the specified colors.
+ * @param scene - The scene to add the chart room to.
+ * @param colors - An array of colors to use for the walls and lights.
+ * @returns An object containing the room, loaded state, and a function to change the colors.
+ */
 export const use3dChartRoom = (scene: Scene, colors: string[]) => {
   const loaded = ref(false);
   const room = new Group();
@@ -64,7 +70,6 @@ export const use3dChartRoom = (scene: Scene, colors: string[]) => {
     const chart = new CSS3DObject(leftChart);
     chart.position.z = -230;
     chart.position.y = 160;
-    chart.scale.set(0.4, 0.4, 0.4);
     chart.name = "LeftChart";
     room.add(chart);
   }
@@ -74,7 +79,7 @@ export const use3dChartRoom = (scene: Scene, colors: string[]) => {
   const rightWall = new Mesh(rightWallGeometry, wallMaterial);
   rightWall.position.x = 250;
   rightWall.position.y = 175;
-  rightWall.rotation.y = -Math.PI / 2;
+  rightWall.rotation.y = Math.PI / 2;
   rightWall.name = "RightWall";
   room.add(rightWall);
 
@@ -90,8 +95,7 @@ export const use3dChartRoom = (scene: Scene, colors: string[]) => {
     const chart = new CSS3DObject(rightChart);
     chart.position.x = 230;
     chart.position.y = 160;
-    chart.rotation.y = Math.PI / 2;
-    chart.scale.set(0.4, 0.4, 0.4);
+    chart.rotation.y = -Math.PI / 2;
     chart.name = "RightChart";
     room.add(chart);
   }
