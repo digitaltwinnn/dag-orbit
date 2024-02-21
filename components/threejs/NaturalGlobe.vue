@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { gsap } from "gsap";
-import {
-  Color,
-  MathUtils,
-  Mesh,
-  MeshPhongMaterial,
-  Scene,
-  SphereGeometry,
-  TextureLoader,
-} from "three";
-import vAtmos from "~/assets/shaders/atmosphere/vertex.glsl?raw";
-import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
+import { MathUtils, Mesh, MeshPhongMaterial, SphereGeometry, TextureLoader } from "three";
+
+const settings = {
+  radius: 100,
+};
 
 let scene = inject(sceneKey);
 if (!scene) throw new Error("Scene not found");
@@ -18,15 +12,14 @@ if (!scene) throw new Error("Scene not found");
 let colors = inject(colorKey);
 if (!colors) throw new Error("Colors not found");
 
-const settings = {
-  radius: 100,
-  atmosphereColor: new Color("#54a6ef"),
-};
+// Globe
+const globe: Mesh = new Mesh(undefined, undefined);
+globe.name = "NaturalGlobe";
+
+// Sun (needs to be in OnMounted?)
+//const $sun = useSun(globe);
 
 onMounted(() => {
-  const globe: Mesh = new Mesh(undefined, undefined);
-  globe.name = "NaturalGlobe";
-
   const loader = new TextureLoader();
   const $img = useImage();
   const mapImgUrl = $img("/earthmap.jpg", { width: 1536 });
@@ -48,12 +41,6 @@ onMounted(() => {
   globe.material = material;
   scene.add(globe);
 
-  // Sun
-  const $sun = useSun(globe);
-
-  // Atmosphere
-  useAtmosphere(globe, $sun.light, vAtmos, fAtmos, settings.atmosphereColor);
-
   const animate = () => {
     gsap.to(globe.rotation, {
       y: MathUtils.degToRad(360),
@@ -67,5 +54,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div></div>
+  <div>
+    <!--<ThreejsAtmosphere :parent="globe" :light="$sun.light" />-->
+    <ThreejsAtmosphere :parent="globe" />
+  </div>
 </template>
