@@ -66,4 +66,6 @@ onMounted(() => {
 });
 </script>
 
-<template></template>
+<template>
+  <div></div>
+</template>
