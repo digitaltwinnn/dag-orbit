@@ -18,6 +18,7 @@ if (!scene) throw new Error("Scene not found");
 
 let colors = inject(colorKey);
 if (!colors) throw new Error("Colors not found");
+watch(colors, () => changeColor(colors.value));
 
 //let theatre = inject(theatreKey);
 //if (!theatre) throw new Error("Theatre not found");
@@ -83,6 +84,12 @@ rightLight.position.y = 176;
 rightLight.rotation.y = Math.PI / 2;
 rightLight.name = "RightLight";
 room.add(rightLight);
+
+const changeColor = (newColors: string[]) => {
+  wallMaterial.color.set(newColors[1]);
+  leftLight.color.set(newColors[0]);
+  rightLight.color.set(newColors[1]);
+};
 
 onMounted(() => {
   const rightChart = document.getElementById("right-wall");
