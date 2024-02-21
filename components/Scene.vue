@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import vAtmos from "~/assets/shaders/atmosphere/vertex.glsl?raw";
-import fAtmos from "~/assets/shaders/atmosphere/fragment.glsl?raw";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { Theme } from "daisyui";
@@ -52,28 +50,6 @@ onMounted(() => {
     gsap.ticker.add((time, deltaTime, frame) => {
       $scene.tick(deltaTime);
     });
-
-    // threejs visualistions
-    const $naturalGlobe = useNaturalGlobe($scene.scene, vAtmos, fAtmos, "#54a6ef");
-
-    const $digitalGlobe = useDigitalGlobe($scene.scene, colors.value);
-    changeDigtalGlobeColor = $digitalGlobe.changeColor;
-
-    // create data objects for threejs visualisations
-    const $processedData = useClusterDataProcessor(nodesResponse, colors.value);
-    watch($processedData.loaded, async () => {
-      const $satellites = useSatellites($scene.scene, $scene.camera, $scene.bloom, {
-        satellites: $processedData.satellites,
-        edges: $processedData.satelliteEdges,
-      });
-      changeSatelliteColor = $satellites.changeColor;
-
-      const $clusterGraph = useGraph($scene.scene, $scene.bloom, {
-        satellites: $processedData.satellites,
-        edges: $processedData.graphEdges,
-      });
-      changeGraphColor = $clusterGraph.changeColor;
-    });
   }
 });
 </script>
@@ -85,7 +61,7 @@ onMounted(() => {
     <canvas id="webgl-container" class="w-full h-full block absolute z-10"></canvas>
     <!-- html panels visualised and controlled by the css3d renderer -->
     <ThreejsWallCharts />
-    <SatelliteAnnotation />
+    <ThreejsNaturalGlobe />
     <div id="css3d-container" class="w-full h-full block absolute pointer-events-none"></div>
   </div>
 </template>

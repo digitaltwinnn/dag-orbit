@@ -4,7 +4,7 @@ import {
   LensflareElement,
 } from "three/examples/jsm/objects/Lensflare";
 
-export const useSun = async (parent: Object3D) => {
+export const useSun = (parent: Object3D) => {
   const settings = {
     intensity: 1,
   };
