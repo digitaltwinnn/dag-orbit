@@ -10,19 +10,21 @@ gsap.registerPlugin(ScrollTrigger);
 
 // watch for theme changes and update the (reactive) colors array
 const colorMode = useColorMode();
-let colors = ref<string[]>([]);
+let colors = ref<string[]>(["#54a6ef", "#54a6ef", "#54a6ef"]);
 provide(colorKey, colors);
 
 // (currently) this is used to change color in threejs objects when theme changes
 let changeDigtalGlobeColor: (newColors: string[]) => void;
 let changeSatelliteColor: (newColors: string[]) => void;
 let changeGraphColor: (newColors: string[]) => void;
-let changeRoomColor: (newColors: string[]) => void;
+
+const $scene = useScene();
+provide(sceneKey, $scene.scene);
 
 // get the latest cluster information from our db
 const nodesResponse: L0Node[] = await $fetch("/api/nodes");
 
-onMounted(async () => {
+onMounted(() => {
   watch(
     colorMode,
     () => {
@@ -37,16 +39,16 @@ onMounted(async () => {
       if (changeDigtalGlobeColor) changeDigtalGlobeColor(colors.value);
       if (changeSatelliteColor) changeSatelliteColor(colors.value);
       if (changeGraphColor) changeGraphColor(colors.value);
-      if (changeRoomColor) changeRoomColor(colors.value);
     },
     { immediate: true }
   );
 
-  // load the threejs scene
+  // initiate the threejs scene renderer with the html elements
   const webglContainer = document.getElementById("webgl-container");
   const css3dContainer = document.getElementById("css3d-container");
-  if (webglContainer != null && css3dContainer != null) {
-    const $scene = useScene(webglContainer, css3dContainer);
+  const statsContainer = document.getElementById("stats");
+  if (webglContainer && css3dContainer && statsContainer) {
+    $scene.initRenderer(webglContainer, css3dContainer, statsContainer);
     gsap.ticker.add((time, deltaTime, frame) => {
       $scene.tick(deltaTime);
     });
@@ -56,9 +58,6 @@ onMounted(async () => {
 
     const $digitalGlobe = useDigitalGlobe($scene.scene, colors.value);
     changeDigtalGlobeColor = $digitalGlobe.changeColor;
-
-    const $chartRoom = use3dChartRoom($scene.scene, colors.value);
-    changeRoomColor = $chartRoom.changeColor;
 
     // create data objects for threejs visualisations
     const $processedData = useClusterDataProcessor(nodesResponse, colors.value);
@@ -74,34 +73,6 @@ onMounted(async () => {
         edges: $processedData.graphEdges,
       });
       changeGraphColor = $clusterGraph.changeColor;
-
-      // threejs animations
-      const $theatre = useTheatre(
-        $scene.camera,
-        $scene.scene,
-        $scene.bloom,
-        [$scene.light],
-        [
-          $naturalGlobe.globe,
-          $digitalGlobe.globe,
-          $satellites.satellites,
-          $clusterGraph.graph,
-          $chartRoom.room,
-        ]
-      );
-      gsap.ticker.add((time, deltaTime, frame) => {
-        $theatre.rafDriver.tick(deltaTime);
-      });
-      $theatre.project.ready.then(() => {
-        gsap.to($theatre.intro.sequence, {
-          position: 5,
-          scrollTrigger: {
-            trigger: "#panel-2",
-            scrub: 0.6,
-            markers: true,
-          },
-        });
-      });
     });
   }
 });
@@ -113,7 +84,7 @@ onMounted(async () => {
     <!-- canvas that is used by the webgl renderer to draw 3d objects -->
     <canvas id="webgl-container" class="w-full h-full block absolute z-10"></canvas>
     <!-- html panels visualised and controlled by the css3d renderer -->
-    <ChartsPanel />
+    <ThreejsWallCharts />
     <SatelliteAnnotation />
     <div id="css3d-container" class="w-full h-full block absolute pointer-events-none"></div>
   </div>
