@@ -12,7 +12,6 @@ let colors = ref<string[]>(["#54a6ef", "#54a6ef", "#54a6ef"]);
 provide(colorKey, colors);
 
 // (currently) this is used to change color in threejs objects when theme changes
-let changeDigtalGlobeColor: (newColors: string[]) => void;
 let changeSatelliteColor: (newColors: string[]) => void;
 let changeGraphColor: (newColors: string[]) => void;
 
@@ -34,7 +33,6 @@ onMounted(() => {
         cssColorToHEX(daisyuiColors[<Theme>colorMode.value].secondary, tmp),
         cssColorToHEX(daisyuiColors[<Theme>colorMode.value].accent, tmp)
       );
-      if (changeDigtalGlobeColor) changeDigtalGlobeColor(colors.value);
       if (changeSatelliteColor) changeSatelliteColor(colors.value);
       if (changeGraphColor) changeGraphColor(colors.value);
     },
@@ -62,6 +60,7 @@ onMounted(() => {
     <!-- html panels visualised and controlled by the css3d renderer -->
     <ThreejsWallCharts />
     <ThreejsNaturalGlobe />
+    <ThreejsDigitalGlobe />
     <div id="css3d-container" class="w-full h-full block absolute pointer-events-none"></div>
   </div>
 </template>
