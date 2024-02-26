@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { gsap } from "gsap";
-import { MathUtils, Mesh, MeshPhongMaterial, SphereGeometry, TextureLoader } from "three";
+import {
+  MathUtils,
+  Mesh,
+  MeshPhongMaterial,
+  PointLight,
+  SphereGeometry,
+  TextureLoader,
+} from "three";
 
 const settings = {
   radius: 100,
@@ -12,12 +19,14 @@ if (!scene) throw new Error("Scene not found");
 let colors = inject(colorKey);
 if (!colors) throw new Error("Colors not found");
 
-// Globe
 const globe: Mesh = new Mesh(undefined, undefined);
 globe.name = "NaturalGlobe";
+scene.add(globe);
 
-// Sun (needs to be in OnMounted?)
-//const $sun = useSun(globe);
+const light = new PointLight(0xffffff);
+light.name = "Sun";
+light.position.set(1000, 0, 1000);
+globe.add(light);
 
 onMounted(() => {
   const loader = new TextureLoader();
@@ -39,7 +48,6 @@ onMounted(() => {
 
   globe.geometry = geometry;
   globe.material = material;
-  scene.add(globe);
 
   const animate = () => {
     gsap.to(globe.rotation, {
@@ -55,7 +63,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <!--<ThreejsAtmosphere :parent="globe" :light="$sun.light" />-->
-    <ThreejsAtmosphere :parent="globe" />
+    <ThreejsSun :light="light" />
+    <ThreejsAtmosphere :parent="globe" :light="light" />
   </div>
 </template>

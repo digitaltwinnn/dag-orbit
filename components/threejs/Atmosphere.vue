@@ -18,12 +18,10 @@ const props = defineProps({
     type: Object3D,
     required: true,
   },
-  /* TODO
   light: {
     type: PointLight,
     required: true,
   },
-  */
 });
 
 const settings = {
@@ -38,19 +36,13 @@ if (!scene) throw new Error("Scene not found");
 let colors = inject(colorKey);
 if (!colors) throw new Error("Colors not found");
 
-// TODO use the sun (from parent component)
-const light = new PointLight(0xffffff);
-light.name = "Sun";
-light.intensity = 1;
-light.position.set(1000, 0, 1000);
-
 const atmosphereGeometry = new SphereGeometry(settings.outerRadius, 64, 64);
 const uniforms = {
   earthCenter: new Uniform(props.parent.position),
   earthRadius: new Uniform(settings.innerRadius),
   atmosphereRadius: new Uniform(settings.outerRadius),
   atmosphereColor: new Uniform(new Vector3().setFromColor(settings.color)),
-  lightDirection: new Uniform(light.position),
+  lightDirection: new Uniform(props.light.position),
 };
 const atmosphereMaterial = new ShaderMaterial({
   uniforms: uniforms,
