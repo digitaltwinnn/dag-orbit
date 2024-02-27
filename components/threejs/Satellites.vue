@@ -48,7 +48,6 @@ const satellites = new InstancedMesh(
 );
 satellites.name = "Satellites";
 satellites.count = 0;
-const loaded = ref(false);
 
 /**
  * Creates a globe geometry based on the data of satellites.
@@ -122,7 +121,7 @@ const changeColor = (newColors: string[]) => {
 };
 
 /**
- * Animates the satellites.
+ * Animates the satellites by rotating them continuously.
  */
 const animate = () => {
   gsap.to(satellites.rotation, {
@@ -168,5 +167,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div><ThreejsSatelliteEdges :parent="satellites" :satellites="sats" :edges="edges" /></div>
+  <div>
+    <ThreejsSatelliteAnnotation
+      v-for="satellite in sats.slice(0, 5)"
+      :key="satellite.node.ip"
+      :id="satellite.node.ip.toString()"
+      :parent="satellites"
+      :satellite="satellite"
+    />
+    <ThreejsSatelliteEdges :parent="satellites" :satellites="sats" :edges="edges" />
+  </div>
 </template>

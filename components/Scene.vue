@@ -13,6 +13,7 @@ provide(colorKey, colors);
 
 const $scene = useScene();
 provide(sceneKey, $scene.scene);
+provide(cameraKey, $scene.camera);
 provide(bloomKey, $scene.bloom);
 
 // get the latest cluster information from our db
