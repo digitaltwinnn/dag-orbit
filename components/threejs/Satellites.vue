@@ -19,27 +19,35 @@ const props = defineProps({
   },
 });
 
-const sats: Satellite[] = [];
-const edges: Edge[] = [];
-
 const settings = {
   satellite: {
     size: 2,
+    maxCount: 1000,
   },
 };
 
 let scene = inject(sceneKey);
 if (!scene) throw new Error("Scene not found");
 
-let bloom = inject(bloomKey);
-if (!bloom) throw new Error("Bloom effect not found");
-
 let colors = inject(colorKey);
 if (!colors) throw new Error("Colors not found");
-let changeEdgeColor: (satellites: Satellite[]) => void;
 watch(colors, () => changeColor(colors.value));
 
-let satellites = new InstancedMesh(undefined, undefined, 0);
+const sats: Ref<Satellite[]> = ref([]);
+const edges: Ref<Edge[]> = ref([]);
+
+const cube = new BoxGeometry(
+  settings.satellite.size,
+  settings.satellite.size,
+  settings.satellite.size
+);
+const satellites = new InstancedMesh(
+  new InstancedBufferGeometry().copy(cube),
+  new MeshBasicMaterial({ transparent: true }),
+  settings.satellite.maxCount
+);
+satellites.name = "Satellites";
+satellites.count = 0;
 const loaded = ref(false);
 
 /**
@@ -48,18 +56,18 @@ const loaded = ref(false);
  */
 const createGlobeGeometry = (): BufferGeometry => {
   const geometry = new BufferGeometry();
-  const positions = new Float32Array(sats.length * 3);
+  const positions = new Float32Array(sats.value.length * 3);
 
-  sats.sort((s1, s2) => {
+  sats.value.sort((s1, s2) => {
     return s1.mode.globe.visible === s2.mode.globe.visible ? 0 : s1.mode.globe.visible ? -1 : 1;
   });
-  const visibleSatellites = sats.filter((s) => {
+  const visibleSatellites = sats.value.filter((s) => {
     return s.mode.globe.visible;
   }).length;
   geometry.userData = { visibleSatellites: visibleSatellites };
 
   let i3 = 0;
-  sats.map((sat) => {
+  sats.value.map((sat) => {
     positions[i3++] = sat.mode.globe.vector.x;
     positions[i3++] = sat.mode.globe.vector.y;
     positions[i3++] = sat.mode.globe.vector.z;
@@ -74,18 +82,18 @@ const createGlobeGeometry = (): BufferGeometry => {
  */
 const createGraphGeometry = () => {
   const geometry = new BufferGeometry();
-  const positions = new Float32Array(sats.length * 3);
+  const positions = new Float32Array(sats.value.length * 3);
 
   // always visible
-  sats.sort((s1, s2) => {
+  sats.value.sort((s1, s2) => {
     return s1.mode.graph.visible === s2.mode.graph.visible ? 0 : s1.mode.graph.visible ? -1 : 1;
   });
-  const visibleSatellites = sats.filter((s) => {
+  const visibleSatellites = sats.value.filter((s) => {
     return s.mode.graph.visible;
   }).length;
 
   let i3 = 0;
-  sats.forEach((sat) => {
+  sats.value.forEach((sat) => {
     positions[i3++] = sat.mode.graph.vector.x;
     positions[i3++] = sat.mode.graph.vector.y;
     positions[i3++] = sat.mode.graph.vector.z;
@@ -93,41 +101,6 @@ const createGraphGeometry = () => {
   geometry.setAttribute("position", new BufferAttribute(positions, 3));
   geometry.userData = { visibleSatellites: visibleSatellites };
   return geometry;
-};
-
-/**
- * Creates an InstancedMesh object from a BufferGeometry object.
- * @param geometry - The BufferGeometry object to create the InstancedMesh from.
- * @returns The created InstancedMesh object.
- */
-const instancedMeshFromGeometry = (geometry: BufferGeometry): InstancedMesh => {
-  const instances = geometry.attributes.position.array.length / 3;
-  const cube = new BoxGeometry(
-    settings.satellite.size,
-    settings.satellite.size,
-    settings.satellite.size
-  );
-  const instancedCube = new InstancedBufferGeometry().copy(cube);
-  const material = new MeshBasicMaterial({ transparent: true });
-  let mesh = new InstancedMesh(instancedCube, material, instances);
-  mesh.name = "Satellites";
-
-  const dummy = new Object3D();
-  const color = new Color();
-  let i3 = 0;
-  for (let i = 0; i < instances; i++) {
-    dummy.position.set(
-      geometry.attributes.position.array[i3++],
-      geometry.attributes.position.array[i3++],
-      geometry.attributes.position.array[i3++]
-    );
-    dummy.lookAt(0, 0, 0);
-    dummy.updateMatrix();
-    mesh.setMatrixAt(i, dummy.matrix);
-    mesh.setColorAt(i, color.set(sats[i].color));
-  }
-
-  return mesh;
 };
 
 /**
@@ -139,15 +112,13 @@ const changeColor = (newColors: string[]) => {
   let i = 0;
 
   if (satellites.instanceColor) {
-    sats.forEach((sat) => {
+    sats.value.forEach((sat) => {
       color.set(newColors[MathUtils.randInt(0, newColors.length - 1)]);
       sat.color = color.clone();
       satellites.setColorAt(i++, sat.color);
     });
     satellites.instanceColor.needsUpdate = true;
   }
-
-  if (changeEdgeColor) changeEdgeColor(sats);
 };
 
 /**
@@ -165,24 +136,37 @@ const animate = () => {
 onMounted(() => {
   const $data = useClusterDataProcessor(props.nodes, colors.value);
   watch($data.loaded, () => {
-    sats.push(...$data.satellites);
-    edges.push(...$data.satelliteEdges);
+    sats.value.push(...$data.satellites);
+    edges.value.push(...$data.satelliteEdges);
 
-    // Satellites
-    const orientation = createGlobeGeometry();
-    satellites = instancedMeshFromGeometry(orientation);
-    satellites.count = orientation.userData.visibleSatellites;
+    const templateGeometry = createGlobeGeometry();
+    satellites.count = templateGeometry.userData.visibleSatellites;
+    const maxInstances = templateGeometry.attributes.position.array.length / 3;
+
+    if (maxInstances > settings.satellite.maxCount)
+      throw new Error("Maximum satellite count exceeded");
+
+    const dummy = new Object3D();
+    const color = new Color();
+    let i3 = 0;
+    for (let i = 0; i < maxInstances; i++) {
+      dummy.position.set(
+        templateGeometry.attributes.position.array[i3++],
+        templateGeometry.attributes.position.array[i3++],
+        templateGeometry.attributes.position.array[i3++]
+      );
+      dummy.lookAt(0, 0, 0);
+      dummy.updateMatrix();
+      satellites.setMatrixAt(i, dummy.matrix);
+      satellites.setColorAt(i, color.set(sats.value[i].color));
+    }
+
     scene.add(satellites);
-
-    // Edges
-    const $edges = useSatelliteEdges(satellites, bloom, edges);
-    changeEdgeColor = $edges.changeColor;
-
     animate();
   });
 });
 </script>
 
 <template>
-  <div></div>
+  <div><ThreejsSatelliteEdges :parent="satellites" :satellites="sats" :edges="edges" /></div>
 </template>
