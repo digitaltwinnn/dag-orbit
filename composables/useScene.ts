@@ -28,7 +28,7 @@ const settings = {
   },
 };
 
-// Scene
+// Scene singleton
 const scene = new Scene();
 scene.name = "Scene";
 const light = new AmbientLight(0xffffff);
@@ -36,7 +36,7 @@ light.name = "Ambient";
 light.intensity = settings.scene.light.intensity;
 scene.add(light);
 
-// Camera
+// Camera singleton
 const camera = new PerspectiveCamera();
 camera.position.set(
   settings.camera.position.x,
@@ -45,18 +45,26 @@ camera.position.set(
 );
 camera.up.set(0, 1, 0);
 
-// Bloom
+// Bloom singleton
 const bloom = new SelectiveBloomEffect(scene, camera, {
   luminanceThreshold: settings.bloom.luminanceThreshold,
   luminanceSmoothing: settings.bloom.luminanceSmoothing,
   intensity: settings.bloom.intensity,
 });
+
+// Renderer singletons
 let stats: any;
 let css3dRenderer: CSS3DRenderer;
 let webglRenderer: WebGLRenderer;
 let webglComposer: EffectComposer;
 let controls: OrbitControls;
 
+/**
+ * Initializes the renderer and sets up the necessary components for rendering.
+ * @param webglContainer - The HTML element that will contain the WebGL renderer.
+ * @param css3dContainer - The HTML element that will contain the CSS3D renderer.
+ * @param statsContainer - The HTML element that will contain the performance stats.
+ */
 const initRenderer = (
   webglContainer: HTMLElement,
   css3dContainer: HTMLElement,
@@ -104,29 +112,35 @@ const initRenderer = (
   });
 };
 
-const resizeRenderer = (webgl: WebGLRenderer, css3d: CSS3DRenderer) => {
-  const canvas = webgl.domElement;
-  const pixelRatio = window.devicePixelRatio;
+/**
+ * Checks if the renderer needs to be resized based on the canvas dimensions.
+ * @param canvas - The HTML canvas element.
+ * @returns True if the renderer needs to be resized
+ */
+const resizeRenderer = (canvas: HTMLCanvasElement) => {
+  //const pixelRatio = window.devicePixelRatio;
   // const width  = canvas.clientWidth  * pixelRatio | 0;
   // const height = canvas.clientHeight * pixelRatio | 0;
   const width = canvas.clientWidth | 0;
   const height = canvas.clientHeight | 0;
-  const needResize = canvas.width !== width || canvas.height !== height;
-  if (needResize) {
-    webgl.setSize(width, height, false);
-    css3d.setSize(width, height);
-    // camera.aspect = width / height;
-  }
-  return needResize;
+
+  return canvas.width !== width || canvas.height !== height;
 };
 
+/**
+ * Executes the tick function to render the scene.
+ * @param deltaTime - The time elapsed since the last frame in milliseconds.
+ */
 const tick = (deltaTime: number) => {
   stats.begin();
   if (controls.enabled) {
     controls.update();
   }
-  if (resizeRenderer(webglRenderer, css3dRenderer)) {
-    const canvas = webglRenderer.domElement;
+
+  const canvas = webglRenderer.domElement;
+  if (resizeRenderer(canvas)) {
+    webglRenderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+    css3dRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
   }
