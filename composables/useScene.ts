@@ -3,6 +3,7 @@ import { AmbientLight, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
+import { gsap } from "gsap";
 
 const settings = {
   renderer: {
@@ -28,7 +29,6 @@ const settings = {
 };
 
 // Scene
-const loaded = ref(false);
 const scene = new Scene();
 scene.name = "Scene";
 const light = new AmbientLight(0xffffff);
@@ -98,6 +98,10 @@ const initRenderer = (
   stats.dom.removeAttribute("style");
   statsContainer.appendChild(stats.dom);
   stats.showPanel(0);
+
+  gsap.ticker.add((deltaTime) => {
+    tick(deltaTime);
+  });
 };
 
 const resizeRenderer = (webgl: WebGLRenderer, css3d: CSS3DRenderer) => {
@@ -133,12 +137,10 @@ const tick = (deltaTime: number) => {
 
 export const useScene = () => {
   return {
-    loaded,
     initRenderer,
     camera,
     scene,
     bloom,
     light,
-    tick,
   };
 };
