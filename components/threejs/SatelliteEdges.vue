@@ -49,23 +49,6 @@ const edges = new LineSegments(
 edges.name = "SatelliteEdges";
 props.parent.add(edges);
 
-const loaded = ref(false);
-watch(props.satellites, async () => {
-  if (loaded.value) {
-    changeColor();
-  } else {
-    const vertices = await createVerticesInWorker();
-    const geometry = new BufferGeometry();
-    geometry.setAttribute("position", new Float32BufferAttribute(vertices.points, 3));
-    geometry.setAttribute("color", new Float32BufferAttribute(vertices.colors, 3));
-    geometry.setIndex(new Uint16BufferAttribute(vertices.indices, 1));
-    edges.geometry = geometry;
-    bloom.selection.add(edges);
-    animate();
-    loaded.value = true;
-  }
-});
-
 /**
  * Animate edges by moving highlighted sections back and forth across the edge nodes continueously.
  */
@@ -179,6 +162,23 @@ const createVerticesInWorker = (): Promise<GeometryVertices> => {
     });
   });
 };
+
+const loaded = ref(false);
+watch(props.satellites, async () => {
+  if (loaded.value) {
+    changeColor();
+  } else {
+    const vertices = await createVerticesInWorker();
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new Float32BufferAttribute(vertices.points, 3));
+    geometry.setAttribute("color", new Float32BufferAttribute(vertices.colors, 3));
+    geometry.setIndex(new Uint16BufferAttribute(vertices.indices, 1));
+    edges.geometry = geometry;
+    bloom.selection.add(edges);
+    animate();
+    loaded.value = true;
+  }
+});
 </script>
 
 <template>
