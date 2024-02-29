@@ -42,9 +42,6 @@ const settings = {
 let bloom = inject(bloomKey);
 if (!bloom) throw new Error("Bloom effect not found");
 
-let colors = inject(colorKey);
-if (!colors) throw new Error("Colors not found");
-
 const edges = new LineSegments(
   undefined,
   new LineBasicMaterial({ vertexColors: true, transparent: true })
@@ -57,7 +54,7 @@ watch(props.satellites, async () => {
   if (loaded.value) {
     changeColor();
   } else {
-    const vertices = await getVerticesFromWorker();
+    const vertices = await createVerticesInWorker();
     const geometry = new BufferGeometry();
     geometry.setAttribute("position", new Float32BufferAttribute(vertices.points, 3));
     geometry.setAttribute("color", new Float32BufferAttribute(vertices.colors, 3));
@@ -69,6 +66,9 @@ watch(props.satellites, async () => {
   }
 });
 
+/**
+ * Animate edges by moving highlighted sections back and forth across the edge nodes continueously.
+ */
 const animate = () => {
   const edgePoints = settings.edge.animation.points;
   let max = settings.edge.points;
@@ -112,12 +112,20 @@ const animate = () => {
   });
 };
 
+/**
+ * Changes the color of the satellite edges.
+ * @async because it is using a worker to generate the color vertices.
+ */
 const changeColor = async () => {
-  const colors = await getColorsFromWorker();
+  const colors = await createColorsInWorker();
   edges.geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
 };
 
-const getColorsFromWorker = (): Promise<ArrayBuffer> => {
+/**
+ * Creates the colors in a web worker separate from the main thread
+ * @returns {Promise<ArrayBuffer>} A promise that resolves to an ArrayBuffer containing the colors.
+ */
+const createColorsInWorker = (): Promise<ArrayBuffer> => {
   return new Promise((resolve, reject) => {
     const worker = new lineSegmentsWorker();
     worker.postMessage({
@@ -142,7 +150,11 @@ const getColorsFromWorker = (): Promise<ArrayBuffer> => {
   });
 };
 
-const getVerticesFromWorker = (): Promise<GeometryVertices> => {
+/**
+ * Creates the vertices in a web worker separate from the main thread
+ * @returns {Promise<GeometryVertices>} A Promise that resolves to the GeometryVertices object.
+ */
+const createVerticesInWorker = (): Promise<GeometryVertices> => {
   return new Promise((resolve, reject) => {
     const worker = new lineSegmentsWorker();
     worker.postMessage({

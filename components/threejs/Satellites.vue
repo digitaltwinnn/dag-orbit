@@ -48,6 +48,7 @@ const satellites = new InstancedMesh(
 );
 satellites.name = "Satellites";
 satellites.count = 0;
+scene.add(satellites);
 
 /**
  * Creates a globe geometry based on the data of satellites.
@@ -160,8 +161,10 @@ onMounted(() => {
       satellites.setColorAt(i, color.set(sats.value[i].color));
     }
 
-    scene.add(satellites);
     animate();
+
+    const $theatre = useTheatre();
+    $theatre.registration.registerSatellites(satellites);
   });
 });
 </script>
