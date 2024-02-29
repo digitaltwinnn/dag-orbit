@@ -16,9 +16,6 @@ const settings = {
 let scene = inject(sceneKey);
 if (!scene) throw new Error("Scene not found");
 
-let colors = inject(colorKey);
-if (!colors) throw new Error("Colors not found");
-
 const globe: Mesh = new Mesh(undefined, undefined);
 globe.name = "NaturalGlobe";
 scene.add(globe);
@@ -27,6 +24,18 @@ const light = new PointLight(0xffffff);
 light.name = "Sun";
 light.position.set(1000, 0, 1000);
 globe.add(light);
+
+/**
+ * Animate the globe by rotating it.
+ */
+const animate = () => {
+  gsap.to(globe.rotation, {
+    y: MathUtils.degToRad(360),
+    duration: 60,
+    repeat: -1,
+    ease: "linear",
+  });
+};
 
 onMounted(() => {
   const loader = new TextureLoader();
@@ -45,18 +54,12 @@ onMounted(() => {
     bumpScale: 1,
     transparent: true,
   });
-
   globe.geometry = geometry;
   globe.material = material;
 
-  const animate = () => {
-    gsap.to(globe.rotation, {
-      y: MathUtils.degToRad(360),
-      duration: 60,
-      repeat: -1,
-      ease: "linear",
-    });
-  };
+  const $theatre = useTheatre();
+  $theatre.registration.registerNaturalGlobe(globe, light);
+
   animate();
 });
 </script>
