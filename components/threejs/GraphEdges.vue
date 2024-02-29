@@ -33,27 +33,20 @@ const edges = new LineSegments(
 edges.name = "GraphEdges";
 props.parent.add(edges);
 
-const loaded = ref(false);
-watch(props.satellites, async () => {
-  if (loaded.value) {
-    changeColor();
-  } else {
-    const vertices = await getVerticesFromWorker();
-    const geometry = new BufferGeometry();
-    geometry.setAttribute("position", new Float32BufferAttribute(vertices.points, 3));
-    geometry.setAttribute("color", new Float32BufferAttribute(vertices.colors, 3));
-    geometry.setIndex(new Uint16BufferAttribute(vertices.indices, 1));
-    edges.geometry = geometry;
-    loaded.value = true;
-  }
-});
-
+/**
+ * Changes the color of the graph edges.
+ * @async because it is using a worker to generate the color vertices.
+ */
 const changeColor = async () => {
-  const colors = await getColorsFromWorker();
+  const colors = await createColorsInWorker();
   edges.geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
 };
 
-const getColorsFromWorker = (): Promise<ArrayBuffer> => {
+/**
+ * Creates colors in a web worker separate from the main thread.
+ * @returns {Promise<ArrayBuffer>} A promise that resolves to an ArrayBuffer containing the colors.
+ */
+const createColorsInWorker = (): Promise<ArrayBuffer> => {
   return new Promise((resolve, reject) => {
     const worker = new lineSegmentsWorker();
     worker.postMessage({
@@ -78,7 +71,11 @@ const getColorsFromWorker = (): Promise<ArrayBuffer> => {
   });
 };
 
-const getVerticesFromWorker = (): Promise<GeometryVertices> => {
+/**
+ * Creates vertices in a web worker separate from the main thread.
+ * @returns {Promise<GeometryVertices>} A promise that resolves to the geometry vertices.
+ */
+const createVerticesInWorker = (): Promise<GeometryVertices> => {
   return new Promise((resolve, reject) => {
     const worker = new lineSegmentsWorker();
     worker.postMessage({
@@ -103,6 +100,21 @@ const getVerticesFromWorker = (): Promise<GeometryVertices> => {
     });
   });
 };
+
+const loaded = ref(false);
+watch(props.satellites, async () => {
+  if (loaded.value) {
+    changeColor();
+  } else {
+    const vertices = await createVerticesInWorker();
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new Float32BufferAttribute(vertices.points, 3));
+    geometry.setAttribute("color", new Float32BufferAttribute(vertices.colors, 3));
+    geometry.setIndex(new Uint16BufferAttribute(vertices.indices, 1));
+    edges.geometry = geometry;
+    loaded.value = true;
+  }
+});
 </script>
 
 <template>
