@@ -20,16 +20,12 @@ let colors = inject(colorKey);
 if (!colors) throw new Error("Colors not found");
 watch(colors, () => changeColor(colors.value));
 
-//let theatre = inject(theatreKey);
-//if (!theatre) throw new Error("Theatre not found");
-
 const room = new Group();
 room.rotation.y = MathUtils.degToRad(45);
 room.scale.set(1.2, 1.2, 1.2);
 room.position.y = -150;
 room.name = "Room";
 scene.add(room);
-//theatre.add(room);
 
 const floorMaterial = new MeshStandardMaterial({
   color: "#bcc6cc",
@@ -92,30 +88,32 @@ const changeColor = (newColors: string[]) => {
 };
 
 onMounted(() => {
-  const rightChart = document.getElementById("right-wall");
-  if (rightChart) {
-    const chart = new CSS3DObject(rightChart);
-    chart.position.x = 230;
-    chart.position.y = 160;
-    chart.rotation.y = -Math.PI / 2;
-    chart.name = "RightChart";
-    room.add(chart);
-  }
-  const leftChart = document.getElementById("left-wall");
-  if (leftChart) {
-    const chart = new CSS3DObject(leftChart);
-    chart.position.z = -230;
-    chart.position.y = 160;
-    chart.name = "LeftChart";
-    room.add(chart);
-  }
+  const leftCharts = document.getElementById("left-charts");
+  const rightCharts = document.getElementById("right-charts");
+  if (!leftCharts || !rightCharts) throw new Error("Chart elements not found");
+
+  const left = new CSS3DObject(leftCharts);
+  left.position.z = -230;
+  left.position.y = 160;
+  left.name = "LeftCharts";
+  room.add(left);
+
+  const right = new CSS3DObject(rightCharts);
+  right.position.x = 230;
+  right.position.y = 160;
+  right.rotation.y = -Math.PI / 2;
+  right.name = "RightCharts";
+  room.add(right);
+
+  const $theatre = useTheatre();
+  $theatre.registration.registerControlRoom(room);
 });
 </script>
 
 <template>
   <div class="flow-row items-center justify-center">
     <div
-      id="left-wall"
+      id="left-charts"
       class="grid grid-cols-2 grid-rows-2 gap-4 bg-primary border-2 border-secondary rounded-box"
     >
       <ChartsBarExample id="bar1" :colors="colors" :static="false" />
@@ -124,7 +122,7 @@ onMounted(() => {
       <ChartsBarExample id="bar4" :colors="colors" :static="true" />
     </div>
     <div
-      id="right-wall"
+      id="right-charts"
       class="grid grid-cols-2 grid-rows-2 gap-4 bg-secondary border-2 border-primary rounded-box"
     >
       <ChartsBarExample id="bar5" :colors="colors.slice().reverse()" :static="true" />

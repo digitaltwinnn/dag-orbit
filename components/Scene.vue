@@ -46,7 +46,7 @@ onMounted(() => {
     <div id="stats" class="top-20 left-4 absolute" />
     <!-- canvas that is used by the webgl renderer to draw 3d objects -->
     <canvas id="webgl-container" class="w-full h-full block absolute z-10"></canvas>
-    <ThreejsWallCharts />
+    <ThreejsControlRoom />
     <ThreejsNaturalGlobe />
     <ThreejsDigitalGlobe />
     <ThreejsSatellites :nodes="nodes" />
