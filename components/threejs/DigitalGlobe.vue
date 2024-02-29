@@ -22,20 +22,33 @@ let colors = inject(colorKey);
 if (!colors) throw new Error("Colors not found");
 watch(colors, () => changeColor(colors.value));
 
-const createGlobeOrientedGeometry = (): BufferGeometry => {
+/**
+ * Creates a globe geometry.
+ * @returns {BufferGeometry} The created globe geometry.
+ */
+const createGlobeGeometry = (): BufferGeometry => {
   const geometry = new BufferGeometry();
   geometry.setAttribute("position", dotsToPositions(globedots));
   geometry.setAttribute("rotation", rotatePositionsToGlobe(geometry));
   return geometry;
 };
 
-const createMapOrientedGeometry = (): BufferGeometry => {
+/**
+ * Creates a map geometry.
+ * @returns {BufferGeometry} The created map geometry.
+ */
+const createMapGeometry = (): BufferGeometry => {
   const geometry = new BufferGeometry();
   geometry.setAttribute("position", dotsToPositions(mapdots));
   geometry.setAttribute("rotation", rotatePositionsToMap(geometry));
   return geometry;
 };
 
+/**
+ * Converts an array of dots to a BufferAttribute of positions.
+ * @param {Dot[]} dots - The array of dots to convert.
+ * @returns {BufferAttribute} - The BufferAttribute of positions.
+ */
 const dotsToPositions = (dots: Dot[]): BufferAttribute => {
   const position = new Float32Array(dots.length * 3);
   let i3 = 0;
@@ -49,6 +62,11 @@ const dotsToPositions = (dots: Dot[]): BufferAttribute => {
   return new BufferAttribute(position, 3);
 };
 
+/**
+ * Rotates the positions of a geometry to align with the globe.
+ * @param {BufferGeometry} geom - The geometry to rotate.
+ * @returns {BufferAttribute} - The rotated geometry.
+ */
 const rotatePositionsToGlobe = (geom: BufferGeometry): BufferAttribute => {
   const rotation = new Float32Array(geom.attributes.position.array.length);
   const dummy = new Object3D();
@@ -68,6 +86,11 @@ const rotatePositionsToGlobe = (geom: BufferGeometry): BufferAttribute => {
   return new BufferAttribute(rotation, 3);
 };
 
+/**
+ * Rotates the positions of a geometry to the map.
+ * @param {BufferGeometry} geom - The geometry to convert.
+ * @returns {BufferAttribute} - The converted geometry positions as a buffer attribute.
+ */
 const rotatePositionsToMap = (geom: BufferGeometry): BufferAttribute => {
   const rotation = new Float32Array(geom.attributes.position.array.length);
   const dummy = new Object3D();
@@ -81,6 +104,11 @@ const rotatePositionsToMap = (geom: BufferGeometry): BufferAttribute => {
   return new BufferAttribute(rotation, 3);
 };
 
+/**
+ * Creates an instanced mesh from a given geometry.
+ * @param {BufferGeometry} geometry - The geometry to create the instanced mesh from.
+ * @returns {InstancedMesh} The created instanced mesh.
+ */
 const instancedMeshFromGeometry = (geometry: BufferGeometry): InstancedMesh => {
   const instances = geometry.attributes.position.array.length / 3;
   const circle = new CircleGeometry(0.7, 6);
@@ -114,38 +142,50 @@ const instancedMeshFromGeometry = (geometry: BufferGeometry): InstancedMesh => {
   return mesh;
 };
 
+/**
+ * Transforms the geometry to a globe.
+ */
 const transformToGlobe = () => {
   let subject: number[] = [];
   let end: number[] = [];
 
   subject = concatBufferAttributes(
-    mapOrientation.attributes.position.array,
-    mapOrientation.attributes.rotation.array
+    mapGeometry.attributes.position.array,
+    mapGeometry.attributes.rotation.array
   );
   end = concatBufferAttributes(
-    globeOrientation.attributes.position.array,
-    globeOrientation.attributes.rotation.array
+    globeGeometry.attributes.position.array,
+    globeGeometry.attributes.rotation.array
   );
 
   animateTransformation(subject, end);
 };
 
+/**
+ * Transforms the geometry to a map.
+ */
 const transformToMap = () => {
   let subject: number[] = [];
   let end: number[] = [];
 
   subject = concatBufferAttributes(
-    globeOrientation.attributes.position.array,
-    globeOrientation.attributes.rotation.array
+    globeGeometry.attributes.position.array,
+    globeGeometry.attributes.rotation.array
   );
   end = concatBufferAttributes(
-    mapOrientation.attributes.position.array,
-    mapOrientation.attributes.rotation.array
+    mapGeometry.attributes.position.array,
+    mapGeometry.attributes.rotation.array
   );
 
   animateTransformation(subject, end);
 };
 
+/**
+ * Concatenates two buffer attributes.
+ * @param a - The first buffer attribute.
+ * @param b - The second buffer attribute.
+ * @returns The concatenated buffer attribute.
+ */
 const concatBufferAttributes = (a: ArrayLike<number>, b: ArrayLike<number>): number[] => {
   const array: any[] = [];
   for (let i = 0; i < a.length; i++) {
@@ -157,6 +197,11 @@ const concatBufferAttributes = (a: ArrayLike<number>, b: ArrayLike<number>): num
   return array;
 };
 
+/**
+ * Animates the transformation from one array of vertices to another.
+ * @param {number[]} subject - The subject to be transformed.
+ * @param {number[]} end - The end state of the transformation.
+ */
 const animateTransformation = (subject: number[], end: number[]) => {
   const dummy = new Object3D();
   let p3, r3;
@@ -178,6 +223,10 @@ const animateTransformation = (subject: number[], end: number[]) => {
   });
 };
 
+/**
+ * Changes the color of the DigitalGlobe.
+ * @param {string[]} newColors - An array of new colors to apply.
+ */
 const changeColor = (newColors: string[]) => {
   let color = new Color();
   for (let i = 0; i < globe.count; i++) {
@@ -189,6 +238,9 @@ const changeColor = (newColors: string[]) => {
   }
 };
 
+/**
+ * Animates the DigitalGlobe by rotating it and changing the dot colors at random intervals.
+ */
 const animate = () => {
   const color = new Color();
   const animateColors = () => {
@@ -211,16 +263,19 @@ const animate = () => {
     ease: "linear",
   });
 };
-const globeOrientation = createGlobeOrientedGeometry();
-const mapOrientation = createMapOrientedGeometry();
 
-const orientation = globeOrientation;
-const globe = instancedMeshFromGeometry(orientation);
+const globeGeometry = createGlobeGeometry();
+const mapGeometry = createMapGeometry();
+const activeGeometry = globeGeometry;
+const globe = instancedMeshFromGeometry(activeGeometry);
 globe.name = "DigitalGlobe";
 scene.add(globe);
 animate();
 
-//onMounted(() => {});
+onMounted(() => {
+  const $theatre = useTheatre();
+  $theatre.registration.registerDigtalGlobe(globe);
+});
 </script>
 
 <template>
