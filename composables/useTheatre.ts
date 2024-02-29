@@ -148,10 +148,13 @@ export const useTheatre = () => {
 
   /**
    * Initializes a visibility control for an object in the sheet.
-   * @param sheet The sheet to add the control to
-   * @param obj The object to control the visibility of
+   * @param sheet The sheet to add the control to.
+   * @param obj The object to control the visibility of.
+   * @throws Error if the object does not have a name.
    */
   const initVisibility = (sheet: ISheet, obj: Object3D) => {
+    if (!obj.name) throw new Error("Object must have a name");
+
     const control = sheet.object("visibility / " + obj.name, {
       visible: types.boolean(true, { label: "Visible" }),
       /*
@@ -174,10 +177,13 @@ export const useTheatre = () => {
 
   /**
    * Initializes a movement control for an object in the sheet.
-   * @param sheet - The sheet to add the control to
+   * @param sheet - The sheet to add the control to.
    * @param obj - The object to control the movement of.
+   * @throws Error if the object does not have a name.
    */
   const initMovement = (sheet: ISheet, obj: Object3D) => {
+    if (!obj.name) throw new Error("Object must have a name");
+
     const control = sheet.object("movement / " + obj.name, {
       rotation: types.compound({
         x: types.number(obj.rotation.x, { range: settings.range.rotation }),
@@ -234,10 +240,13 @@ const initColor = (sheet: ISheet, obj: Object3D): ISheetObject<any> => {
 
   /**
    * Initializes a light control for a light object in the sheet.
-   * @param sheet The sheet to add the control to
+   * @param sheet The sheet to add the control to.
    * @param light The object to control the light of.
+   * @throws Error if the light does not have a name.
    */
   const initLight = (sheet: ISheet, light: Light) => {
+    if (!light.name) throw new Error("Object must have a name");
+
     const control = sheet.object("light / " + light.name, {
       position: types.compound({
         x: types.number(light.position.x, { range: settings.range.position }),

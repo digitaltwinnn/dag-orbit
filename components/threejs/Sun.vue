@@ -27,6 +27,7 @@ onMounted(() => {
   const purple = new Color("purple");
 
   const flare = new Lensflare();
+  flare.name = "SunFlares";
   flare.addElement(new LensflareElement(sun, 500, 0, props.light.color));
   flare.addElement(new LensflareElement(circle, 75, 0.55));
   flare.addElement(new LensflareElement(hexagon, 200, 0.6));
