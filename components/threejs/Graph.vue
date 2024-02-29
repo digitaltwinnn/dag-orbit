@@ -36,6 +36,9 @@ onMounted(() => {
   watch($data.loaded, () => {
     satellites.value.push(...$data.satellites);
     edges.value.push(...$data.graphEdges);
+
+    const $theatre = useTheatre();
+    $theatre.registration.registerGraph(graph);
   });
 });
 </script>
