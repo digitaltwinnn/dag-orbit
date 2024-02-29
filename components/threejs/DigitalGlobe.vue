@@ -15,6 +15,12 @@ import { globedots } from "~/assets/dots/dots.globe";
 import { mapdots } from "~/assets/dots/dots.map";
 import { gsap } from "gsap";
 
+type Dot = {
+  x: number;
+  y: number;
+  z: number;
+};
+
 let scene = inject(sceneKey);
 if (!scene) throw new Error("Scene not found");
 

@@ -35,12 +35,6 @@ declare global {
     target: Satellite;
   };
 
-  type Dot = {
-    x: number;
-    y: number;
-    z: number;
-  };
-
   type NodeData = {
     satellites: Satellite[];
     satelliteEdges: Edge[];
